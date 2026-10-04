@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="epub_loading_kicker">Một khoảnh khắc trước chương tiếp theo</string>
+    <string name="epub_loading_title">Sẵn sàng đọc</string>
+    <string name="epub_loading_content">Đang chuẩn bị sách…</string>
+    <string name="epub_loading_interrupted">Tải bị gián đoạn</string>
+    <string name="epub_loading_menu_hint">Chạm vào trang để mở menu đọc</string>
+    <string name="epub_loading_templates">Mẫu màn hình tải EPUB</string>
+    <string name="epub_loading_templates_summary">Chọn hình ảnh và bố cục hiển thị khi mở sách</string>
+    <string name="epub_loading_templates_help">Chọn cảnh mở đầu cho sách. Chế độ ngày và đêm dùng để xem trước; khi tải sẽ theo chế độ của ứng dụng. Sao chép mẫu để tùy chỉnh.</string>
+    <string name="epub_loading_selected">Đang dùng: %1$s</string>
+    <string name="epub_loading_preview">Xem trước toàn màn hình</string>
+    <string name="epub_loading_preview_book">Nơi câu chuyện bắt đầu</string>
+    <string name="epub_loading_preview_close">Chạm vào trang để quay lại danh sách mẫu</string>
+    <string name="epub_loading_add">Thêm mẫu màn hình tải</string>
+    <string name="epub_loading_copy">Sao chép và sửa</string>
+    <string name="epub_loading_import">Nhập mẫu</string>
+    <string name="epub_loading_export">Xuất mẫu</string>
+    <string name="epub_loading_builtin">Có sẵn</string>
+    <string name="epub_loading_custom">Tùy chỉnh</string>
+    <string name="epub_loading_copy_name">%1$s · Bản sao</string>
+    <string name="epub_loading_editor_hint">Sửa cảnh, lời dẫn, phông chữ và màu ngày/đêm</string>
+</resources>

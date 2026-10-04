@@ -1,0 +1,603 @@
+{
+  "collection": "Rider-Waite-Smith major arcana",
+  "artist": "Pamela Colman Smith",
+  "source": "Wikimedia Commons",
+  "license": "Public domain",
+  "downloadedAtUtc": "2026-09-22T14:36:05.082055+00:00",
+  "cards": [
+    {
+      "index": 0,
+      "title": "File:RWS Tarot 00 Fool.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/90/RWS_Tarot_00_Fool.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_00_Fool.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "557c6592b73107508eac65ef140d090d2ccd657ac5a2d5d4fe31c6c2ceacbcb5",
+      "originalBytes": 1177006,
+      "assets": [
+        {
+          "file": "tarot-00.webp",
+          "bytes": 69082,
+          "sha256": "0b6ab67f30620c7c4a59eec7667648d977e0a64798c7e528ddf49857e29da000",
+          "width": 360,
+          "height": 604
+        },
+        {
+          "file": "tarot-00-thumb.webp",
+          "bytes": 2564,
+          "sha256": "3a1010be4c6ee530a67233c803bfa93b00810fe3b517a33a3a36a8613e3589e7",
+          "width": 64,
+          "height": 107
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "title": "File:RWS Tarot 01 Magician.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/de/RWS_Tarot_01_Magician.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_01_Magician.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "e0569e468545abfd2987ec0af5d3c51da3a9d478e37077aeaa1d715ddfc9941b",
+      "originalBytes": 800458,
+      "assets": [
+        {
+          "file": "tarot-01.webp",
+          "bytes": 72402,
+          "sha256": "8b53a79a78c6d06d501c6395c92580d9fcd77e36a54de70cdfd182d320b69073",
+          "width": 360,
+          "height": 624
+        },
+        {
+          "file": "tarot-01-thumb.webp",
+          "bytes": 2582,
+          "sha256": "dbcffc47add0cc9327b39a13c32a39d9fcbd6e8e8341673121fef5bee605628a",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "title": "File:RWS Tarot 02 High Priestess.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/88/RWS_Tarot_02_High_Priestess.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_02_High_Priestess.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "0e87b5a22187a299334188c2e8fd178125151f9015c122f6946367489cfd252a",
+      "originalBytes": 884438,
+      "assets": [
+        {
+          "file": "tarot-02.webp",
+          "bytes": 79844,
+          "sha256": "c6a9828408605760cf72536f5908f3182bd78e8ceefe7834f03eb3310ee5c421",
+          "width": 360,
+          "height": 618
+        },
+        {
+          "file": "tarot-02-thumb.webp",
+          "bytes": 2654,
+          "sha256": "50dc04081415717196c61679cb986d2a08a4ce6b1cea53b1bb6d4c553e92f330",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "title": "File:RWS Tarot 03 Empress.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/RWS_Tarot_03_Empress.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_03_Empress.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "2f0a9885c4f4e68bbca4cb40d3d5f42d4c7559f914bb5b3765ee429c74c142df",
+      "originalBytes": 949129,
+      "assets": [
+        {
+          "file": "tarot-03.webp",
+          "bytes": 90752,
+          "sha256": "56a6b4daafe68ef2ea63ace54f05b5f604d08d7f2c42c3c7692aed4aefde8dad",
+          "width": 360,
+          "height": 615
+        },
+        {
+          "file": "tarot-03-thumb.webp",
+          "bytes": 2840,
+          "sha256": "b14f84f582c84c8eb13fc9e437413324086d5ad5c3f7495d938bab7de1b932b4",
+          "width": 64,
+          "height": 109
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "title": "File:RWS Tarot 04 Emperor.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c3/RWS_Tarot_04_Emperor.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_04_Emperor.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "7a800b57c5b7da7b493e6968da31325327134e98083e95ee75b3db6eaef7e868",
+      "originalBytes": 938373,
+      "assets": [
+        {
+          "file": "tarot-04.webp",
+          "bytes": 86128,
+          "sha256": "c0f79fa597f8f2332d07baeb756f38a67607bda95df80833e09b2fa32e03ed7d",
+          "width": 360,
+          "height": 618
+        },
+        {
+          "file": "tarot-04-thumb.webp",
+          "bytes": 2600,
+          "sha256": "bf510d715878a0f12713b3f7870cd09b8d65cdcb4b4823f4de70b4707f1c61f8",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "title": "File:RWS Tarot 05 Hierophant.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/8d/RWS_Tarot_05_Hierophant.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_05_Hierophant.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "68faba7f016b2d76b2fc2200f834279a0b08b7228767ae744fcdc70f9402699d",
+      "originalBytes": 900561,
+      "assets": [
+        {
+          "file": "tarot-05.webp",
+          "bytes": 85796,
+          "sha256": "42c37817cf65df1111a8c02f37c19c31bce123b8dc27de2dd98f9e5e4429160f",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-05-thumb.webp",
+          "bytes": 2846,
+          "sha256": "bf06ce877a477f3883027bb5aac9cbe7757f206e3c408f438e28498c7e80e277",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "title": "File:RWS Tarot 06 Lovers.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_06_Lovers.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_06_Lovers.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "5a24e337a146568ebbbfa9783fa451d22c02bccd3cb7fe518afdb3ff396487fe",
+      "originalBytes": 995290,
+      "assets": [
+        {
+          "file": "tarot-06.webp",
+          "bytes": 90600,
+          "sha256": "f603746adbbd5e128313668501d3e68f50df788cf7c56152ea6c3e46fa1b650c",
+          "width": 360,
+          "height": 616
+        },
+        {
+          "file": "tarot-06-thumb.webp",
+          "bytes": 3006,
+          "sha256": "2e06df03f66edf1dc4a25cf75077096bce0214c9cf683fbbaa1c1389d77e1860",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "title": "File:RWS Tarot 07 Chariot.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/9/9b/RWS_Tarot_07_Chariot.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_07_Chariot.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "3906e01a159d3b7f1696e9094080e0a4ae95b2f4d4ca8b084131aba6ad133dd8",
+      "originalBytes": 859575,
+      "assets": [
+        {
+          "file": "tarot-07.webp",
+          "bytes": 81276,
+          "sha256": "dacf45805db4ddbaed127a0056b8d6b4146441c85143e3ec2588f37c059c6831",
+          "width": 360,
+          "height": 622
+        },
+        {
+          "file": "tarot-07-thumb.webp",
+          "bytes": 3000,
+          "sha256": "20f7a206795e142329fef691dba6b90da6c618c0ef3a31a945b7dd3d4fc56593",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "title": "File:RWS Tarot 08 Strength.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/RWS_Tarot_08_Strength.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_08_Strength.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "b222f1799b8dc46944d28f6079b1551011691dc439740371126e874fcf0c768f",
+      "originalBytes": 806480,
+      "assets": [
+        {
+          "file": "tarot-08.webp",
+          "bytes": 68434,
+          "sha256": "cce1b98ba0e3b5c5b8b0bf200f31283adae41f5980bc48e04a2e0248e04050b4",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-08-thumb.webp",
+          "bytes": 2210,
+          "sha256": "a118ce214c19be0bc293b0961166c03cb491a49ec2aec6e9d5bb9f38589639bc",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "title": "File:RWS Tarot 09 Hermit.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/4d/RWS_Tarot_09_Hermit.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_09_Hermit.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "0f86ac4560e598ced039665e21023d329e7a7e58872c46b3e9a9d85bb6cb2a50",
+      "originalBytes": 735989,
+      "assets": [
+        {
+          "file": "tarot-09.webp",
+          "bytes": 52552,
+          "sha256": "b063c8c5b8054e3fdb3e3cb9b84aba1f0a0cebb4ae86baca84b7061755797d22",
+          "width": 360,
+          "height": 615
+        },
+        {
+          "file": "tarot-09-thumb.webp",
+          "bytes": 1798,
+          "sha256": "450b64f892b3ed91cac7fb500d5f4ad68577a0b8e8ba89345b8120fb86da8508",
+          "width": 64,
+          "height": 109
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "title": "File:RWS Tarot 10 Wheel of Fortune.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/3/3c/RWS_Tarot_10_Wheel_of_Fortune.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_10_Wheel_of_Fortune.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "2979bea7530572f408739757c87200772f6171a5249684cc9ee2a379108b3657",
+      "originalBytes": 1155837,
+      "assets": [
+        {
+          "file": "tarot-10.webp",
+          "bytes": 84322,
+          "sha256": "adb3e8e617226a74a79f2e7569dd711da39b76d8f91720210a9cc17645edc356",
+          "width": 360,
+          "height": 626
+        },
+        {
+          "file": "tarot-10-thumb.webp",
+          "bytes": 3224,
+          "sha256": "ff3c4093871d49c1063fe8e5c60a01a8b767f6261e82e72933cc574a6fad08e2",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "title": "File:RWS Tarot 11 Justice.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/e/e0/RWS_Tarot_11_Justice.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_11_Justice.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "028645f4ed40a82035c410f4b7b5b00adbdcdf1c21ffd706cddeaf9227e0151d",
+      "originalBytes": 893399,
+      "assets": [
+        {
+          "file": "tarot-11.webp",
+          "bytes": 83618,
+          "sha256": "d14f82aa5881141f28f4a6c8b1cb340d47fcf27503ffa1a15c00c8de79c7015e",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-11-thumb.webp",
+          "bytes": 2456,
+          "sha256": "afca9ece8c67fcba1c846ddae740e62fa93b343eaed907f10e46a113bf607a5c",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "title": "File:RWS Tarot 12 Hanged Man.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/2/2b/RWS_Tarot_12_Hanged_Man.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_12_Hanged_Man.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "0eacf7afe48e4b51c5405a8354ecb867a4d8868151137434ef84621e4d56359c",
+      "originalBytes": 1138974,
+      "assets": [
+        {
+          "file": "tarot-12.webp",
+          "bytes": 81586,
+          "sha256": "269e72a48098dc40ba799587dd4818afb23995d183c818c317aea480a8016ab2",
+          "width": 360,
+          "height": 633
+        },
+        {
+          "file": "tarot-12-thumb.webp",
+          "bytes": 2068,
+          "sha256": "5cba4aa021652915ce5bb00cb1b59a63453db778281f81f197748c399c45c27c",
+          "width": 64,
+          "height": 113
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "title": "File:RWS Tarot 13 Death.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/RWS_Tarot_13_Death.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_13_Death.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "9e9cdd41a4d975691e79acc2358b45f4f2c58661431c3113a5ccf27477356a66",
+      "originalBytes": 922316,
+      "assets": [
+        {
+          "file": "tarot-13.webp",
+          "bytes": 86880,
+          "sha256": "5fce9a53b664c2f53b58e52031a12149ecd64a68cd5dbbc6920f2be77f4f82a6",
+          "width": 360,
+          "height": 622
+        },
+        {
+          "file": "tarot-13-thumb.webp",
+          "bytes": 2856,
+          "sha256": "3459c07c4e25bf247cfb74dfbdbbf175118872287256017b21b574b2e2993030",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "title": "File:RWS Tarot 14 Temperance.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/f8/RWS_Tarot_14_Temperance.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_14_Temperance.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "a306b373f8ff18270a2daabe3d89967eadd428e460c39ed717bda7bd38a1f009",
+      "originalBytes": 957655,
+      "assets": [
+        {
+          "file": "tarot-14.webp",
+          "bytes": 92672,
+          "sha256": "c8bfeda5a347dae74a313c2513e41669f57c0f177e8a67db4784c2a12b0ba6a9",
+          "width": 360,
+          "height": 625
+        },
+        {
+          "file": "tarot-14-thumb.webp",
+          "bytes": 2716,
+          "sha256": "c62ffd5221eaafac90361b90b439c04a6ab7b28ad6e1602689a58bf82a0b572f",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "title": "File:RWS Tarot 15 Devil.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/55/RWS_Tarot_15_Devil.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_15_Devil.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "f8e37102cbf2120270c0ed8c3e193b260d2f79dd5908bc9acbd48e8335083cf8",
+      "originalBytes": 779014,
+      "assets": [
+        {
+          "file": "tarot-15.webp",
+          "bytes": 69934,
+          "sha256": "b8b894aef28eee316bc9b08066ce5513c886d32beb5cefb2c55e85678c09cc3a",
+          "width": 360,
+          "height": 634
+        },
+        {
+          "file": "tarot-15-thumb.webp",
+          "bytes": 2668,
+          "sha256": "d123506112eff1da8ec5d9192388730896079c21dce7ce3e843723ea7ee990e0",
+          "width": 64,
+          "height": 113
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "title": "File:RWS Tarot 16 Tower.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/5/53/RWS_Tarot_16_Tower.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_16_Tower.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "ab5ce9bf29f32b9cf61720b375fe35f23ce7e116ee1c648a9bf6832e17241163",
+      "originalBytes": 758728,
+      "assets": [
+        {
+          "file": "tarot-16.webp",
+          "bytes": 66252,
+          "sha256": "a89c2462d2da4ac57b1bb17f6bf6bf52dcf41423b3f8cddf8661e731f3a13a0d",
+          "width": 360,
+          "height": 623
+        },
+        {
+          "file": "tarot-16-thumb.webp",
+          "bytes": 2976,
+          "sha256": "380ad034932c909359745447b786853dedd96b24f4ab4006f48bb4bfa5fdff44",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "title": "File:RWS Tarot 17 Star.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/db/RWS_Tarot_17_Star.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_17_Star.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "20bb3e04c1655cc318031d94a024d84199cfeae2ca55e80d2d341c2d30435ac7",
+      "originalBytes": 852520,
+      "assets": [
+        {
+          "file": "tarot-17.webp",
+          "bytes": 73530,
+          "sha256": "48f66b4ca551418ada2ada4a83d16ecf0c8f9ce49d391b4f2edcc8990129888b",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-17-thumb.webp",
+          "bytes": 2738,
+          "sha256": "844afd7eefdc99a37fd49b97e144b5760a088354af77eba7de80f8952cb5c909",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "title": "File:RWS Tarot 18 Moon.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7f/RWS_Tarot_18_Moon.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_18_Moon.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "866474dc3de02bf3817495fd75d254dac2b9f36470f2f29ecb54de572f9dc70e",
+      "originalBytes": 859000,
+      "assets": [
+        {
+          "file": "tarot-18.webp",
+          "bytes": 75476,
+          "sha256": "a1447da2b2c9788f362d6dceedb16dc36636c0fee197db133843eb2ca2b41094",
+          "width": 360,
+          "height": 622
+        },
+        {
+          "file": "tarot-18-thumb.webp",
+          "bytes": 2596,
+          "sha256": "30a8c157a2e21c9eca95d5568b495d4fcc9db40664ad1759ef235bdaf462035d",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "title": "File:RWS Tarot 19 Sun.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/1/17/RWS_Tarot_19_Sun.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_19_Sun.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "6c21ef99fef3807bafb26cd467464c8efc59e7312a688ae66285968e364c6450",
+      "originalBytes": 935619,
+      "assets": [
+        {
+          "file": "tarot-19.webp",
+          "bytes": 89184,
+          "sha256": "810d553e2d0e9b61745265ded6c697a0bf93547816210be328e8fb4e85008ad1",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-19-thumb.webp",
+          "bytes": 3102,
+          "sha256": "c5e7ed327565772b5a1368928ee56a59fe06a568ab4d4323a10faf10f994251e",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "title": "File:RWS Tarot 20 Judgement.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/RWS_Tarot_20_Judgement.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_20_Judgement.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "1d670d30e651554051f1a04708a11c57583a92a2cc370b8c0fc54fb82f2ffbd3",
+      "originalBytes": 934640,
+      "assets": [
+        {
+          "file": "tarot-20.webp",
+          "bytes": 87940,
+          "sha256": "ad46f42c734c56689650921af5091d5c11b5e63b9176a2c90c263f80a7dea956",
+          "width": 360,
+          "height": 620
+        },
+        {
+          "file": "tarot-20-thumb.webp",
+          "bytes": 3088,
+          "sha256": "0dd26c970524a18278be804928ae95698db7baaf305f5c5d16c8926683b1377b",
+          "width": 64,
+          "height": 110
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "title": "File:RWS Tarot 21 World.jpg",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/RWS_Tarot_21_World.jpg",
+      "pageUrl": "https://commons.wikimedia.org/wiki/File:RWS_Tarot_21_World.jpg",
+      "artist": "Pamela Colman Smith",
+      "publicationYear": 1909,
+      "license": "Public domain",
+      "originalSha256": "f866b87a3c4422f96074080024860f46b5b3f456fcad74ca7aefdb5263bf0e69",
+      "originalBytes": 1171390,
+      "assets": [
+        {
+          "file": "tarot-21.webp",
+          "bytes": 85104,
+          "sha256": "9901e3020508858f9afabb29e9bd679ac08a565f55f1b62c9b42893a9776c4f4",
+          "width": 360,
+          "height": 622
+        },
+        {
+          "file": "tarot-21-thumb.webp",
+          "bytes": 3016,
+          "sha256": "b492440b574fbfd4b2d059536a889fed82cb2de27acc8be47025b535751f3ca0",
+          "width": 64,
+          "height": 111
+        }
+      ]
+    }
+  ]
+}

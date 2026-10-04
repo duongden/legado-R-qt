@@ -1,0 +1,14 @@
+[
+  {
+    "file": "Cinzel.ttf",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf",
+    "sha256": "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
+    "bytes": 125468
+  },
+  {
+    "file": "Cinzel-OFL.txt",
+    "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/OFL.txt",
+    "sha256": "f2b3029aba64c378bf0963b62945eee15e564fe4330b934c8f2eb058282b5e83",
+    "bytes": 4383
+  }
+]

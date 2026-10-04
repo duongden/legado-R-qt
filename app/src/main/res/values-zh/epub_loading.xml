@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="epub_loading_kicker">即将进入阅读</string>
+    <string name="epub_loading_title">翻开新的故事</string>
+    <string name="epub_loading_content">正在准备正文…</string>
+    <string name="epub_loading_interrupted">加载未完成</string>
+    <string name="epub_loading_menu_hint">轻触页面可打开阅读菜单</string>
+    <string name="epub_loading_templates">EPUB 加载模板</string>
+    <string name="epub_loading_templates_summary">选择正文加载时的插画、构图与配色</string>
+    <string name="epub_loading_templates_help">为阅读挑选一幕开场。日夜切换仅用于预览，加载时跟随应用日夜模式。可复制模板，自定义你喜欢的画面。</string>
+    <string name="epub_loading_selected">当前使用：%1$s</string>
+    <string name="epub_loading_preview">全屏预览</string>
+    <string name="epub_loading_preview_book">故事，从这里开始</string>
+    <string name="epub_loading_preview_close">轻触页面返回模板列表</string>
+    <string name="epub_loading_add">添加加载模板</string>
+    <string name="epub_loading_copy">复制并编辑</string>
+    <string name="epub_loading_import">导入模板</string>
+    <string name="epub_loading_export">导出模板</string>
+    <string name="epub_loading_builtin">内置</string>
+    <string name="epub_loading_custom">自定义</string>
+    <string name="epub_loading_copy_name">%1$s · 副本</string>
+    <string name="epub_loading_editor_hint">可修改构图、文案、字体和日夜配色</string>
+</resources>

@@ -1,0 +1,5 @@
+<resources>
+    <item name="ui_translation_label" type="id" />
+    <item name="ui_translation_hint" type="id" />
+    <item name="ui_translation_options" type="id" />
+</resources>

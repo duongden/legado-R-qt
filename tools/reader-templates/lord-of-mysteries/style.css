@@ -1,0 +1,130 @@
+@font-face { font-family: 'Mysteries Display'; src: url("{{asset:Cinzel.ttf}}") format('truetype'); font-style: normal; font-weight: 400 900; font-display: block; }
+{{tarotAssets}}
+:root {
+  --lm-sky-top: #24242b; --lm-sky-glow: #69404b66;
+  --lm-heading: #763741; --lm-dialogue: #69454c; --lm-ornament: #927043;
+  --lm-paper-wash: #d9ccb544; --lm-paper-border: #bfaa86; --lm-paper-line: #8f6f4c33;
+  --lm-ink: #342c2b; --lm-gold: #c4a479; --lm-red: #9d3e46; --lm-paper: #eae1ce;
+  --reader-text-color: var(--lm-ink); --reader-page-background: var(--lm-sky-top); --reader-accent: #843540;
+  --reader-font-family: 'Noto Serif CJK SC', 'Source Han Serif SC', 'Songti SC', serif;
+  --reader-font-size: 18px; --reader-line-height: 1.82;
+  --reader-paragraph-indent: 2em; --reader-paragraph-spacing: .65em;
+}
+html, body { background: var(--lm-sky-top); color: var(--lm-ink); }
+[data-reader-page] { padding: 0; }
+.lm-page, .lm-page * { box-sizing: border-box; }
+.lm-page { position: relative; isolation: isolate; width: 100%; height: 100%; overflow: hidden; display: grid; grid-template-rows: 189px 27px minmax(0, 1fr) 87px; padding: var(--reader-safe-top,0px) calc(10px + var(--reader-safe-right,0px)) calc(5px + var(--reader-safe-bottom,0px)) calc(10px + var(--reader-safe-left,0px)); background: radial-gradient(ellipse at 95% 0, var(--lm-sky-glow), transparent 47%), radial-gradient(ellipse at 0 72%, #53545a44, transparent 60%), var(--lm-sky-top); }
+.lm-hero { position: relative; min-width: 0; overflow: hidden; color: #dfc8a5; background: radial-gradient(ellipse at 81% 36%, var(--lm-sky-glow), transparent 64%); border-top: 1px solid #c4a47965; border-bottom: 1px solid #c4a47945; }
+.lm-crimson-moon { position: absolute; width: 98px; height: 98px; border-radius: 50%; right: 37px; top: 25px; background: radial-gradient(circle at 65% 35%, #c78579, #a65057 34%, #78313f 69%, #4e2538); box-shadow: inset -6px -5px 14px #391c33aa, 0 0 0 5px #9d46530a, 0 0 36px #bb515936; opacity: .85; }
+.lm-crimson-moon::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(ellipse at 25% 60%, #6034427a 0 6%, transparent 8%), radial-gradient(ellipse at 67% 30%, #e3a0903b 0 4%, transparent 7%), radial-gradient(ellipse at 60% 73%, #5022394d 0 7%, transparent 10%); }
+.lm-astral-dial { position: absolute; width: 192px; height: 192px; right: -9px; top: -16px; color: #c4a479; opacity: .34; }
+.lm-astral-dial > svg, .lm-console-seal > svg { width: 100%; height: 100%; display: block; }
+.lm-skyline { position: absolute; inset: 42px -3px 14px 0; color: #151c27; opacity: .85; }.lm-skyline > svg { width: 100%; height: 100%; }
+.lm-hero-rule { position: absolute; top: 10px; left: 7px; right: 7px; display: flex; align-items: center; gap: 7px; font: 6px/1 'Mysteries Display', serif; letter-spacing: 1px; color: #bdac97; z-index: 2; }.lm-hero-rule > i { flex: 1; height: 1px; background: linear-gradient(90deg,#c4a47960,transparent); }
+.lm-hero-copy { position: absolute; left: 11px; top: 48px; z-index: 3; }
+.lm-kicker { display: block; font: 6px/1.4 'Mysteries Display', serif; letter-spacing: 1.1px; color: #d4bda1; }
+.lm-hero-copy > strong { display: block; margin-top: 7px; font: 700 31px/1.35 var(--reader-font-family); letter-spacing: 4px; color: #eedec6; text-shadow: 0 3px 8px #131822; }
+.lm-hero-subtitle { display: block; margin-top: 3px; font: 12px/1.5 var(--reader-font-family); letter-spacing: 1.8px; color: #d1b18c; }
+.lm-motto { display: block; margin-top: 12px; font: 8px/1.4 var(--reader-font-family); letter-spacing: 1px; color: #aab0b7; }
+.lm-opening-card { position: absolute; z-index: 2; right: 24px; top: 43px; width: 77px; height: 120px; transform: rotate(10deg); box-shadow: 8px 10px 16px #0e10184d; background: #151c26; }
+.lm-opening-card > svg { width: 100%; height: 100%; display: block; }
+.lm-hero-caption { position: absolute; z-index: 3; bottom: 7px; left: 8px; right: 8px; display: flex; align-items: center; font: 6px/1.2 'Mysteries Display', serif; letter-spacing: 1px; color: #bfae9a; }.lm-hero-caption b { flex: 1; text-align: center; font-size: 11px; font-weight: 400; }.lm-hero-caption > span:last-child { margin-left: auto; }
+.lm-mist { position: absolute; pointer-events: none; z-index: 1; width: 140%; height: 85px; bottom: 6px; left: -20%; opacity: .32; background: radial-gradient(ellipse at 17% 75%, #b3b6b960, transparent 34%), radial-gradient(ellipse at 50% 65%, #b3b6b945, transparent 40%), radial-gradient(ellipse at 83% 83%, #cad0ce60, transparent 29%); }
+.lm-bookline { display: flex; align-items: center; gap: 7px; padding: 0 4px; min-width: 0; color: #c8b497; font: 9px/1.3 var(--reader-font-family); }.lm-star { font: 12px/1 serif; flex: 0 0 auto; color: #a58165; }.lm-bookline > [data-reader-field], .lm-card-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.lm-bookline > i { margin-left: auto; font: 5.5px/1 'Mysteries Display', serif; letter-spacing: 1px; white-space: nowrap; flex: 0 0 auto; color: #b4a18c; }
+.lm-paper { position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: 17px 21px 14px; background: linear-gradient(100deg,var(--lm-paper-wash),var(--lm-paper) 13%,var(--lm-paper) 86%,var(--lm-paper-wash)), var(--lm-paper); border: 1px solid var(--lm-paper-border); box-shadow: inset 0 0 0 3px #f6eddb55, 0 3px 8px #12151d77; }
+.lm-paper::before { content: ''; position: absolute; pointer-events: none; inset: 6px; border: 1px solid var(--lm-paper-line); }.lm-corners { position: absolute; pointer-events: none; inset: 5px; color: var(--lm-ornament); }.lm-corner { position: absolute; width: 23px; height: 23px; }.lm-corner:nth-child(1) { left: 0; top: 0; }.lm-corner:nth-child(2) { right: 0; top: 0; transform: rotate(90deg); }.lm-corner:nth-child(3) { right: 0; bottom: 0; transform: rotate(180deg); }.lm-corner:nth-child(4) { left: 0; bottom: 0; transform: rotate(270deg); }
+/* Keep font shaping consistent with Chromium's CJK punctuation trimming.
+   Disabling chws/vchw makes Noto Serif quotes overflow a line that the browser
+   fitted with compressed punctuation; that horizontal overflow becomes a page break. */
+.lm-flow { position: relative; min-height: 0; min-width: 0; height: 100%; overflow: hidden; color: var(--lm-ink); font: var(--reader-font-size)/var(--reader-line-height) var(--reader-font-family); text-align: justify; overflow-wrap: anywhere; word-break: normal; line-break: strict; font-kerning: auto; font-feature-settings: normal; }
+.lm-flow .reader-chapter-title { display: block; margin: 0 0 .8em; padding: .25em 0 .65em; font: 700 1.25em/1.5 var(--reader-font-family); letter-spacing: .035em; color: var(--lm-heading); border-bottom: 1px solid #946f4950; }.lm-flow .reader-chapter-title::before { content: '✦  MYSTERY / ' attr(data-lm-chapter); display: block; font: 8px/1.6 'Mysteries Display',serif; letter-spacing: 1.5px; color: #8f7757; margin-bottom: 7px; }
+.lm-flow .reader-paragraph { margin: 0 0 var(--reader-paragraph-spacing); padding: 0; text-indent: var(--reader-paragraph-indent); line-height: inherit; orphans: 1; widows: 1; break-inside: auto; }.lm-flow .lm-dialogue { color: var(--lm-dialogue); background: linear-gradient(#94605644,#94605618) left top / 1px 100% no-repeat; }.lm-flow .lm-lead:not([data-reader-continuation]):not([data-split-from])::first-line { color: var(--lm-heading); font-weight: 600; }.lm-flow .lm-scene { text-align: center; text-indent: 0; letter-spacing: .45em; color: var(--lm-ornament); font-size: .8em; margin: .25em 0 1em; }
+.lm-flow [data-reader-continuation], .lm-flow [data-split-from] { text-indent: 0; }.lm-flow .reader-chapter-title[data-split-from] { padding-top: 0; margin-top: 0; }.lm-flow .reader-chapter-title[data-split-from]::before { display: none; }.lm-flow pre,.lm-flow code { white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2; }.lm-flow pre { text-indent: 0; margin: 0 0 var(--reader-paragraph-spacing); orphans: 1; widows: 1; }.lm-flow img { max-width: 100%; height: auto; }.lm-flow a { color: var(--lm-heading); text-decoration-color: #7a354070; }
+.lm-footer { position: relative; min-width: 0; overflow: hidden; padding: 7px 7px 0; color: #c4a479; }.lm-tarot-deck { display: flex; align-items: center; justify-content: center; gap: 8px; height: 43px; }.lm-deck-card { width: 27px; height: 36px; position: relative; border: 1px solid #a38b6660; background: #1f222b; box-shadow: inset 0 0 0 2px #1f222b,inset 0 0 0 3px #9b85653b; color: #a28c74; opacity: .6; transform: translateY(2px); }.lm-deck-card::after { content: ''; position: absolute; inset: 6px; border: 1px solid currentColor; transform: rotate(45deg) scale(.6); opacity: .35; }.lm-deck-card .lm-card-mark { position: absolute; top: 3px; left: 0; width: 100%; text-align: center; font: 5px/1 'Mysteries Display',serif; }.lm-card-sigil { position: absolute; left: 0; right: 0; top: 12px; height: 16px; text-align: center; font: 15px/1 serif; font-weight: 400; }.lm-deck-card[data-lm-selected] { width: 31px; height: 43px; transform: none; opacity: 1; color: #e4c595; border-color: #c4a479; background: #392831; box-shadow: inset 0 0 0 2px #392831,inset 0 0 0 3px #c4a47955,0 0 9px #be795b18; }.lm-deck-card[data-lm-selected] .lm-card-sigil { top: 15px; font-size: 17px; }
+.lm-footer-line { display: flex; align-items: baseline; gap: 7px; height: 24px; padding-top: 5px; color: #b9a993; font: 7px/1.4 var(--reader-font-family); }.lm-tarot-caption b { font: 9px/1 'Mysteries Display',serif; color: #ddc59f; margin-left: 4px; }.lm-tarot-caption i { font: 6px/1 'Mysteries Display',serif; margin-left: 3px; font-style: normal; }.lm-folio { display: flex; align-items: baseline; justify-content: center; gap: 5px; margin-left: auto; font: 9px/1 'Mysteries Display',serif; }.lm-folio b { font-size: 19px; font-weight: 500; color: #e3cda8; }.lm-folio i { font: 9px/1 serif; color: #8d7965; }.lm-progress-label { margin-left: auto; }.lm-progress-label b { font: 8px/1 'Mysteries Display',serif; font-weight: 400; color: #d7bf99; }.lm-progress-track { height: 2px; margin-top: 2px; background: #bda38025; overflow: hidden; }.lm-progress-track > span { display: block; width: 100%; height: 100%; transform: scaleX(var(--lm-progress,0)); transform-origin: left center; background: linear-gradient(90deg,#8b3e4b,#cfaa7a); }
+.lm-manuscript { grid-template-rows: 75px 24px minmax(0,1fr) 87px; background: radial-gradient(ellipse at 90% 0,var(--lm-sky-glow),transparent 60%),var(--lm-sky-top); }.lm-console { min-width: 0; position: relative; overflow: hidden; border-bottom: 1px solid #c4a47940; }.lm-console-seal { position: absolute; width: 86px; height: 86px; left: -8px; top: -7px; color: #bda07a; opacity: .8; }.lm-console-copy { position: absolute; left: 80px; right: 43px; top: 12px; z-index: 2; min-width: 0; }.lm-console-copy .lm-kicker { font-size: 5px; letter-spacing: .9px; }.lm-console-copy > strong { display: block; margin-top: 5px; font: 500 13px/1.4 var(--reader-font-family); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2cfaf; }.lm-console-copy > span:last-child { display: block; margin-top: 3px; font: 8px/1.3 var(--reader-font-family); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a6a7a9; }.lm-mini-card { position: absolute; right: 3px; top: 14px; width: 29px; height: 43px; text-align: center; border: 1px solid #bda07a80; background: #362c35; color: #dbc29c; z-index: 2; box-shadow: inset 0 0 0 2px #362c35,inset 0 0 0 3px #bda07a30; }.lm-mini-card > span { display: block; font: 6px/1 'Mysteries Display',serif; margin-top: 5px; }.lm-mini-card > b { display: block; font: 19px/1 serif; font-weight: 400; margin-top: 5px; }.lm-console .lm-mist { bottom: -43px; }
+@media (min-height: 860px) and (min-width: 360px) { .lm-opening { grid-template-rows: 210px 28px minmax(0,1fr) 90px; }.lm-hero-copy { top: 58px; }.lm-hero-copy > strong { font-size: 33px; }.lm-opening-card { top: 52px; right: 27px; width: 82px; height: 128px; }.lm-crimson-moon { width: 115px; height: 115px; right: 35px; top: 29px; }.lm-astral-dial { width: 215px; height: 215px; right: -14px; } }
+@media (max-width: 350px) { .lm-page { padding-left: calc(7px + var(--reader-safe-left,0px)); padding-right: calc(7px + var(--reader-safe-right,0px)); }.lm-paper { padding-left: 17px; padding-right: 17px; }.lm-hero-copy { left: 7px; }.lm-hero-copy > strong { font-size: 26px; letter-spacing: 2px; }.lm-hero-copy .lm-kicker { font-size: 5px; letter-spacing: .6px; }.lm-opening-card { right: 15px; width: 70px; height: 110px; }.lm-crimson-moon { right: 18px; }.lm-motto { font-size: 7px; }.lm-console-copy { left: 68px; }.lm-console-seal { width: 76px; left: -9px; }.lm-console-copy .lm-kicker { font-size: 4.5px; letter-spacing: .3px; }.lm-tarot-deck { gap: 5px; }.lm-bookline > i { font-size: 5px; letter-spacing: .5px; } }
+@media (max-height: 650px) { .lm-opening { grid-template-rows: 135px 23px minmax(0,1fr) 67px; }.lm-manuscript { grid-template-rows: 60px 22px minmax(0,1fr) 67px; }.lm-hero-copy { top: 32px; }.lm-hero-copy > strong { font-size: 25px; margin-top: 4px; }.lm-hero-subtitle { font-size: 10px; }.lm-motto { display: none; }.lm-opening-card { top: 24px; right: 31px; width: 60px; height: 95px; }.lm-crimson-moon { width: 83px; height: 83px; top: 13px; }.lm-astral-dial { width: 153px; height: 153px; top: -22px; right: 2px; }.lm-hero-caption { font-size: 5px; bottom: 5px; }.lm-paper { padding-top: 12px; padding-bottom: 10px; }.lm-footer { padding-top: 4px; }.lm-tarot-deck { height: 32px; }.lm-deck-card { height: 28px; width: 24px; }.lm-deck-card[data-lm-selected] { height: 32px; width: 27px; }.lm-card-sigil { top: 10px; font-size: 12px; }.lm-deck-card[data-lm-selected] .lm-card-sigil { top: 11px; font-size: 14px; }.lm-footer-line { height: 21px; padding-top: 4px; }.lm-folio b { font-size: 17px; }.lm-console-copy { top: 8px; }.lm-console-copy > strong { margin-top: 2px; font-size: 12px; }.lm-console-copy > span:last-child { margin-top: 2px; }.lm-console-seal { top: -13px; }.lm-mini-card { top: 9px; height: 40px; } }
+@media (max-height: 440px) { .lm-page { grid-template-rows: 42px 18px minmax(0,1fr) 37px; }.lm-hero-copy { top: 5px; left: 8px; }.lm-hero-copy > strong { font-size: 20px; line-height: 1.3; margin: 0; letter-spacing: 2px; }.lm-hero-copy .lm-kicker,.lm-hero-subtitle,.lm-hero-rule,.lm-hero-caption,.lm-opening-card { display: none; }.lm-crimson-moon { width: 44px; height: 44px; right: 18%; top: -5px; }.lm-astral-dial { width: 90px; height: 90px; right: 13%; top: -25px; }.lm-skyline { inset: 0; opacity: .45; }.lm-paper { padding-top: 8px; padding-bottom: 8px; }.lm-console-seal { width: 60px; height: 60px; top: -10px; }.lm-console-copy { top: 11px; left: 60px; }.lm-console-copy .lm-kicker,.lm-console-copy > span:last-child,.lm-mini-card { display: none; }.lm-console-copy > strong { font-size: 12px; }.lm-footer { display: flex; align-items: center; gap: 15px; padding-top: 0; }.lm-tarot-deck { flex: 0 0 43%; gap: 7px; height: 28px; }.lm-deck-card { width: 18px; height: 24px; }.lm-deck-card[data-lm-selected] { width: 22px; height: 29px; }.lm-card-sigil { font-size: 10px; top: 9px; }.lm-deck-card[data-lm-selected] .lm-card-sigil { font-size: 12px; top: 10px; }.lm-footer-line { flex: 1; padding: 0; align-items: center; }.lm-progress-track,.lm-tarot-caption { display: none; }.lm-flow .reader-chapter-title { padding-top: 0; } }
+
+/* Original 1909 Rider-Waite-Smith plates: full art for the opening, small
+   versions for the folio rail. Fixed boxes keep artwork out of pagination. */
+.lm-hero-copy { left: 14px; right: 151px; top: 45px; }
+.lm-hero-copy > strong { font-size: 34px; letter-spacing: 5px; margin-top: 8px; white-space: nowrap; }
+.lm-hero-copy .lm-kicker { font-size: 6px; letter-spacing: 1.3px; }
+.lm-hero-subtitle { font-size: 9px; letter-spacing: 1.1px; line-height: 1.7; margin-top: 5px; white-space: nowrap; }
+.lm-motto { max-width: 181px; font-size: 8px; line-height: 1.8; letter-spacing: .6px; margin-top: 10px; }
+.lm-oracle-number { position: absolute; left: -4px; top: 13px; font: 88px/1 'Mysteries Display',serif; letter-spacing: -4px; color: #d7b586; opacity: .11; pointer-events: none; }
+.lm-hero-caption > span:last-child { margin-right: 143px; }
+.lm-opening-spread { position: absolute; z-index: 3; top: 20px; right: 14px; width: 137px; height: 160px; pointer-events: none; }
+.lm-opening-card, .lm-companion-card { position: absolute; margin: 0; overflow: hidden; padding: 3px; border: 1px solid #dcc496; border-radius: 2px; background: #d6c49f; box-shadow: 2px 4px 5px #080d1877, inset 0 0 0 1px #fbecd099; }
+.lm-opening-card { z-index: 3; right: 6px; top: 0; width: 87px; height: 151px; transform: rotate(3deg); }
+.lm-companion-far { z-index: 1; left: 0; top: 23px; width: 70px; height: 124px; transform: rotate(-19deg); opacity: .74; }
+.lm-companion-near { z-index: 2; left: 25px; top: 10px; width: 76px; height: 134px; transform: rotate(-9deg); opacity: .91; }
+[data-lm-spread="1"] .lm-opening-card { transform: rotate(-3deg); }
+[data-lm-spread="1"] .lm-companion-far { transform: rotate(17deg); left: 58px; top: 17px; }
+[data-lm-spread="1"] .lm-companion-near { transform: rotate(-17deg); left: 3px; top: 18px; }
+[data-lm-spread="2"] .lm-opening-card { transform: rotate(6deg); right: 3px; }
+[data-lm-spread="2"] .lm-companion-far { transform: rotate(-10deg); top: 10px; left: 8px; }
+[data-lm-spread="2"] .lm-companion-near { transform: rotate(-22deg); top: 27px; left: 18px; }
+.lm-tarot-art { position: absolute; inset: 3px; background-color: #eddfbd; background-size: 100% 100%; background-repeat: no-repeat; }
+.lm-crimson-moon { left: var(--lm-celestial-x,70%); right: auto; top: var(--lm-celestial-y,22%); width: 87px; height: 87px; transform: translate(-50%,-50%); }
+[data-lm-celestial="sun"] .lm-crimson-moon { background: radial-gradient(circle at 42% 40%,#ffecc3,#dcb477 45%,#b17a56 77%,#805744); box-shadow: 0 0 26px #e9c88647,0 0 0 7px #ead19d0b; }
+[data-lm-celestial="sun"] .lm-crimson-moon::after { opacity: 0; }
+.lm-paper { box-shadow: inset 0 0 0 3px var(--lm-paper-line),0 3px 8px #12151d66; }
+.lm-deck-card { width: 24px; height: 38px; padding: 0; border-color: #bda17880; border-radius: 1px; background: #baa582; box-shadow: none; opacity: .61; }
+.lm-deck-card::after { display: none; }
+.lm-deck-card .lm-tarot-art, .lm-mini-card .lm-tarot-art { inset: 1px; }
+.lm-deck-card .lm-card-mark { top: 2px; left: 2px; right: auto; width: auto; min-width: 7px; padding: 1px 2px; border-radius: 1px; font-size: 5px; background: #252532cb; color: #f2dfb9; z-index: 2; }
+.lm-deck-card[data-lm-selected] { width: 29px; height: 46px; background: #e3ca9c; border-color: #e7c89a; box-shadow: 0 0 0 1px #b9926540; }
+.lm-mini-card { overflow: hidden; border-color: #bba482; background: #d6c49f; box-shadow: none; }
+.lm-mini-card > .lm-card-mark { position: absolute; bottom: 2px; left: 2px; right: 2px; top: auto; z-index: 2; margin: 0; padding: 1px; line-height: 1.25; background: #252532cc; color: #f2dfb9; }
+:root[data-lm-phase="dawn"] { --lm-paper: #e7e1d5; --lm-ink: #37343d; --lm-heading: #735866; --lm-dialogue: #5e4c60; --lm-paper-wash: #ada2aa20; }
+:root[data-lm-phase="day"] { --lm-paper: #eee5d2; --lm-ink: #342d29; --lm-heading: #815042; --lm-dialogue: #69494b; }
+:root[data-lm-phase="dusk"] { --lm-paper: #e4d1ba; --lm-ink: #403039; --lm-heading: #813f4c; --lm-dialogue: #694355; --lm-paper-wash: #a8756525; }
+:root[data-lm-phase="night"] { --lm-paper: #252936; --lm-ink: #d9d3c7; --lm-heading: #e2b88d; --lm-dialogue: #cfbac9; --lm-ornament: #baa080; --lm-paper-border: #71624f; --lm-paper-line: #be9c6d24; --lm-paper-wash: #5e637324; }
+@media (min-height: 860px) and (min-width: 360px) {
+  .lm-opening-spread { top: 26px; right: 19px; width: 151px; height: 177px; }
+  .lm-opening-card { width: 96px; height: 167px; }
+  .lm-companion-far { width: 77px; height: 135px; top: 26px; }
+  .lm-companion-near { width: 84px; height: 146px; top: 12px; }
+  .lm-hero-copy { top: 52px; right: 166px; }
+  .lm-hero-copy > strong { font-size: 37px; }
+  .lm-oracle-number { top: 19px; font-size: 107px; }
+}
+@media (max-width: 350px) {
+  .lm-hero-copy { left: 8px; right: 128px; }
+  .lm-hero-copy > strong { font-size: 27px; letter-spacing: 3px; }
+  .lm-hero-copy .lm-kicker { font-size: 5px; letter-spacing: .55px; }
+  .lm-hero-subtitle { font-size: 8px; letter-spacing: .55px; }
+  .lm-motto { font-size: 7px; max-width: 142px; }
+  .lm-opening-spread { right: 6px; width: 117px; }
+  .lm-opening-card { width: 79px; height: 139px; top: 7px; right: 3px; }
+  .lm-companion-far { width: 60px; height: 108px; top: 32px; }
+  .lm-companion-near { width: 67px; height: 118px; top: 19px; left: 19px; }
+  .lm-hero-caption > span:last-child { margin-right: 122px; }
+}
+@media (max-height: 650px) {
+  .lm-hero-copy { top: 31px; right: 121px; }
+  .lm-hero-copy > strong { font-size: 25px; letter-spacing: 3px; margin-top: 4px; }
+  .lm-hero-subtitle { font-size: 8px; margin-top: 3px; }
+  .lm-opening-spread { top: 16px; right: 13px; width: 104px; height: 108px; }
+  .lm-opening-card { top: 0; right: 2px; width: 61px; height: 107px; padding: 2px; }
+  .lm-companion-far { left: -2px; top: 16px; width: 52px; height: 91px; }
+  .lm-companion-near { left: 18px; top: 6px; width: 57px; height: 100px; }
+  .lm-opening-card .lm-tarot-art, .lm-companion-card .lm-tarot-art { inset: 2px; }
+  .lm-oracle-number { top: 12px; font-size: 65px; }
+  .lm-hero-caption > span:last-child { margin-right: 111px; }
+  .lm-crimson-moon { width: 75px; height: 75px; }
+  .lm-deck-card { width: 21px; height: 29px; }
+  .lm-deck-card[data-lm-selected] { width: 25px; height: 33px; }
+}
+@media (max-height: 440px) {
+  .lm-opening-spread, .lm-oracle-number { display: none; }
+  .lm-hero-copy { top: 5px; right: 65px; }
+  .lm-hero-copy > strong { font-size: 20px; margin: 0; }
+  .lm-crimson-moon { width: 44px; height: 44px; }
+  .lm-deck-card { width: 18px; height: 24px; }
+  .lm-deck-card[data-lm-selected] { width: 22px; height: 29px; }
+}

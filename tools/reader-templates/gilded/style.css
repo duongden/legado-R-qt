@@ -1,0 +1,114 @@
+/* 鎏金花笺。配色、字体与排版只由本模板控制。内嵌版画不依赖网络。 */
+:root {
+  --reader-text-color: #343c32;
+  --reader-page-background: #f4edde;
+  --reader-accent: #976044;
+  --reader-font-family: "Noto Serif CJK SC", "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+  --reader-font-size: 18px;
+  --reader-line-height: 1.8;
+  --reader-paragraph-indent: 2em;
+  --reader-paragraph-spacing: .75em;
+  --gilded-forest: #183b32;
+  --gilded-gold: #bc9559;
+  --gilded-muted: #88765b;
+  --gilded-portrait: url("{{portrait}}");
+}
+body { margin: 0; color: var(--reader-text-color); background: var(--reader-page-background); font: 400 var(--reader-font-size)/var(--reader-line-height) var(--reader-font-family); font-style: normal; letter-spacing: normal; }
+.gilded-page { position: relative; isolation: isolate; box-sizing: border-box; width: 100%; height: 100%; overflow: hidden; display: grid; grid-template-rows: 50px minmax(0, 1fr) 44px; gap: 17px; padding: 22px 31px 18px; background: radial-gradient(ellipse at 8% 1%, #e2c9a25c, transparent 40%), radial-gradient(ellipse at 100% 100%, #d2bea344, transparent 50%), var(--reader-page-background); }
+.gilded-opening { grid-template-rows: 92px minmax(0, 1fr) 44px; }
+.gilded-page::before { content: ""; position: absolute; inset: 0; box-shadow: inset 11px 0 #183b32, inset -11px 0 #183b32; pointer-events: none; }
+.gilded-border { position: absolute; inset: 7px; border: 1px solid #ae884f; box-shadow: inset 0 0 0 3px var(--reader-page-background), inset 0 0 0 4px #be9f665e; pointer-events: none; }
+.gilded-border::after { content: ""; position: absolute; inset: 6px; border: 1px solid #c2a77457; }
+.gilded-corner { position: absolute; width: 64px; height: 64px; color: #ac8049; pointer-events: none; z-index: 2; }
+.gilded-corner svg { display: block; width: 100%; height: 100%; }
+.gilded-nw { top: 4px; left: 4px; }
+.gilded-ne { top: 4px; right: 4px; transform: rotate(90deg); }
+.gilded-sw { bottom: 4px; left: 4px; transform: rotate(-90deg); }
+.gilded-se { bottom: 4px; right: 4px; transform: rotate(180deg); }
+.gilded-vine { position: absolute; width: 20px; height: 222px; color: #aa8a57aa; pointer-events: none; top: 41%; }
+.gilded-vine svg { width: 100%; height: 100%; }
+.gilded-vine-left { left: 9px; }
+.gilded-vine-right { right: 9px; transform: rotate(180deg); }
+.gilded-bookmark { position: absolute; right: 12px; top: 27px; z-index: 3; width: 12px; height: 137px; pointer-events: none; }
+.gilded-bookmark i { display: block; width: 1px; height: 100px; margin-left: 5px; background: linear-gradient(#b6925a, #e2c786, #a4854a); }
+.gilded-bookmark b { display: block; box-sizing: border-box; width: 12px; height: 32px; padding-top: 6px; color: #f2dda6; background: #96564f; border-top: 1px solid #d6b56e; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 81%, 0 100%); text-align: center; font: 13px/1.5 Georgia, serif; }
+.gilded-masthead { min-width: 0; position: relative; display: flex; align-items: center; color: #ecdfb9; background: var(--gilded-forest); border: 1px solid #af8e50; padding: 8px 14px; box-sizing: border-box; box-shadow: 0 2px 0 #b1966340; }
+.gilded-masthead::before { content: ""; position: absolute; inset: 4px; border: 1px solid #c0a7704d; pointer-events: none; }
+.gilded-pin { position: absolute; left: -7px; top: 50%; margin-top: -7px; z-index: 2; width: 14px; height: 14px; color: #f0daa2; background: var(--gilded-forest); border: 1px solid #c4a15f; transform: rotate(45deg); font: 13px/14px Georgia, serif; text-align: center; }
+.gilded-heading { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; width: 100%; }
+.gilded-kicker { font: 8px/1.4 Georgia, serif; color: #c8ae75; white-space: nowrap; }
+.gilded-book { font-size: 13px; line-height: 1.65; letter-spacing: .08em; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+.gilded-running { display: none; }
+.gilded-header-rule { display: none; align-items: center; gap: 8px; width: 92%; height: 13px; margin-top: 4px; color: #c8ae75; }
+.gilded-header-rule::before, .gilded-header-rule::after { content: ""; flex: 1; height: 1px; background: #b493575c; }
+.gilded-header-rule svg { flex: none; width: 38px; height: 11px; }
+.gilded-cameo { display: none; position: absolute; z-index: 2; width: 84px; height: 84px; right: 7px; top: 50%; margin-top: -42px; border: 1px solid #c4a15f; border-radius: 50%; padding: 4px; box-sizing: border-box; box-shadow: 0 0 0 3px #183b32, 0 0 0 4px #ae89544d; }
+.gilded-portrait { height: 100%; width: 100%; border-radius: 50%; background: var(--gilded-portrait) center/cover; border: 1px solid #cfb675; box-sizing: border-box; }
+.gilded-cameo-star { position: absolute; right: -3px; top: -4px; color: #f2dc9c; font-size: 19px; line-height: 1; text-shadow: 0 1px 3px #183b32; }
+.gilded-opening .gilded-heading { width: calc(100% - 88px); }
+.gilded-opening .gilded-book { font-size: 16px; line-height: 1.9; }
+.gilded-opening .gilded-header-rule { display: flex; }
+.gilded-opening .gilded-cameo { display: block; }
+.gilded-opening .gilded-cameo::after { content: ""; position: absolute; inset: -7px; border: 1px dotted #ccad716e; border-radius: 50%; }
+.gilded-page:not(.gilded-opening) .gilded-heading { flex-direction: row; align-items: center; gap: 8px; }
+.gilded-page:not(.gilded-opening) .gilded-kicker { width: 18px; font-size: 0; flex: none; }
+.gilded-page:not(.gilded-opening) .gilded-kicker::after { content: "✧"; font: 23px/1 Georgia, serif; }
+.gilded-page:not(.gilded-opening) .gilded-book { display: none; }
+.gilded-page:not(.gilded-opening) .gilded-running { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; letter-spacing: .035em; }
+/* Keep CJK punctuation advances stable when a text run becomes a page fragment. */
+.gilded-body { position: relative; min-width: 0; min-height: 0; z-index: 1; text-align: justify; text-spacing-trim: space-all; --legado-highlight-room-left: 14px; --legado-highlight-room-right: 14px; }
+.gilded-body .reader-template-flow-content { box-sizing: border-box; padding-left: 14px; }
+.reader-paragraph { position: relative; display: block; margin: 0 0 var(--reader-paragraph-spacing); text-indent: var(--reader-paragraph-indent); break-inside: auto; page-break-inside: auto; orphans: 1; widows: 1; }
+.reader-paragraph[data-gilded-ordinal]::before { content: attr(data-gilded-ordinal); position: absolute; left: -16px; top: .62em; width: 12px; text-align: left; text-indent: 0; color: #ac8d6096; font: italic 8px/1 Georgia, serif; pointer-events: none; }
+.reader-paragraph.gilded-lead { text-indent: 0; }
+/* First-line ink preserves native selection offsets, including joined emoji. */
+.gilded-lead:not([data-reader-continuation]):not([data-split-from])::first-line { font-weight: 600; color: #956343; text-shadow: 0 1px 0 #fff7dc; }
+.reader-paragraph.gilded-dialogue { text-indent: 0; padding-left: .6em; border-left: 1px solid #b18b5794; color: #425647; background: linear-gradient(90deg, #ba9a6020, transparent 65%); box-decoration-break: slice; -webkit-box-decoration-break: slice; }
+.reader-paragraph.gilded-scene { text-align: center; text-indent: 0; letter-spacing: .32em; color: #a7834c; }
+.reader-paragraph.gilded-scene::before, .reader-paragraph.gilded-scene::after { content: ""; display: block; position: absolute; top: 50%; height: 1px; width: 27%; background: linear-gradient(90deg, transparent, #b7985d); pointer-events: none; }
+.reader-paragraph.gilded-scene::before { left: 6%; }
+.reader-paragraph.gilded-scene::after { right: 6%; transform: scaleX(-1); }
+[data-reader-continuation], .reader-paragraph[data-split-from] { text-indent: 0; }
+.reader-paragraph[data-reader-continuation]::before, .reader-paragraph[data-split-from]::before { display: none; }
+.reader-chapter-title { position: relative; display: block; color: var(--gilded-forest); font: 600 1.6em/1.45 var(--reader-font-family); text-align: center; text-indent: 0; letter-spacing: .045em; overflow-wrap: anywhere; margin: .12em 0 .95em; padding: .4em .2em .55em; border-bottom: 1px solid #b4955766; break-before: auto; break-after: auto; break-inside: auto; page-break-before: auto; page-break-after: auto; page-break-inside: auto; orphans: 1; widows: 1; }
+.reader-chapter-title::before { content: "C H A P T E R   /   " attr(data-gilded-chapter); display: block; margin-bottom: .6em; color: #a37b46; font: 9px/1.4 Georgia, serif; letter-spacing: .12em; }
+.reader-chapter-title::after { content: "✦"; position: absolute; left: 50%; bottom: -10px; margin-left: -10px; width: 20px; height: 20px; color: #c7a166; border: 1px solid #b4955766; border-radius: 50%; font: 15px/20px Georgia, serif; background: var(--reader-page-background); box-shadow: 0 0 0 5px var(--reader-page-background); }
+.reader-chapter-title[data-split-from] { margin-top: 0; padding-top: 0; }
+.reader-chapter-title[data-split-from]::before, .reader-chapter-title[data-split-to]::after { display: none; }
+figure { margin: 0 0 var(--reader-paragraph-spacing); text-align: center; }
+img, svg, video, canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+.gilded-footer { min-width: 0; position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 9px; padding-top: 7px; color: #756649; border-top: 1px solid #b18c5066; font: 10px/1.45 Georgia, var(--reader-font-family); }
+.gilded-footer-left, .gilded-footer-right { display: flex; flex-direction: column; min-width: 0; }
+.gilded-footer-right { text-align: right; }
+.gilded-footer-label { font: 7px/1.8 var(--reader-font-family); letter-spacing: .14em; color: #9e8459; }
+.gilded-footer [data-reader-field] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.gilded-folio { flex: 0 1 auto; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 2px 3px 0; min-width: 0; color: var(--gilded-forest); font: italic 17px/1.3 Georgia, serif; }
+.gilded-folio [data-reader-field] { padding: 1px 9px; border: 1px solid #ad8c50; background: var(--gilded-forest); color: #eeddae; box-shadow: 0 0 0 2px var(--reader-page-background), 0 0 0 3px #bd9e6450; }
+.gilded-folio-wing { display: block; width: 28px; height: 20px; flex: none; color: #aa884c; }
+.gilded-folio-wing svg { width: 100%; height: 100%; }
+.gilded-mirror { transform: scaleX(-1); }
+.gilded-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #bea27536; }
+.gilded-progress i { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #43674c, #b99659); transform: scaleX(0); transform-origin: left; }
+.gilded-shimmer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.gilded-shimmer::after { content: ""; display: block; position: absolute; top: 0; bottom: 0; left: 0; width: 24%; background: linear-gradient(90deg, transparent, #f6e4a822, transparent); transform: translateX(-180%) skewX(-24deg); }
+.gilded-sparks { position: absolute; inset: 0; pointer-events: none; }
+.gilded-sparks i { position: absolute; width: 3px; height: 3px; background: #bc984f; transform: rotate(45deg); opacity: .35; }
+.gilded-sparks i:nth-child(1) { left: 15px; top: 22%; }
+.gilded-sparks i:nth-child(2) { right: 16px; top: 28%; }
+.gilded-sparks i:nth-child(3) { left: 16px; bottom: 24%; }
+.gilded-sparks i:nth-child(4) { right: 15px; bottom: 16%; }
+[data-reader-motion="running"] .gilded-sparks i { animation: gilded-glimmer 8s ease-in-out infinite; }
+[data-reader-motion="running"] .gilded-sparks i:nth-child(2) { animation-delay: -3s; }
+[data-reader-motion="running"] .gilded-sparks i:nth-child(3) { animation-delay: -5s; }
+[data-reader-motion="running"] .gilded-sparks i:nth-child(4) { animation-delay: -1s; }
+[data-reader-motion="running"][data-reader-entry="playing"] .gilded-opening .gilded-shimmer::after { animation: gilded-sheen 2.2s ease-out 1; }
+[data-reader-motion="paused"] .gilded-sparks i { animation: gilded-glimmer 8s ease-in-out infinite paused; }
+@keyframes gilded-glimmer { 0%, 100% { opacity: .25; transform: translateY(0) rotate(45deg); } 50% { opacity: .8; transform: translateY(-8px) rotate(135deg); } }
+@keyframes gilded-sheen { to { transform: translateX(650%) skewX(-24deg); } }
+@media (prefers-reduced-motion: reduce) { .gilded-sparks i, .gilded-shimmer::after { animation: none !important; } }
+@media (min-width: 600px) { .gilded-page { padding-left: 46px; padding-right: 46px; } .gilded-opening { grid-template-rows: 106px minmax(0, 1fr) 44px; } .gilded-opening .gilded-book { font-size: 20px; } .gilded-cameo { width: 96px; height: 96px; margin-top: -48px; right: 18px; } }
+@media (max-height: 560px) { .gilded-page { grid-template-rows: 33px minmax(0, 1fr) 29px; padding: 15px 27px 12px; gap: 10px; } .gilded-opening { grid-template-rows: 49px minmax(0, 1fr) 29px; } .gilded-masthead { padding: 4px 12px; } .gilded-opening .gilded-book { font-size: 13px; } .gilded-cameo { width: 43px; height: 43px; margin-top: -21.5px; padding: 2px; } .gilded-opening .gilded-heading { width: calc(100% - 48px); } .gilded-header-rule { display: none !important; } .gilded-footer-label { display: none; } .gilded-folio { padding-top: 0; font-size: 13px; } .gilded-corner { width: 48px; height: 48px; } .reader-chapter-title { font-size: 1.3em; margin-bottom: .6em; padding-top: .1em; padding-bottom: .35em; } .reader-chapter-title::before { font-size: 8px; margin-bottom: .2em; } }
+@media (max-height: 320px) { .gilded-page { grid-template-rows: 24px minmax(0, 1fr) 19px; gap: 7px; padding-top: 12px; padding-bottom: 10px; } .gilded-opening { grid-template-rows: 26px minmax(0, 1fr) 19px; } .gilded-kicker, .gilded-cameo, .gilded-folio-wing { display: none !important; } .gilded-opening .gilded-heading { width: 100%; } .gilded-opening .gilded-book { font-size: 11px; } .gilded-masthead { padding: 0 10px; } .gilded-footer { padding-top: 2px; font-size: 9px; } .gilded-folio { font-size: 11px; } .reader-chapter-title { font-size: 1.15em; margin-bottom: .35em; padding-bottom: .2em; } .reader-chapter-title::before { display: none; } }
+@media (max-width: 340px) { .gilded-page { padding-left: 25px; padding-right: 25px; } .gilded-opening .gilded-book { font-size: 13px; } .gilded-cameo { width: 65px; height: 65px; margin-top: -32.5px; } .gilded-opening .gilded-heading { width: calc(100% - 70px); } .gilded-kicker { font-size: 6px; } .gilded-folio-wing { width: 18px; } .gilded-folio { gap: 3px; font-size: 14px; } }
+@media (max-height: 560px) { .gilded-bookmark { height: 80px; top: 15px; } .gilded-bookmark i { height: 48px; } .gilded-folio [data-reader-field] { padding: 0 8px; } }
+@media (max-height: 320px) { .gilded-bookmark { display: none; } .gilded-folio [data-reader-field] { padding: 0 6px; box-shadow: none; } }

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 336" width="360" height="336">
+  <defs>
+    <linearGradient id="gate" x1="0" y1="0" x2="0.8" y2="1">
+      <stop stop-color="{{glow}}" stop-opacity=".36"/><stop offset=".62" stop-color="{{background}}" stop-opacity=".2"/><stop offset="1" stop-color="{{glow}}" stop-opacity=".16"/>
+    </linearGradient>
+    <radialGradient id="halo"><stop stop-color="{{glow}}" stop-opacity=".2"/><stop offset="1" stop-color="{{glow}}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1"><stop stop-color="{{ink}}"/><stop offset="1" stop-color="{{accent}}" stop-opacity=".6"/></linearGradient>
+    <linearGradient id="step"><stop stop-color="{{accent}}" stop-opacity="0"/><stop offset=".5" stop-color="{{accent}}" stop-opacity=".65"/><stop offset="1" stop-color="{{accent}}" stop-opacity="0"/></linearGradient>
+    <path id="star" d="M0 -5Q1 -1 5 0Q1 1 0 5Q-1 1 -5 0Q-1 -1 0 -5Z" fill="{{accent}}"/>
+  </defs>
+  <ellipse cx="180" cy="158" rx="179" ry="158" fill="url(#halo)"/>
+  <g fill="none" stroke="{{accent}}" stroke-width=".65">
+    <ellipse cx="180" cy="148" rx="157" ry="62" transform="rotate(-28 180 148)" opacity=".38"/>
+    <ellipse cx="180" cy="148" rx="150" ry="64" transform="rotate(31 180 148)" opacity=".18"/>
+    <circle cx="180" cy="140" r="124" opacity=".13" stroke-dasharray="1 7"/>
+    <path d="M63 269V150a117 117 0 0 1 234 0v119" opacity=".45"/>
+    <path d="M75 267V150a105 105 0 0 1 210 0v117" opacity=".8"/>
+    <path d="M85 267V150a95 95 0 0 1 190 0v117" opacity=".24"/>
+  </g>
+  <path d="M95 267V150a85 85 0 0 1 170 0v117Z" fill="url(#gate)" stroke="{{glow}}" stroke-opacity=".58" stroke-width="1"/>
+  <path d="M103 257V151a77 77 0 0 1 154 0v106" fill="none" stroke="{{glow}}" stroke-opacity=".22"/>
+  <g fill="none" stroke="{{accent}}" stroke-width=".7" opacity=".5">
+    <path d="M55 271H86M274 271h31M59 278h31M270 278h31M71 157h8m-8 5h8m202 -5h8m-8 5h8"/>
+    <path d="M176 25l4 -7 4 7 -4 7Z"/><path d="M180 6v7M180 36v12"/>
+    <circle cx="180" cy="132" r="52"/><circle cx="180" cy="132" r="58" stroke-dasharray=".5 7"/>
+    <path d="M180 66v9m0 114v9M114 132h9m114 0h9"/>
+  </g>
+  <circle cx="180" cy="132" r="35" fill="url(#moon)"/>
+  <path d="M181 97a35 35 0 1 0 0 70c-23 -11 -23 -59 0 -70Z" fill="{{background}}" opacity=".94"/>
+  <circle cx="195" cy="116" r="2.4" fill="{{ink}}" opacity=".2"/>
+  <circle cx="203" cy="133" r="4.4" fill="{{ink}}" opacity=".1"/>
+  <path d="M145 244c10 -41 62 -40 71 -7M123 257c18 -59 96 -58 114 -7" fill="none" stroke="{{glow}}" stroke-opacity=".18"/>
+  <g stroke="{{accent}}" stroke-width=".55" fill="none" opacity=".4">
+    <path d="M36 107l-9 39 20 40M313 74l19 20 -9 22M36 230l11 18 -9 19M304 214l17 16 -6 17"/>
+    <circle cx="27" cy="146" r="2"/><circle cx="332" cy="94" r="2"/>
+    <circle cx="47" cy="248" r="1.7"/><circle cx="321" cy="230" r="1.7"/>
+  </g>
+  <g xmlns:xlink="http://www.w3.org/1999/xlink">
+    <use xlink:href="#star" x="36" y="107"/><use xlink:href="#star" x="47" y="186"/>
+    <use xlink:href="#star" x="313" y="74"/><use xlink:href="#star" x="323" y="116"/>
+    <use xlink:href="#star" x="132" y="72"/><use xlink:href="#star" x="218" y="213"/>
+    <use xlink:href="#star" x="124" y="222"/><use xlink:href="#star" x="304" y="214"/>
+  </g>
+  <g fill="{{ink}}" opacity=".65">
+    <circle cx="106" cy="38" r="1"/><circle cx="263" cy="41" r="1.2"/><circle cx="16" cy="222" r=".9"/>
+    <circle cx="147" cy="174" r=".9"/><circle cx="245" cy="182" r="1"/><circle cx="311" cy="164" r="1.2"/>
+    <circle cx="191" cy="211" r=".8"/><circle cx="163" cy="236" r="1"/><circle cx="217" cy="36" r=".8"/>
+    <circle cx="64" cy="54" r=".8"/><circle cx="337" cy="196" r=".7"/>
+  </g>
+  <g stroke="{{accent}}" stroke-opacity=".22" fill="{{background}}">
+    <path d="M95 267H265l12 10H83Z"/><path d="M83 279H277l13 10H70Z"/>
+    <path d="M70 291H290l15 11H55Z"/>
+  </g>
+  <g fill="url(#step)"><rect x="82" y="276" width="196" height="1.3"/><rect x="69" y="289" width="222" height="1.3"/><rect x="50" y="302" width="260" height="1.3"/></g>
+  <path d="M42 320H144m72 0h102M174 320l6 -4 6 4 -6 4Z" fill="none" stroke="{{accent}}" stroke-opacity=".45" stroke-width=".7"/>
+</svg>

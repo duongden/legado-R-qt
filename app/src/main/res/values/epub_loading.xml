@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="epub_loading_kicker">A moment for your next chapter</string>
+    <string name="epub_loading_title">Ready to read</string>
+    <string name="epub_loading_content">Preparing your book…</string>
+    <string name="epub_loading_interrupted">Loading interrupted</string>
+    <string name="epub_loading_menu_hint">Tap anywhere to open the reading menu</string>
+    <string name="epub_loading_templates">EPUB loading templates</string>
+    <string name="epub_loading_templates_summary">Choose the artwork and layout shown while your book opens</string>
+    <string name="epub_loading_templates_help">Choose an opening scene for your book. Preview either appearance; loading follows the app’s day or night mode. Copy a template to customize it.</string>
+    <string name="epub_loading_selected">Current: %1$s</string>
+    <string name="epub_loading_preview">Full-screen preview</string>
+    <string name="epub_loading_preview_book">Where the story begins</string>
+    <string name="epub_loading_preview_close">Tap anywhere to return to templates</string>
+    <string name="epub_loading_add">Add loading template</string>
+    <string name="epub_loading_copy">Copy and edit</string>
+    <string name="epub_loading_import">Import template</string>
+    <string name="epub_loading_export">Export template</string>
+    <string name="epub_loading_builtin">Built-in</string>
+    <string name="epub_loading_custom">Custom</string>
+    <string name="epub_loading_copy_name">%1$s · Copy</string>
+    <string name="epub_loading_editor_hint">Edit the scene, caption, typography and day/night colors</string>
+</resources>
