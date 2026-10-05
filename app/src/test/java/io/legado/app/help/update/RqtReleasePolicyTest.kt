@@ -20,4 +20,12 @@ class RqtReleasePolicyTest {
         assertEquals(12027L, info.versionCode)
         assertEquals("3.26.1005.1", info.versionName)
     }
+    @Test fun acceptsShortReleaseNameWithoutVersionCode() {
+        val name = "legado-R-qt_app_3.26.1005.1.apk"
+        assertTrue(RqtReleasePolicy.isReleaseApk(name))
+        val info = AppReleaseInfo(AppVariant.OFFICIAL, 0L, "", name, "", "")
+        assertEquals("3.26.1005.1", info.versionName)
+        assertEquals(0L, info.versionCode)
+        assertTrue(RqtReleasePolicy.compareVersions(info.versionName, "3.26.1004.1") > 0)
+    }
 }

@@ -59,7 +59,7 @@ Khi báo lỗi, vui lòng cung cấp phiên bản ứng dụng, chế độ đ�
 
 README này được biên soạn dựa trên [README gốc của duongden/legado-R](https://github.com/duongden/legado-R/blob/main/README.md). Cảm ơn [gedoor/legado](https://github.com/gedoor/legado), [Luoyacheng/legado](https://github.com/Luoyacheng/legado), [Rimchars/legado](https://github.com/Rimchars/legado) và các tác giả đóng góp. Chức năng tác vụ định kỳ có sự đóng góp và hỗ trợ của 明月.
 
-Phần dịch kế thừa mã từ [legado-qt](https://github.com/duongden/legado-qt) và [VietPhrase translator](https://github.com/duongden/duongden-vietphrase-translator).
+Phần dịch kế thừa mã từ [dat-bi/legado-qt](https://github.com/dat-bi/legado-qt), [duongden/legado-qt](https://github.com/duongden/legado-qt) và [VietPhrase translator](https://github.com/duongden/duongden-vietphrase-translator).
 
 Dự án sử dụng Rhino, Jsoup, OkHttp, Glide, Miuix, Paged.js và các thành phần mã nguồn mở khác. Giấy phép dự án nằm trong [LICENSE](LICENSE); các thành phần giữ giấy phép riêng được ghi trong [danh sách giấy phép](app/src/main/assets/LICENSE.md).
 
