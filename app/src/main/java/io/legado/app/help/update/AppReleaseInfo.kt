@@ -51,6 +51,7 @@ data class GithubRelease(
     val body: String,
     @SerializedName("prerelease")
     val isPreRelease: Boolean,
+    val draft: Boolean = false,
 ) {
     fun gitReleaseToAppReleaseInfo(): List<AppReleaseInfo> {
         assets ?: throw NoStackTraceException("获取新版本出错")

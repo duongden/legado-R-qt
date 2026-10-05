@@ -37,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import io.legado.app.ui.widget.compose.translatedUiString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -120,8 +120,8 @@ internal fun AiImageProviderEditScreen(
                         insidePadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
                     ) {
                         Text(
-                            text = "${stringResource(R.string.ai_image_provider_type)}: " +
-                                stringResource(
+                            text = "${translatedUiString(R.string.ai_image_provider_type)}: " +
+                                translatedUiString(
                                     if (isOpenAi) R.string.ai_image_provider_openai
                                     else R.string.ai_image_provider_js
                                 ),
@@ -136,7 +136,7 @@ internal fun AiImageProviderEditScreen(
                     EditTextField(
                         value = name,
                         onValueChange = onNameChange,
-                        label = stringResource(R.string.name)
+                        label = translatedUiString(R.string.name)
                     )
 
                     // OpenAI group
@@ -144,24 +144,24 @@ internal fun AiImageProviderEditScreen(
                         EditTextField(
                             value = baseUrl,
                             onValueChange = onBaseUrlChange,
-                            label = stringResource(R.string.ai_base_url),
+                            label = translatedUiString(R.string.ai_base_url),
                             keyboardType = KeyboardType.Uri
                         )
                         EditTextField(
                             value = apiKey,
                             onValueChange = onApiKeyChange,
-                            label = stringResource(R.string.ai_api_key),
+                            label = translatedUiString(R.string.ai_api_key),
                             isPassword = true
                         )
                         EditTextField(
                             value = model,
                             onValueChange = onModelChange,
-                            label = stringResource(R.string.ai_model)
+                            label = translatedUiString(R.string.ai_model)
                         )
                         EditTextField(
                             value = headers,
                             onValueChange = onHeadersChange,
-                            label = stringResource(R.string.ai_custom_headers),
+                            label = translatedUiString(R.string.ai_custom_headers),
                             minLines = 3,
                             maxLines = 5
                         )
@@ -171,7 +171,7 @@ internal fun AiImageProviderEditScreen(
                     EditTextField(
                         value = timeout,
                         onValueChange = onTimeoutChange,
-                        label = stringResource(R.string.timeout_millisecond),
+                        label = translatedUiString(R.string.ai_image_timeout),
                         keyboardType = KeyboardType.Number
                     )
 
@@ -194,7 +194,7 @@ internal fun AiImageProviderEditScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.enable),
+                            text = translatedUiString(R.string.enable),
                             color = style.primaryText,
                             fontSize = 14.sp
                         )
@@ -235,7 +235,7 @@ internal fun AiImageProviderEditScreen(
 
                 // Save button
                 LegadoMiuixActionButton(
-                    text = stringResource(R.string.action_save),
+                    text = translatedUiString(R.string.action_save),
                     palette = palette,
                     onClick = onSave,
                     modifier = Modifier
@@ -283,7 +283,7 @@ private fun AiImageProviderEditTopBar(onBack: () -> Unit) {
             }
         }
         Text(
-            text = stringResource(R.string.ai_image_provider_manage),
+            text = translatedUiString(R.string.ai_image_provider_manage),
             color = style.primaryText,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,

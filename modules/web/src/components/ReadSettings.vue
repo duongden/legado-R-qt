@@ -169,17 +169,17 @@ const controls = computed(() => [
 ])
 </script>
 <style scoped>
-.settings-wrapper { color:var(--ink); background:var(--surface); font:14px/1.5 Arial,system-ui,sans-serif; }
+.settings-wrapper { color:var(--ink); background:var(--surface); font:14px/1.5 var(--font-ui); }
 .panel-heading { display:flex; align-items:center; justify-content:space-between; padding:22px 24px 16px; border-bottom:1px solid var(--line); }
 h2 { margin:4px 0 0; font-size:22px; letter-spacing:-.5px; }.eyebrow { color:var(--muted); font-size:10px; letter-spacing:1.8px; font-weight:700; }
-.close-panel { width:36px; height:36px; border:1px solid var(--line); border-radius:50%; background:var(--surface); color:var(--ink); cursor:pointer; font-size:24px; }
+.close-panel { width:36px; height:36px; border:var(--border-ui); border-radius:50%; background:var(--surface); color:var(--ink); cursor:pointer; font-size:24px; }
 .setting-list { padding:0 24px 24px; max-height:calc(76dvh - 105px); overflow:auto; overscroll-behavior:contain; }
 .settings-section { padding:20px 0; border-bottom:1px solid var(--line); }.settings-section:last-child { border:0; padding-bottom:0; }
 h3 { font-size:13px; margin:0 0 12px; color:var(--muted); font-weight:600; }
-.font-options { display:flex; gap:8px; }.font-options button { flex:1; }.font-options button, .custom-font-row button { border:1px solid var(--line); background:var(--surface); color:var(--ink); padding:9px 10px; border-radius:9px; cursor:pointer; }
+.font-options { display:flex; gap:8px; }.font-options button { flex:1; }.font-options button, .custom-font-row button { border:var(--border-ui); background:var(--surface); color:var(--ink); padding:9px 10px; border-radius:var(--radius-control); cursor:pointer; }
 .font-options .selected { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
-.custom-font-label { display:block; color:var(--muted); font-size:12px; margin:16px 0 6px; }.custom-font-row { display:flex; gap:8px; }.custom-font-row input { width:0; flex:1; min-width:0; background:var(--page); border:1px solid var(--line); color:var(--ink); border-radius:9px; padding:10px; }
+.custom-font-label { display:block; color:var(--muted); font-size:12px; margin:16px 0 6px; }.custom-font-row { display:flex; gap:8px; }.custom-font-row input { width:0; flex:1; min-width:0; background:var(--page); border:var(--border-ui); color:var(--ink); border-radius:var(--radius-control); padding:10px; }
 .text-action { background:none; border:0; color:var(--accent); cursor:pointer; padding:10px 0 0; font-size:12px; }
-.setting-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; }.stepper { display:flex; align-items:center; border:1px solid var(--line); border-radius:9px; overflow:hidden; flex-shrink:0; }.stepper button { border:0; background:var(--hover); color:var(--ink); width:32px; min-height:36px; cursor:pointer; font-size:18px; }.stepper output { min-width:60px; text-align:center; font-size:12px; font-variant-numeric:tabular-nums; }
+.setting-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; }.stepper { display:flex; align-items:center; border:var(--border-ui); border-radius:var(--radius-control); overflow:hidden; flex-shrink:0; }.stepper button { border:0; background:var(--hover); color:var(--ink); width:32px; min-height:36px; cursor:pointer; font-size:18px; }.stepper output { min-width:60px; text-align:center; font-size:12px; font-variant-numeric:tabular-nums; }
 @media(max-width:380px) { .panel-heading { padding:16px; }.setting-list { padding:0 16px 16px; }.setting-row { font-size:12px; } }
 </style>

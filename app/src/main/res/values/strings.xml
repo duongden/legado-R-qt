@@ -109,9 +109,7 @@
     <string name="about_description">
         \u3000\u3000 This is an open source reading software newly developed by Kotlin, welcome to join us.
     </string>
-    <string name="app_share_description">
-        阅读Archive download link：\nhttps://gitee.com/zziji/legado/releases\nGitHub fallback：\nhttps://github.com/Rimchars/legado/releases
-    </string>
+    <string name="app_share_description">Legado R-qt download:\nhttps://github.com/duongden/legado-R-qt/releases</string>
     <string name="version_name">Version %s</string>
     <string name="pt_background_verification">Background-verification</string>
     <string name="ps_background_verification">you can operate freely when verifying the book source</string>
@@ -1851,10 +1849,8 @@ function login() {
     <string name="history">历史记录</string>
     <string name="app_name_sigma">阅读Archive</string>
     <string name="about_description_sigma">\u3000\u3000阅读Archive 基于 Legado 持续定制，专注阅读体验、书源工具与 AI 辅助能力。</string>
-    <string name="contributors_summary_sigma">当前维护仓库：Rimchars/legado，详情请在 GitHub 中查看</string>
-    <string name="app_share_description_sigma">
-        阅读Archive 下载地址：\nhttps://gitee.com/zziji/legado/releases\nGitHub 备用：\nhttps://github.com/Rimchars/legado/releases
-    </string>
+    <string name="contributors_summary_sigma">Upstream contributors: Rimchars/legado</string>
+    <string name="app_share_description_sigma">Legado R-qt download:\nhttps://github.com/duongden/legado-R-qt/releases</string>
     <string name="sure_cache_book">是否确认开始缓存？</string>
     <string name="non_printable_set">不可视字符设定</string>
     <string name="whitespace_leading">行首</string>

@@ -75,10 +75,10 @@ machine. No signing passwords, release keys or prebuilt APKs are committed.
 ./gradlew :app:testAppDebugUnitTest :app:lintAppDebug :app:assembleAppDebug
 ```
 
-The release build for version 3.26.1004.1 uses:
+The release build for version 3.26.1005.1 uses:
 
 ```sh
-./gradlew -PVERSION_NAME=3.26.1004.1 -PVERSION_CODE=12026 :app:assembleAppRelease
+./gradlew -PVERSION_NAME=3.26.1005.1 -PVERSION_CODE=12027 :app:assembleAppRelease
 ```
 
 Without private release signing properties this produces an unsigned release
@@ -109,12 +109,12 @@ pnpm exec vite build
 ```
 
 Copy the **contents** of modules/web/dist into app/src/main/assets/web/vue,
-replacing old bundle files. The existing sync script runs only when GITHUB_ENV
-is set; running the commands above locally does not automatically embed assets.
+replacing old bundle files. The sync script also copies the shared design-system stylesheet to the standalone web pages.
+The Vue bundle is copied automatically only when GITHUB_ENV is set; local builds must embed the generated bundle before building the APK.
 The embedded web files in this export were rebuilt from its source and scanned.
 No source maps, node_modules or temporary dist files are included.
 
-## Validation limits
+## Initial snapshot validation (3.26.1004.1)
 
 TypeScript checking, Vite production build, dependency lock validation,
 web UI regressions at five viewport widths, theme/storage regressions, and XML
@@ -131,3 +131,15 @@ No instrumentation test or physical-device verification was run for this
 publication task. The private audit report records the scanner results and
 exclusion manifest. Secret scanning reduces risk but does not prove that arbitrary
 source or binary resources contain no sensitive data.
+
+## Release validation (3.26.1005.1)
+
+The release uses versionCode 12027 and the same signing certificate as 3.26.1004.1.
+The signed release build and lint-vital checks passed with JDK 21 and Android SDK 36.
+Three updater policy unit tests passed. Browser regressions checked the unified
+LAN entry, navigation, light/dark/paper themes and search alignment at 320, 390,
+768 and 1280 pixels. The embedded Vue assets match the tested production bundle.
+Release APK signature, package metadata and excluded-file checks were performed
+before publication. The release APK has not been installed or instrumented on a
+physical device; automatic update notification and installation still need an
+on-device end-to-end check.

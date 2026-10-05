@@ -1,5 +1,7 @@
 package io.legado.app.ui.config
 
+import io.legado.app.R
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +38,7 @@ class AiWorldBookManageActivity : BaseActivity<ActivityAiWorldBookManageBinding>
                     uri.readText(this@AiWorldBookManageActivity)
                 }.onSuccess(::emitImportPayload)
                     .onFailure {
-                        toastOnUi(it.localizedMessage ?: "世界书文件读取失败")
+                        toastOnUi(it.localizedMessage ?: uiString(R.string.ai_world_file_error))
                     }
             }
         }
@@ -62,14 +64,14 @@ class AiWorldBookManageActivity : BaseActivity<ActivityAiWorldBookManageBinding>
     private fun launchImportFile() {
         importWorldBook.launch {
             mode = HandleFileContract.FILE
-            title = "导入世界书"
+            title = uiString(R.string.ai_world_import)
             allowExtensions = arrayOf("json")
         }
     }
 
     private fun showImportUrlDialog() {
         showComposeTextInputDialog(
-            title = "网络导入世界书",
+            title = uiString(R.string.ai_world_import_url),
             hint = "https://...",
             onPositive = { value ->
                 val url = value.trim()
@@ -86,14 +88,14 @@ class AiWorldBookManageActivity : BaseActivity<ActivityAiWorldBookManageBinding>
                 }
             }.onSuccess(::emitImportPayload)
                 .onFailure {
-                    toastOnUi(it.localizedMessage ?: "世界书下载失败")
+                    toastOnUi(it.localizedMessage ?: uiString(R.string.ai_world_download_error))
                 }
         }
     }
 
     private fun emitImportPayload(raw: String) {
         if (raw.isBlank()) {
-            toastOnUi("世界书内容为空")
+            toastOnUi(uiString(R.string.ai_world_empty_content))
             return
         }
         importPayload = AiWorldBookImportPayload(++importRequestId, raw)

@@ -1,6 +1,7 @@
 package io.legado.app.ui.config
 
 import android.content.Intent
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -46,7 +47,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
                 }.onSuccess { rules ->
                     importRules(rules)
                 }.onFailure {
-                    toastOnUi(it.localizedMessage ?: getString(R.string.wrong_format))
+                    toastOnUi(it.localizedMessage ?: uiString(R.string.wrong_format))
                 }
             }
         }
@@ -56,10 +57,10 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
             val value = uri.toString()
             if (value.startsWith("http://", true) || value.startsWith("https://", true)) {
                 showComposeConfirmDialog(
-                    title = getString(R.string.upload_url),
+                    title = uiString(R.string.upload_url),
                     message = value,
-                    positiveText = getString(R.string.copy_text),
-                    negativeText = getString(R.string.cancel),
+                    positiveText = uiString(R.string.copy_text),
+                    negativeText = uiString(R.string.cancel),
                     onPositive = {
                         sendToClip(value)
                         toastOnUi(R.string.copy_complete)
@@ -105,12 +106,12 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
 
     private fun showAddSelector() {
         val labels = listOf(
-            getString(R.string.ai_image_provider_openai),
-            getString(R.string.ai_image_provider_js),
-            "导入 JS 生图规则"
+            uiString(R.string.ai_image_provider_openai),
+            uiString(R.string.ai_image_provider_js),
+            uiString(R.string.ai_image_import_js)
         )
         showComposeActionListDialog(
-            title = getString(R.string.add),
+            title = uiString(R.string.add),
             labels = labels
         ) { index ->
             if (index == 2) {
@@ -123,8 +124,8 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
     }
 
     override fun onCompatCreateOptionsMenu(menu: Menu): Boolean {
-        menu.add(0, MENU_IMPORT_RULE, 0, "导入规则").setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
-        menu.add(0, MENU_EXPORT_RULES, 1, "导出规则").setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+        menu.add(0, MENU_IMPORT_RULE, 0, uiString(R.string.ai_image_import_rules)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+        menu.add(0, MENU_EXPORT_RULES, 1, uiString(R.string.ai_image_export_rules)).setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
         return super.onCompatCreateOptionsMenu(menu)
     }
 
@@ -152,20 +153,20 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
         return buildList {
             if (!isCurrent) {
                 add(
-                    AppManagementMenuAction("设为当前生图模型") {
+                    AppManagementMenuAction(uiString(R.string.ai_image_set_current)) {
                         if (!provider.enabled) {
-                            toastOnUi("请先启用该生图模型")
+                            toastOnUi(uiString(R.string.ai_image_enable_first))
                         } else {
                             AppConfig.aiCurrentImageProviderId = provider.id
                             notifyAiConfigChanged()
                             reload()
-                            toastOnUi("已设为当前生图模型")
+                            toastOnUi(uiString(R.string.ai_image_current_set))
                         }
                     }
                 )
             }
             add(
-                AppManagementMenuAction(getString(if (provider.enabled) R.string.disable else R.string.enable)) {
+                AppManagementMenuAction(uiString(if (provider.enabled) R.string.disable else R.string.enable)) {
                     AppConfig.aiImageProviderList = AppConfig.aiImageProviderList.map {
                         if (it.id == provider.id) it.copy(enabled = !it.enabled) else it
                     }
@@ -174,7 +175,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
                 }
             )
             add(
-                AppManagementMenuAction(getString(R.string.edit)) {
+                AppManagementMenuAction(uiString(R.string.edit)) {
                     openEdit(
                         AiImageProviderEditActivity.newIntent(
                             this@AiImageProviderManageActivity,
@@ -185,9 +186,9 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
                 }
             )
             if (isJsRule) {
-                add(AppManagementMenuAction("导出规则") { exportRule(provider) })
+                add(AppManagementMenuAction(uiString(R.string.ai_image_export_rules)) { exportRule(provider) })
                 add(
-                    AppManagementMenuAction("复制规则") {
+                    AppManagementMenuAction(uiString(R.string.ai_image_copy_rule)) {
                         sendToClip(serializeRule(provider))
                         toastOnUi(R.string.copy_complete)
                     }
@@ -195,7 +196,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
             }
             add(
                 AppManagementMenuAction(
-                    text = getString(R.string.delete),
+                    text = uiString(R.string.delete),
                     danger = true,
                     onClick = { confirmDelete(provider) }
                 )
@@ -206,8 +207,8 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
 
     private fun showImportActions() {
         showComposeActionListDialog(
-            title = getString(R.string.import_str),
-            labels = listOf(getString(R.string.import_str), getString(R.string.import_on_line))
+            title = uiString(R.string.import_str),
+            labels = listOf(uiString(R.string.import_str), uiString(R.string.import_on_line))
         ) { index ->
             when (index) {
                 0 -> launchImportFile()
@@ -219,14 +220,14 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
     private fun launchImportFile() {
         importRule.launch {
             mode = HandleFileContract.FILE
-            title = getString(R.string.import_str)
+            title = uiString(R.string.import_str)
             allowExtensions = arrayOf("json")
         }
     }
 
     private fun showImportUrlDialog() {
         showComposeTextInputDialog(
-            title = getString(R.string.import_on_line),
+            title = uiString(R.string.import_on_line),
             hint = "https://...",
             onPositive = { value ->
                 val url = value.trim()
@@ -245,7 +246,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
             }.onSuccess { rules ->
                 importRules(rules)
             }.onFailure {
-                toastOnUi(it.localizedMessage ?: getString(R.string.wrong_format))
+                toastOnUi(it.localizedMessage ?: uiString(R.string.wrong_format))
             }
         }
     }
@@ -282,7 +283,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
             .trim()
         if (script.isBlank()) return null
         return AiImageProviderConfig(
-            name = json.optString("name").ifBlank { getString(R.string.ai_image_provider_js) },
+            name = json.optString("name").ifBlank { uiString(R.string.ai_image_provider_js) },
             type = AiImageProviderConfig.TYPE_JS,
             model = json.optString("model").ifBlank { "JS" },
             stylePrompt = json.optString("stylePrompt"),
@@ -379,7 +380,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
         }
         notifyAiConfigChanged()
         reload()
-        toastOnUi("已导入 ${validRules.size} 个生图规则")
+        toastOnUi(uiString(R.string.ai_image_rules_imported, validRules.size))
     }
 
     private fun exportRule(provider: AiImageProviderConfig) {
@@ -453,7 +454,7 @@ class AiImageProviderManageActivity : BaseActivity<ActivityAiProviderManageBindi
     private fun confirmDelete(provider: AiImageProviderConfig) {
         showComposeConfirmDialog(
             title = provider.displayName(),
-            message = getString(R.string.delete),
+            message = uiString(R.string.delete),
             dangerPositive = true,
             onPositive = {
                 AppConfig.aiImageProviderList = AppConfig.aiImageProviderList.filterNot { it.id == provider.id }

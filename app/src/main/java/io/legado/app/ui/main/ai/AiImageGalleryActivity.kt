@@ -1,5 +1,6 @@
 package io.legado.app.ui.main.ai
 
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -55,7 +56,7 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
         if (fixedBookKey.isNotBlank()) {
             currentFilter = GalleryFilter.BOOK(fixedBookKey)
         }
-        binding.titleBar.title = fixedTitle.ifBlank { getString(R.string.ai_image_gallery) }
+        binding.titleBar.title = fixedTitle.ifBlank { uiString(R.string.ai_image_gallery) }
         binding.etSearch.background = UiCorner.panelRounded(
             this,
             themeCardColorOrDefault(),
@@ -115,30 +116,30 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
 
     private fun renderFilters(groups: List<AiImageGroup>) {
         binding.filterContainer.removeAllViews()
-        addFilterChip(getString(R.string.ai_image_gallery_all), currentFilter == GalleryFilter.ALL) {
+        addFilterChip(uiString(R.string.ai_image_gallery_all), currentFilter == GalleryFilter.ALL) {
             currentFilter = GalleryFilter.ALL
             reload()
         }
-        addFilterChip(getString(R.string.ai_image_gallery_temporary), currentFilter == GalleryFilter.TEMPORARY) {
+        addFilterChip(uiString(R.string.ai_image_gallery_temporary), currentFilter == GalleryFilter.TEMPORARY) {
             currentFilter = GalleryFilter.TEMPORARY
             reload()
         }
-        addFilterChip(getString(R.string.favorites), currentFilter == GalleryFilter.FAVORITE) {
+        addFilterChip(uiString(R.string.favorites), currentFilter == GalleryFilter.FAVORITE) {
             currentFilter = GalleryFilter.FAVORITE
             reload()
         }
         if (fixedBookKey.isNotBlank()) {
-            addFilterChip("本书", currentFilter == GalleryFilter.BOOK(fixedBookKey)) {
+            addFilterChip(uiString(R.string.ai_gallery_this_book), currentFilter == GalleryFilter.BOOK(fixedBookKey)) {
                 currentFilter = GalleryFilter.BOOK(fixedBookKey)
                 reload()
             }
         }
-        addFilterChip("角色图", currentFilter == GalleryFilter.SOURCE_TYPE(AiImageGalleryManager.SOURCE_TYPE_CHARACTER_AVATAR)) {
+        addFilterChip(uiString(R.string.ai_gallery_characters), currentFilter == GalleryFilter.SOURCE_TYPE(AiImageGalleryManager.SOURCE_TYPE_CHARACTER_AVATAR)) {
             currentFilter = GalleryFilter.SOURCE_TYPE(AiImageGalleryManager.SOURCE_TYPE_CHARACTER_AVATAR)
             reload()
         }
         groups.forEach { group ->
-            addFilterChip(group.name, currentFilter == GalleryFilter.GROUP(group.id)) {
+            addFilterChip(imageGroupLabel(group), currentFilter == GalleryFilter.GROUP(group.id)) {
                 currentFilter = GalleryFilter.GROUP(group.id)
                 reload()
             }
@@ -197,7 +198,7 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
 
     private fun updateBatchBar() {
         binding.batchBar.isVisible = selectedIds.isNotEmpty()
-        binding.tvBatchCount.text = "已选择 ${selectedIds.size} 张"
+        binding.tvBatchCount.text = uiString(R.string.ai_gallery_selected, selectedIds.size)
     }
 
     private fun showBatchGroupDialog() {
@@ -205,8 +206,8 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
         if (ids.isEmpty()) return
         lifecycleScope.launch {
             val groups = withContext(Dispatchers.IO) { AiImageGalleryManager.listGroups() }
-            val labels: List<CharSequence> = groups.map { it.name } + getString(R.string.ai_image_new_group)
-            selector(getString(R.string.ai_image_favorite_to), labels) { _, index ->
+            val labels: List<CharSequence> = groups.map { imageGroupLabel(it) } + uiString(R.string.ai_image_new_group)
+            selector(uiString(R.string.ai_image_favorite_to), labels) { _, index ->
                 val group = groups.getOrNull(index)
                 if (group != null) {
                     moveSelectedToGroup(ids, group.id)
@@ -219,9 +220,9 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
 
     private fun showCreateGroupDialog(ids: List<String>) {
         val dialogBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-            editView.hint = getString(R.string.ai_image_new_group)
+            editView.hint = uiString(R.string.ai_image_new_group)
         }
-        alert(getString(R.string.ai_image_new_group)) {
+        alert(uiString(R.string.ai_image_new_group)) {
             customView { dialogBinding.root }
             okButton {
                 val name = dialogBinding.editView.text?.toString()?.trim().orEmpty()
@@ -239,7 +240,7 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
             withContext(Dispatchers.IO) {
                 AiImageGalleryManager.moveImagesToGroup(ids, groupId)
             }
-            toastOnUi("已移动分组")
+            toastOnUi(uiString(R.string.ai_gallery_moved))
             clearSelection()
             reload()
         }
@@ -248,7 +249,7 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
     private fun confirmBatchDelete() {
         val ids = selectedIds.toList()
         if (ids.isEmpty()) return
-        alert(title = getString(R.string.delete), message = "删除选中的 ${ids.size} 张图片？") {
+        alert(title = uiString(R.string.delete), message = uiString(R.string.ai_gallery_delete_selected, ids.size)) {
             okButton {
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -287,7 +288,7 @@ class AiImageGalleryActivity : BaseActivity<ActivityAiImageGalleryBinding>() {
                 .into(ivImage)
             tvName.text = item.name
             tvPrompt.text = buildImageSubtitle(item)
-            tvState.text = if (item.favorite) getString(R.string.in_favorites) else getString(R.string.ai_image_gallery_temporary)
+            tvState.text = if (item.favorite) uiString(R.string.in_favorites) else uiString(R.string.ai_image_gallery_temporary)
             tvSelected.isVisible = selected
             tvSelected.setTextColor(accentColor)
             tvSelected.background = UiCorner.actionSelector(

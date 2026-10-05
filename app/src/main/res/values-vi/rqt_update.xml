@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rqt_repository">Mã nguồn R-qt</string>
+    <string name="rqt_releases">Các bản phát hành R-qt</string>
+    <string name="rqt_auto_update">Tự kiểm tra bản cập nhật</string>
+    <string name="rqt_auto_update_summary">Kiểm tra khi mở ứng dụng, tối đa một lần mỗi 6 giờ. Bạn quyết định tải và cài đặt bản mới.</string>
+    <string name="contributors_summary_sigma">Những người đóng góp cho dự án gốc Rimchars/legado</string>
+    <string name="app_share_description_sigma">Tải Legado R-qt: \nhttps://github.com/duongden/legado-R-qt/releases</string>
+</resources>

@@ -1,6 +1,7 @@
 package io.legado.app.ui.config
 
 import android.content.Intent
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import io.legado.app.ui.widget.compose.translatedUiString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -101,11 +102,11 @@ class AiProviderManageActivity : BaseActivity<ActivityAiProviderManageBinding>()
 
     private fun providerActions(provider: AiProviderConfig): List<AppManagementMenuAction> {
         return listOf(
-            AppManagementMenuAction(getString(R.string.edit)) {
+            AppManagementMenuAction(uiString(R.string.edit)) {
                 openEdit(provider)
             },
             AppManagementMenuAction(
-                text = getString(R.string.delete),
+                text = uiString(R.string.delete),
                 danger = true,
                 onClick = { confirmRemoveProvider(provider) }
             )
@@ -114,7 +115,7 @@ class AiProviderManageActivity : BaseActivity<ActivityAiProviderManageBinding>()
 
     private fun providerName(provider: AiProviderConfig): String {
         return provider.name.ifBlank {
-            provider.baseUrl.ifBlank { getString(R.string.ai_provider) }
+            provider.baseUrl.ifBlank { uiString(R.string.ai_provider) }
         }
     }
 
@@ -122,13 +123,13 @@ class AiProviderManageActivity : BaseActivity<ActivityAiProviderManageBinding>()
         val relatedModelCount = AppConfig.aiModelConfigList.count { it.providerId == provider.id }
         showComposeConfirmDialog(
             title = providerName(provider),
-            message = getString(
+            message = uiString(
                 if (relatedModelCount > 0) R.string.ai_remove_provider_confirm_with_models
                 else R.string.ai_remove_provider_confirm,
                 relatedModelCount
             ),
-            positiveText = getString(R.string.delete),
-            negativeText = getString(R.string.cancel),
+            positiveText = uiString(R.string.delete),
+            negativeText = uiString(R.string.cancel),
             dangerPositive = true,
             onPositive = {
                 AppConfig.aiProviderList = AppConfig.aiProviderList.filterNot { it.id == provider.id }
@@ -171,7 +172,7 @@ private fun AiProviderManageScreen(
             ) {
                 AiProviderTopBar(onBack = onBack)
                 Text(
-                    text = stringResource(R.string.ai_provider_manage_summary),
+                    text = translatedUiString(R.string.ai_provider_manage_summary),
                     color = palette.settings.secondaryText,
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
@@ -203,7 +204,7 @@ private fun AiProviderManageScreen(
                     }
                 }
                 LegadoMiuixActionButton(
-                    text = stringResource(R.string.ai_add_provider),
+                    text = translatedUiString(R.string.ai_add_provider),
                     palette = palette.miuix,
                     onClick = onAdd,
                     modifier = Modifier
@@ -251,7 +252,7 @@ private fun AiProviderTopBar(onBack: () -> Unit) {
             }
         }
         Text(
-            text = stringResource(R.string.ai_provider_manage_title),
+            text = translatedUiString(R.string.ai_provider_manage_title),
             color = palette.settings.primaryText,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
@@ -306,7 +307,7 @@ private fun AiProviderCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.ai_manage_models_summary, modelCount),
+                    text = translatedUiString(R.string.ai_manage_models_summary, modelCount),
                     color = palette.settings.secondaryText,
                     fontSize = 13.sp,
                     maxLines = 1,
@@ -314,7 +315,7 @@ private fun AiProviderCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = stringResource(if (current) R.string.ai_current_provider else R.string.ai_provider),
+                    text = translatedUiString(if (current) R.string.ai_current_provider else R.string.ai_provider),
                     color = if (current) palette.settings.accent else palette.settings.secondaryText,
                     fontSize = 12.sp,
                     fontWeight = if (current) FontWeight.Medium else FontWeight.Normal,
@@ -326,7 +327,7 @@ private fun AiProviderCard(
             AppManagementMoreActionButton(
                 actionsProvider = { moreActions },
                 palette = palette,
-                contentDescription = stringResource(R.string.more)
+                contentDescription = translatedUiString(R.string.more)
             )
         }
     }
@@ -342,7 +343,7 @@ private fun AiProviderCurrentBadge(palette: AppManagementPalette) {
         shadowElevation = 0.dp
     ) {
         Text(
-            text = stringResource(R.string.ai_current_provider),
+            text = translatedUiString(R.string.ai_current_provider),
             color = palette.settings.accent,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
@@ -361,14 +362,14 @@ private fun AiProviderEmptyCard() {
         insidePadding = PaddingValues(horizontal = 14.dp, vertical = 18.dp)
     ) {
         Text(
-            text = stringResource(R.string.ai_current_provider_summary_empty),
+            text = translatedUiString(R.string.ai_current_provider_summary_empty),
             color = palette.settings.primaryText,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = stringResource(R.string.ai_add_provider_summary),
+            text = translatedUiString(R.string.ai_add_provider_summary),
             color = palette.settings.secondaryText,
             fontSize = 13.sp,
             lineHeight = 18.sp

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rqt_repository">R-qt source code</string>
+    <string name="rqt_releases">R-qt releases</string>
+    <string name="rqt_auto_update">Check for new releases</string>
+    <string name="rqt_auto_update_summary">Check when opening the app, at most once every 6 hours. Download and installation require your confirmation.</string>
+</resources>

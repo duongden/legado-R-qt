@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import io.legado.app.ui.widget.compose.translatedUiString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,7 +74,7 @@ internal fun AiImageProviderManageScreen(
                     onExportRules = onExportRules
                 )
                 Text(
-                    text = stringResource(R.string.ai_image_provider_manage_summary),
+                    text = translatedUiString(R.string.ai_image_provider_manage_summary),
                     color = palette.settings.secondaryText,
                     fontSize = 13.sp,
                     lineHeight = 18.sp,
@@ -105,7 +105,7 @@ internal fun AiImageProviderManageScreen(
                     }
                 }
                 LegadoMiuixActionButton(
-                    text = stringResource(R.string.add),
+                    text = translatedUiString(R.string.add),
                     palette = palette.miuix,
                     onClick = onAdd,
                     modifier = Modifier
@@ -157,7 +157,7 @@ private fun AiImageProviderTopBar(
             }
         }
         Text(
-            text = stringResource(R.string.ai_image_provider_manage),
+            text = translatedUiString(R.string.ai_image_provider_manage),
             color = palette.settings.primaryText,
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
@@ -168,14 +168,14 @@ private fun AiImageProviderTopBar(
         )
         AiImageProviderTopBarButton(
             iconRes = R.drawable.ic_import,
-            contentDescription = stringResource(R.string.import_str),
+            contentDescription = translatedUiString(R.string.import_str),
             palette = palette,
             onClick = onImportRules
         )
         Spacer(modifier = Modifier.width(4.dp))
         AiImageProviderTopBarButton(
             iconRes = R.drawable.ic_export,
-            contentDescription = stringResource(R.string.export_str),
+            contentDescription = translatedUiString(R.string.export_str),
             palette = palette,
             onClick = onExportRules
         )
@@ -249,7 +249,7 @@ private fun AiImageProviderCard(
                     text = if (provider.type == AiImageProviderConfig.TYPE_OPENAI) {
                         provider.baseUrl.ifBlank { "OpenAI" }
                     } else {
-                        stringResource(R.string.ai_image_provider_js)
+                        translatedUiString(R.string.ai_image_provider_js)
                     },
                     color = palette.settings.secondaryText,
                     fontSize = 13.sp,
@@ -269,8 +269,8 @@ private fun AiImageProviderCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = buildString {
-                        if (current) append(stringResource(R.string.ai_current_provider)).append(" · ")
-                        append(stringResource(if (provider.enabled) R.string.enabled else R.string.disabled))
+                        if (current) append(translatedUiString(R.string.ai_current_provider)).append(" · ")
+                        append(translatedUiString(if (provider.enabled) R.string.enabled else R.string.disabled))
                     },
                     color = if (current) palette.settings.accent else palette.settings.secondaryText,
                     fontSize = 12.sp,
@@ -283,7 +283,7 @@ private fun AiImageProviderCard(
             AppManagementMoreActionButton(
                 actionsProvider = { moreActions },
                 palette = palette,
-                contentDescription = stringResource(R.string.more)
+                contentDescription = translatedUiString(R.string.more)
             )
         }
     }
@@ -299,7 +299,7 @@ private fun AiImageProviderCurrentBadge(palette: AppManagementPalette) {
         shadowElevation = 0.dp
     ) {
         Text(
-            text = stringResource(R.string.ai_current_provider),
+            text = translatedUiString(R.string.ai_current_provider),
             color = palette.settings.accent,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
@@ -318,14 +318,14 @@ private fun AiImageProviderEmptyCard() {
         insidePadding = PaddingValues(horizontal = 14.dp, vertical = 18.dp)
     ) {
         Text(
-            text = stringResource(R.string.ai_image_provider_manage),
+            text = translatedUiString(R.string.ai_image_provider_manage),
             color = palette.settings.primaryText,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = stringResource(R.string.ai_image_provider_manage_summary),
+            text = translatedUiString(R.string.ai_image_provider_manage_summary),
             color = palette.settings.secondaryText,
             fontSize = 13.sp,
             lineHeight = 18.sp

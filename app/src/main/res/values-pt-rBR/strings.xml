@@ -101,7 +101,7 @@
         \u3000\u3000 Este é um App de leitura de software livre, desenvolvido em Kotlin, você é bem-vindo a participar em projeto.
     </string>
     <string name="app_share_description">
-        阅读Archive link de download：\n https://github.com/Rimchars/legado/releases
+        Legado R-qt link de download：\n https://github.com/duongden/legado-R-qt/releases
     </string>
     <string name="version_name">Versão %s</string>
     <string name="pt_background_verification">Verificação em segundo plano</string>

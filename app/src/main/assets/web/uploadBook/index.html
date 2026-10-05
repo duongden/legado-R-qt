@@ -190,8 +190,10 @@
     width: 110px;
     height: 36px;
 }
-</style></head>
-<body>
+</style><link rel="stylesheet" href="../assets/web-theme.css">
+<script src="../assets/web-theme.js"></script>
+</head>
+<body><header class="ui-page-header"><a href="../">Legado Web</a><strong>Gửi sách</strong><div id="web-appearance-slot"></div></header>
 <div style="display: none"><img src="./img/wrong.png"></div>
 <div id="pc" class="pc" style="display: block;">
     <div class="title_wrap">
@@ -213,7 +215,7 @@
                 <span class="btn" id="flash_btn" style="display: none;"><span id="spanButtonPlaceHolder"></span></span>
                 <form class="select_btn" id="h5_btn" style="display: inline-block;">
                     Chọn tệp
-                    <input type="file" id="click" multiple="">
+                    <input type="file" id="click" multiple="" aria-label="Chọn tệp để gửi">
                 </form>
             </div>
         </div>
@@ -264,7 +266,7 @@
         <div class="type">TXT、EPUB、UMD</div>
         <form class="bottom_btn_wrap">
             Chọn tệp
-            <input type="file" id="tap">
+            <input type="file" id="tap" aria-label="Chọn tệp để gửi">
         </form>
     </div>
 </div>

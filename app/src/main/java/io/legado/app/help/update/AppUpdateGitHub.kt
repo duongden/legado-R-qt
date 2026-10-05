@@ -9,7 +9,6 @@ import io.legado.app.help.http.okHttpClient
 import io.legado.app.help.http.text
 import io.legado.app.utils.GSON
 import io.legado.app.utils.fromJsonArray
-import io.legado.app.utils.fromJsonObject
 import kotlinx.coroutines.CoroutineScope
 
 @Keep
@@ -20,36 +19,23 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
         get() = AppVariant.OFFICIAL
 
     private suspend fun getLatestRelease(): List<AppReleaseInfo> {
-        val lastReleaseUrl = if (checkVariant.isBeta()) {
-            "https://api.github.com/repos/Rimchars/legado/releases/tags/latest-arm64-debug"
-        } else {
-            "https://api.github.com/repos/Rimchars/legado/releases?per_page=10"
-        }
+        val lastReleaseUrl = RqtReleasePolicy.API_URL
         val res = okHttpClient.newCallResponse {
             url(AppUpdateConfig.applyGithubProxy(lastReleaseUrl))
         }
         if (!res.isSuccessful) {
-            throw NoStackTraceException("获取新版本出错(${res.code})")
+            throw NoStackTraceException("Không kiểm tra được bản cập nhật R-qt(${res.code})")
         }
         val body = res.body.text()
         if (body.isBlank()) {
-            throw NoStackTraceException("获取新版本出错")
+            throw NoStackTraceException("Không kiểm tra được bản cập nhật R-qt")
         }
-        if (!checkVariant.isBeta()) {
-            return GSON.fromJsonArray<GithubRelease>(body)
-                .getOrElse {
-                    throw NoStackTraceException("获取新版本出错" + it.localizedMessage)
-                }
-                .filterNot { it.isPreRelease }
-                .flatMap { it.gitReleaseToAppReleaseInfo() }
-                .sortedByDescending { it.createdAt }
-        }
-        return GSON.fromJsonObject<GithubRelease>(body)
-            .getOrElse {
-                throw NoStackTraceException("获取新版本出错" + it.localizedMessage)
-            }
-            .gitReleaseToAppReleaseInfo()
-            .sortedByDescending { it.createdAt }
+        return GSON.fromJsonArray<GithubRelease>(body)
+            .getOrElse { throw NoStackTraceException("Không đọc được thông tin release R-qt") }
+            .filterNot { it.isPreRelease || it.draft }
+            .flatMap { it.gitReleaseToAppReleaseInfo() }
+            .filter { RqtReleasePolicy.isReleaseApk(it.name) }
+            .sortedWith(compareByDescending<AppReleaseInfo> { it.versionCode }.thenByDescending { it.createdAt })
     }
 
     override fun check(
@@ -68,7 +54,7 @@ object AppUpdateGitHub : AppUpdate.AppUpdateInterface {
                 if (it.versionCode > 0L) {
                     it.versionCode > AppConst.appInfo.versionCode
                 } else {
-                    it.versionName > AppConst.appInfo.versionName
+                    RqtReleasePolicy.compareVersions(it.versionName, AppConst.appInfo.versionName) > 0
                 }
             }
             ?.let {

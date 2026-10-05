@@ -355,6 +355,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
 
     override fun onResume() {
         super.onResume()
+        io.legado.app.help.update.RqtUpdateNotifier.checkOnResume(this)
         if (clipboardImportEnabled) {
             scheduleShibbolethImport(500L)
         }

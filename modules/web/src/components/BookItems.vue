@@ -72,9 +72,9 @@ const proxyImage = (evt: Event, book: Book) => {
 
 <style scoped>
 .wrapper { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr)); gap:16px; }
-.book { display:flex; gap:18px; padding:22px; min-width:0; border:1px solid var(--line); border-radius:18px; background:var(--surface); cursor:pointer; }
+.book { display:flex; gap:18px; padding:22px; min-width:0; border:var(--border-ui); border-radius:var(--radius-card); background:var(--surface); cursor:pointer; }
 .book:hover { background:var(--hover); }
-.cover-img { flex:0 0 72px; height:102px; border-radius:7px; background:var(--accent-soft); overflow:hidden; }
+.cover-img { flex:0 0 72px; height:102px; border-radius:var(--radius-sm); background:var(--accent-soft); overflow:hidden; }
 .cover { width:100%; height:100%; object-fit:cover; }
 .info { flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
 .name { font-size:17px; line-height:1.5; font-weight:700; overflow-wrap:anywhere; color:var(--ink); }
