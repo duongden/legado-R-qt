@@ -325,7 +325,10 @@ onMounted(() => {
 .menu > .el-button {
   margin: 4px;
   padding: 1em;
-  width: 6em;
+  width: 10em;
+  white-space: normal;
+  height: auto;
+  min-height: 40px;
 }
 
 .hotkeys-item {
@@ -347,4 +350,5 @@ onMounted(() => {
     }
   }
 }
+@media(max-width:900px) { .menu { flex-direction:row; flex-wrap:wrap; } .menu > .el-button { flex:1 1 140px; } }
 </style>

@@ -40,7 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import io.legado.app.ui.widget.compose.translatedUiString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -166,7 +166,7 @@ fun AiProviderConfigTab(
         AiProviderTextField(
             value = name,
             onValueChange = onNameChange,
-            label = stringResource(R.string.ai_provider_name),
+            label = translatedUiString(R.string.ai_provider_name),
             singleLine = true,
             keyboardType = KeyboardType.Text,
             style = style
@@ -174,7 +174,7 @@ fun AiProviderConfigTab(
         AiProviderTextField(
             value = baseUrl,
             onValueChange = onBaseUrlChange,
-            label = stringResource(R.string.ai_base_url),
+            label = translatedUiString(R.string.ai_base_url),
             singleLine = true,
             keyboardType = KeyboardType.Uri,
             style = style
@@ -182,7 +182,7 @@ fun AiProviderConfigTab(
         AiProviderTextField(
             value = apiKey,
             onValueChange = onApiKeyChange,
-            label = stringResource(R.string.ai_api_key),
+            label = translatedUiString(R.string.ai_api_key),
             singleLine = true,
             isPassword = true,
             style = style
@@ -219,7 +219,7 @@ fun AiProviderConfigTab(
             val palette = style.toMiuixPalette()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(R.string.ai_enable_prompt_cache_key),
+                    text = translatedUiString(R.string.ai_enable_prompt_cache_key),
                     modifier = Modifier.weight(1f),
                     color = if (promptCache) style.primaryText else style.secondaryText,
                     fontSize = 14.sp,
@@ -240,7 +240,7 @@ fun AiProviderConfigTab(
         AiProviderTextField(
             value = headers,
             onValueChange = onHeadersChange,
-            label = stringResource(R.string.ai_custom_headers),
+            label = translatedUiString(R.string.ai_custom_headers),
             singleLine = false,
             minLines = 4,
             style = style
@@ -356,14 +356,14 @@ fun AiModelManageTab(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             LegadoMiuixActionButton(
-                text = stringResource(R.string.ai_add_model_manual),
+                text = translatedUiString(R.string.ai_add_model_manual),
                 palette = palette,
                 onClick = onAddModel,
                 modifier = Modifier.weight(1f),
                 cornerRadius = style.actionRadius
             )
             LegadoMiuixActionButton(
-                text = stringResource(R.string.ai_fetch_models),
+                text = translatedUiString(R.string.ai_fetch_models),
                 palette = palette,
                 onClick = onFetchModels,
                 modifier = Modifier.weight(1f),
@@ -403,7 +403,7 @@ private fun AiModelItem(
                 if (isCurrent) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.ai_current_model),
+                        text = translatedUiString(R.string.ai_current_model),
                         color = style.accent,
                         fontSize = 12.sp,
                         fontFamily = style.bodyFontFamily,
@@ -414,7 +414,7 @@ private fun AiModelItem(
             }
             Spacer(modifier = Modifier.width(8.dp))
             LegadoMiuixActionButton(
-                text = stringResource(R.string.more),
+                text = translatedUiString(R.string.more),
                 palette = style.toMiuixPalette(),
                 onClick = onClick,
                 cornerRadius = style.actionRadius,
@@ -454,13 +454,13 @@ fun FetchedModelSelectorContent(
     }
 
     val summaryText = if (selectionMode) {
-        stringResource(R.string.ai_fetch_models_selected_hint, selectedIds.size)
+        translatedUiString(R.string.ai_fetch_models_selected_hint, selectedIds.size)
     } else {
-        stringResource(R.string.ai_fetch_models_long_press_hint)
+        translatedUiString(R.string.ai_fetch_models_long_press_hint)
     }
 
     AppDialogFrame(
-        title = stringResource(R.string.ai_add_model_from_list),
+        title = translatedUiString(R.string.ai_add_model_from_list),
         scrollContent = false,
         content = {
             // Search field
@@ -471,7 +471,7 @@ fun FetchedModelSelectorContent(
                 singleLine = true,
                 placeholder = {
                     Text(
-                        text = stringResource(R.string.screen_find),
+                        text = translatedUiString(R.string.screen_find),
                         color = style.secondaryText,
                         fontSize = 14.sp
                     )
@@ -533,7 +533,7 @@ fun FetchedModelSelectorContent(
         actions = {
             // Add All button
             LegadoMiuixActionButton(
-                text = stringResource(R.string.ai_add_all_models),
+                text = translatedUiString(R.string.ai_add_all_models),
                 palette = palette,
                 onClick = {
                     onDismiss()
@@ -545,9 +545,9 @@ fun FetchedModelSelectorContent(
             // Add Selected button
             LegadoMiuixActionButton(
                 text = if (selectedIds.isEmpty()) {
-                    stringResource(R.string.ai_fetch_models_add_selected_empty)
+                    translatedUiString(R.string.ai_fetch_models_add_selected_empty)
                 } else {
-                    stringResource(R.string.ai_fetch_models_add_selected, selectedIds.size)
+                    translatedUiString(R.string.ai_fetch_models_add_selected, selectedIds.size)
                 },
                 palette = palette,
                 onClick = {
@@ -613,9 +613,9 @@ private fun FetchedModelRow(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = when {
-                        existing -> stringResource(R.string.ai_fetch_models_existing)
-                        selectionMode -> stringResource(R.string.ai_fetch_models_click_toggle)
-                        else -> stringResource(R.string.ai_fetch_models_click_add_long_select)
+                        existing -> translatedUiString(R.string.ai_fetch_models_existing)
+                        selectionMode -> translatedUiString(R.string.ai_fetch_models_click_toggle)
+                        else -> translatedUiString(R.string.ai_fetch_models_click_add_long_select)
                     },
                     color = if (existing) style.accent else style.secondaryText,
                     fontSize = 12.sp,

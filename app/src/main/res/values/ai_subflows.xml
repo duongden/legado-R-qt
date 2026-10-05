@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_image_import_js">导入 JS 生图规则</string>
+    <string name="ai_image_import_rules">导入规则</string>
+    <string name="ai_image_export_rules">导出规则</string>
+    <string name="ai_image_copy_rule">复制规则</string>
+    <string name="ai_image_set_current">设为当前生图模型</string>
+    <string name="ai_image_enable_first">请先启用该生图模型</string>
+    <string name="ai_image_current_set">已设为当前生图模型</string>
+    <string name="ai_field_unset">未设置</string>
+    <string name="ai_world_file_error">世界书文件读取失败</string>
+    <string name="ai_world_import">导入世界书</string>
+    <string name="ai_world_import_url">网络导入世界书</string>
+    <string name="ai_world_download_error">世界书下载失败</string>
+    <string name="ai_world_empty_content">世界书内容为空</string>
+    <string name="ai_gallery_this_book">本书</string>
+    <string name="ai_gallery_characters">角色图</string>
+    <string name="ai_gallery_moved">已移动分组</string>
+    <string name="ai_gallery_selected">已选择 %1$d 张</string>
+    <string name="ai_gallery_delete_selected">删除选中的 %1$d 张图片？</string>
+    <string name="ai_image_rules_imported">已导入 %1$d 个生图规则</string>
+    <string name="ai_image_timeout">Timeout (ms)</string>
+</resources>

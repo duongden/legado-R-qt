@@ -1,5 +1,6 @@
 package io.legado.app.ui.config
 
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.stringResource
+import io.legado.app.ui.widget.compose.translatedUiString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
@@ -107,15 +108,15 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
     @Composable
     private fun AiProviderEditScreen() {
         val tabLabels = listOf(
-            stringResource(R.string.ai_provider_config),
-            stringResource(R.string.ai_model_manage)
+            translatedUiString(R.string.ai_provider_config),
+            translatedUiString(R.string.ai_model_manage)
         )
         val isModelTab = currentTab == TAB_MODEL
 
         Column(modifier = Modifier.fillMaxSize()) {
             // Title bar
             AppDialogTitleBar(
-                title = stringResource(R.string.ai_edit_provider)
+                title = translatedUiString(R.string.ai_edit_provider)
             )
             // Tab bar
             AiProviderTabBar(
@@ -146,7 +147,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
                     onApiKeyChange = { providerApiKey = it },
                     headers = providerHeaders,
                     onHeadersChange = { providerHeaders = it },
-                    apiModeLabel = "${stringResource(R.string.ai_api_mode)}: " + stringResource(
+                    apiModeLabel = "${translatedUiString(R.string.ai_api_mode)}: " + translatedUiString(
                         if (apiMode == AI_API_MODE_RESPONSES) R.string.ai_provider_mode_responses
                         else R.string.ai_provider_mode_chat
                     ),
@@ -161,7 +162,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
                 val style = rememberAppDialogStyle()
                 val palette = style.toMiuixPalette()
                 LegadoMiuixActionButton(
-                    text = stringResource(R.string.action_save),
+                    text = translatedUiString(R.string.action_save),
                     palette = palette,
                     onClick = { saveProvider(showToast = true) },
                     modifier = Modifier
@@ -202,14 +203,14 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
     private fun showApiModeSelector() {
         val modes = listOf(AI_API_MODE_CHAT_COMPLETIONS, AI_API_MODE_RESPONSES)
         val labels = listOf(
-            getString(R.string.ai_provider_mode_chat),
-            getString(R.string.ai_provider_mode_responses)
+            uiString(R.string.ai_provider_mode_chat),
+            uiString(R.string.ai_provider_mode_responses)
         )
         showDialogFragment(
             ComposeActionListDialog.create(
-                title = getString(R.string.ai_api_mode),
+                title = uiString(R.string.ai_api_mode),
                 labels = labels,
-                negativeText = getString(R.string.cancel),
+                negativeText = uiString(R.string.cancel),
                 onSelected = { index ->
                     modes.getOrNull(index)?.let { selectedMode ->
                         apiMode = selectedMode
@@ -277,9 +278,9 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
             AppConfig.aiModelConfigList.filter { it.providerId == p.id }
         }.orEmpty()
         modelSummary = if (provider == null) {
-            getString(R.string.ai_current_provider_summary_empty)
+            uiString(R.string.ai_current_provider_summary_empty)
         } else {
-            "${provider.name} · ${getString(R.string.ai_manage_models_summary, models.size)}"
+            "${provider.name} · ${uiString(R.string.ai_manage_models_summary, models.size)}"
         }
         modelList = models
     }
@@ -289,8 +290,8 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
     private fun showEditModelDialog(model: AiModelConfig? = null) {
         val provider = currentProviderOrSave() ?: return
         showComposeTextInputDialog(
-            title = getString(if (model == null) R.string.ai_add_model else R.string.ai_edit_model),
-            hint = getString(R.string.ai_model_input_hint),
+            title = uiString(if (model == null) R.string.ai_add_model else R.string.ai_edit_model),
+            hint = uiString(R.string.ai_model_input_hint),
             initialValue = model?.modelId.orEmpty(),
             onPositive = { saveModel(provider.id, model, it) }
         )
@@ -320,16 +321,16 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
 
     private fun showModelActions(model: AiModelConfig) {
         val actions = listOf(
-            getString(R.string.ai_set_current),
-            getString(R.string.edit),
-            getString(R.string.delete)
+            uiString(R.string.ai_set_current),
+            uiString(R.string.edit),
+            uiString(R.string.delete)
         )
         showDialogFragment(
             ComposeActionListDialog.create(
                 title = model.modelId,
                 labels = actions,
                 dangerIndices = setOf(2),
-                negativeText = getString(R.string.cancel),
+                negativeText = uiString(R.string.cancel),
                 onSelected = { index ->
                     when (index) {
                         0 -> {
@@ -349,9 +350,9 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
         showDialogFragment(
             ComposeConfirmDialog.create(
                 title = model.modelId,
-                message = getString(R.string.ai_remove_model_confirm),
-                positiveText = getString(R.string.delete),
-                negativeText = getString(R.string.cancel),
+                message = uiString(R.string.ai_remove_model_confirm),
+                positiveText = uiString(R.string.delete),
+                negativeText = uiString(R.string.cancel),
                 dangerPositive = true,
                 onPositive = {
                     AppConfig.aiModelConfigList =
@@ -380,7 +381,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
                 else showFetchedModelSelector(provider.id, modelIds)
             }.onFailure {
                 toastOnUi(
-                    getString(R.string.ai_fetch_models_failed, it.localizedMessage ?: "Error")
+                    uiString(R.string.ai_fetch_models_failed, it.localizedMessage ?: "Error")
                 )
             }
         }
@@ -438,7 +439,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
         }
         notifyAiConfigChanged()
         reloadModels()
-        toastOnUi(getString(R.string.ai_fetch_models_success, newModels.size))
+        toastOnUi(uiString(R.string.ai_fetch_models_success, newModels.size))
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

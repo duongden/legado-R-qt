@@ -37,12 +37,12 @@ const gotoChapter = (chapter: BookChapter) => {
 }
 </script>
 <style scoped>
-.cata-wrapper { padding:22px; color:var(--ink); background:var(--surface); border-radius:18px; }
+.cata-wrapper { padding:22px; color:var(--ink); background:var(--surface); border-radius:var(--radius-card); }
 header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
 small { color:var(--muted); font-size:10px; letter-spacing:2px; }
 h2 { margin:6px 0 0; font-size:22px; }
 header button { border:0; background:var(--hover); color:var(--ink); border-radius:50%; width:36px; height:36px; font-size:24px; cursor:pointer; }
-input { box-sizing:border-box; width:100%; padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--page); color:var(--ink); margin-bottom:14px; font:inherit; }
+input { box-sizing:border-box; width:100%; padding:12px; border:var(--border-ui); border-radius:var(--radius-control); background:var(--page); color:var(--ink); margin-bottom:14px; font:inherit; }
 .chapter-list { height:min(360px,45dvh); overflow:auto; }
 .empty { color:var(--muted); }
 </style>

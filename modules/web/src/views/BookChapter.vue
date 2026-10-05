@@ -588,7 +588,7 @@ onBeforeRouteLeave(async () => {
 .content { line-height:1.8; }
 .top-bar { height:56px; }
 .bottom-bar { height:120px; }
-.tool-bar,.read-bar { position:fixed; z-index:100; border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+.tool-bar,.read-bar { position:fixed; z-index:100; border:var(--border-ui); border-radius:var(--radius-card); box-shadow:var(--shadow-overlay); overflow:hidden; }
 .tool-bar { top:24px; left:50%; }
 .read-bar { bottom:24px; right:50%; }
 .tools { display:flex; flex-direction:column; }
@@ -598,7 +598,7 @@ onBeforeRouteLeave(async () => {
 .iconfont { font-family:iconfont; font-size:18px; }
 .icon-text { font-size:11px; margin-top:6px; }
 .read-bar .tool-icon { width:42px; min-height:48px; }
-.toolbar-toggle { position:fixed; right:16px; bottom:78px; z-index:101; border:1px solid var(--line); border-radius:24px; padding:12px 16px; color:var(--ink); font:inherit; box-shadow:var(--shadow); cursor:pointer; }
+.toolbar-toggle { position:fixed; right:16px; bottom:78px; z-index:101; border:var(--border-ui); border-radius:24px; padding:12px 16px; color:var(--ink); font:inherit; box-shadow:var(--shadow-overlay); cursor:pointer; }
 @media(max-width:775px) {
  .chapter { width:100% !important; padding:0 22px; box-sizing:border-box; border:0; }
  .top-bar { height:76px; }

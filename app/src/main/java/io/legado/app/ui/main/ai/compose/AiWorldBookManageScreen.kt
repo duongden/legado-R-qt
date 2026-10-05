@@ -267,7 +267,7 @@ fun AiWorldBookManageRoute(
                 onDeleteBook = { book -> persist(books.filterNot { it.id == book.id }) },
                 onExportBook = { book ->
                     jsonEditor = WorldBookJsonState(
-                        title = "${book.name} · 导出 JSON",
+                        title = "${book.name} · ${io.legado.app.utils.UiTranslation.builtinLabel("导出 JSON")}",
                         text = AiWorldBookManager.exportStandardWorldBook(book).toString(2),
                         importMode = false
                     )

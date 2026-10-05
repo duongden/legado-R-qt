@@ -1,5 +1,6 @@
 package io.legado.app.ui.main.ai
 
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -70,7 +71,7 @@ class AiImagePreviewDialog() : BaseDialogFragment(R.layout.dialog_ai_image_previ
             .error(R.drawable.image_loading_error)
             .into(binding.photoView)
         binding.tvTitle.text = target.name
-        binding.btnFavorite.text = getString(
+        binding.btnFavorite.text = uiString(
             if (target.favorite) R.string.ai_image_cancel_favorite else R.string.favorite
         )
         binding.btnGroup.isVisible = target.favorite
@@ -87,7 +88,7 @@ class AiImagePreviewDialog() : BaseDialogFragment(R.layout.dialog_ai_image_previ
             toastOnUi(R.string.out_favorites)
             reload()
         } else {
-            showGroupSelector(getString(R.string.ai_image_favorite_to)) { groupId ->
+            showGroupSelector(uiString(R.string.ai_image_favorite_to)) { groupId ->
                 AiImageGalleryManager.setFavorite(target.id, true, groupId)
                 toastOnUi(R.string.in_favorites)
                 reload()
@@ -98,7 +99,7 @@ class AiImagePreviewDialog() : BaseDialogFragment(R.layout.dialog_ai_image_previ
     private fun selectGroup() {
         val target = image ?: return
         if (!target.favorite) return
-        showGroupSelector(getString(R.string.ai_image_group)) { groupId ->
+        showGroupSelector(uiString(R.string.ai_image_group)) { groupId ->
             AiImageGalleryManager.setFavorite(target.id, true, groupId)
             reload()
         }
@@ -106,7 +107,7 @@ class AiImagePreviewDialog() : BaseDialogFragment(R.layout.dialog_ai_image_previ
 
     private fun showGroupSelector(title: String, onSelected: (String) -> Unit) {
         val groups = AiImageGalleryManager.listGroups()
-        val labels = groups.map { it.name } + getString(R.string.ai_image_new_group)
+        val labels = groups.map { requireContext().imageGroupLabel(it) } + uiString(R.string.ai_image_new_group)
         requireContext().selector(title, labels) { _, index ->
             if (index == groups.size) {
                 createGroup(onSelected)
@@ -118,7 +119,7 @@ class AiImagePreviewDialog() : BaseDialogFragment(R.layout.dialog_ai_image_previ
 
     private fun createGroup(onCreated: (String) -> Unit) {
         val dialogBinding = DialogEditTextBinding.inflate(layoutInflater).apply {
-            editView.hint = getString(R.string.ai_image_new_group)
+            editView.hint = uiString(R.string.ai_image_new_group)
         }
         alert(titleResource = R.string.ai_image_new_group) {
             customView { dialogBinding.root }

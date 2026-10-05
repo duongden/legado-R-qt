@@ -670,10 +670,10 @@ class AiConfigFragment : ComposeSettingFragment() {
             val toolLabels = mutableListOf<String>()
             groupedTools.forEach { (group, groupTools) ->
                 toolNames.add("__group_$group")
-                toolLabels.add("--- $group ---")
+                toolLabels.add("--- ${io.legado.app.utils.UiTranslation.builtinLabel(group)} ---")
                 groupTools.sortedBy { it.label }.forEach { tool ->
                     toolNames.add(tool.name)
-                    toolLabels.add(tool.label)
+                    toolLabels.add(io.legado.app.utils.UiTranslation.builtinLabel(tool.label))
                 }
             }
             val enabledToolNames = AiToolRegistry.effectiveEnabledToolNames()

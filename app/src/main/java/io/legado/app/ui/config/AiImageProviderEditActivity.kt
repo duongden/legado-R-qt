@@ -3,6 +3,7 @@ package io.legado.app.ui.config
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import io.legado.app.utils.uiString
 import android.os.Bundle
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
@@ -99,26 +100,26 @@ class AiImageProviderEditActivity : BaseActivity<ActivityAiImageProviderEditBind
                     providerType = providerType,
                     isOpenAi = isOpenAi,
                     onTypeClick = { selectType() },
-                    stylePromptSummary = "${getString(R.string.ai_image_style_prompt)}: ${summary(stylePromptText)}",
+                    stylePromptSummary = "${uiString(R.string.ai_image_style_prompt)}: ${summary(stylePromptText)}",
                     onStylePromptClick = {
                         openCodeEditor(
                             Field.STYLE_PROMPT,
-                            getString(R.string.ai_image_style_prompt),
+                            uiString(R.string.ai_image_style_prompt),
                             stylePromptText,
                             "text.html.markdown"
                         )
                     },
-                    paramsSummary = "${getString(R.string.ai_image_params)}: ${summary(paramsText.ifBlank { defaultParams() })}",
+                    paramsSummary = "${uiString(R.string.ai_image_params)}: ${summary(paramsText.ifBlank { defaultParams() })}",
                     onParamsClick = {
                         openCodeEditor(
                             Field.PARAMS,
-                            getString(R.string.ai_image_params),
+                            uiString(R.string.ai_image_params),
                             paramsText.ifBlank { defaultParams() }
                         )
                     },
-                    scriptSummary = "${getString(R.string.ai_image_script)}: ${summary(scriptText)}",
+                    scriptSummary = "${uiString(R.string.ai_image_script)}: ${summary(scriptText)}",
                     onScriptClick = {
-                        openCodeEditor(Field.SCRIPT, getString(R.string.ai_image_script), scriptText)
+                        openCodeEditor(Field.SCRIPT, uiString(R.string.ai_image_script), scriptText)
                     },
                     jsLibSummary = "jsLib: ${summary(jsLibText)}",
                     onJsLibClick = {
@@ -148,10 +149,10 @@ class AiImageProviderEditActivity : BaseActivity<ActivityAiImageProviderEditBind
 
     private fun selectType() {
         showComposeActionListDialog(
-            title = getString(R.string.ai_image_provider_type),
+            title = uiString(R.string.ai_image_provider_type),
             labels = listOf(
-                getString(R.string.ai_image_provider_openai),
-                getString(R.string.ai_image_provider_js)
+                uiString(R.string.ai_image_provider_openai),
+                uiString(R.string.ai_image_provider_js)
             )
         ) { index ->
             providerType = if (index == 0) {
@@ -224,7 +225,7 @@ class AiImageProviderEditActivity : BaseActivity<ActivityAiImageProviderEditBind
     }
 
     private fun summary(value: String): String {
-        return value.trim().lineSequence().firstOrNull()?.take(36)?.ifBlank { null } ?: "未设置"
+        return value.trim().lineSequence().firstOrNull()?.take(36)?.ifBlank { null } ?: uiString(R.string.ai_field_unset)
     }
 
     private enum class Field {

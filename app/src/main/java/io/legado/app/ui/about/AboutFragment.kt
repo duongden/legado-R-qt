@@ -4,6 +4,10 @@ import android.content.Intent
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
+import io.legado.app.help.update.RqtReleasePolicy
+import io.legado.app.help.update.RqtUpdateNotifier
+import io.legado.app.ui.config.compose.SettingSwitchSpec
+import io.legado.app.utils.uiString
 import io.legado.app.R
 import io.legado.app.constant.AppConst.appInfo
 import io.legado.app.constant.AppLog
@@ -53,6 +57,23 @@ class AboutFragment : ComposeSettingFragment() {
                 SettingSectionSpec(
                     items = listOf(
                         action(
+                            key = "rqtRepository",
+                            title = uiString(R.string.rqt_repository),
+                            summary = RqtReleasePolicy.REPOSITORY_URL
+                        ) { requireContext().openUrl(RqtReleasePolicy.REPOSITORY_URL) },
+                        action(
+                            key = "rqtReleases",
+                            title = uiString(R.string.rqt_releases),
+                            summary = "GitHub · duongden/legado-R-qt"
+                        ) { requireContext().openUrl(RqtReleasePolicy.RELEASES_URL) },
+                        SettingSwitchSpec(
+                            key = "rqtAutoCheckRelease",
+                            title = uiString(R.string.rqt_auto_update),
+                            summary = uiString(R.string.rqt_auto_update_summary),
+                            checked = RqtUpdateNotifier.enabled,
+                            onCheckedChange = { RqtUpdateNotifier.enabled = it; refreshSettings() }
+                        ),
+                        action(
                             key = KEY_CONTRIBUTORS,
                             title = getString(R.string.contributors),
                             summary = getString(R.string.contributors_summary_sigma)
@@ -71,20 +92,6 @@ class AboutFragment : ComposeSettingFragment() {
                             title = getString(R.string.check_update)
                         ) {
                             checkUpdate()
-                        },
-                        action(
-                            key = KEY_INTERNAL_BETA,
-                            title = "内测版",
-                            summary = internalBetaSummary()
-                        ) {
-                            showInternalBetaDialog()
-                        },
-                        action(
-                            key = KEY_UPDATE_ACCELERATION,
-                            title = getString(R.string.update_acceleration_manage),
-                            summary = AppUpdateConfig.summary(requireContext())
-                        ) {
-                            showUpdateAccelerationManage()
                         }
                     )
                 ),

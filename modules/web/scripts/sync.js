@@ -2,6 +2,8 @@ import { URL } from "node:url";
 import fs from "node:fs";
 import process from "node:process";
 
+fs.copyFileSync(new URL('../src/assets/design-system.css', import.meta.url), new URL('../../../app/src/main/assets/web/assets/design-system.css', import.meta.url));
+
 if (!process.env.GITHUB_ENV) {
   console.log("非Github WorkFlows环境，取消文件复制");
   process.exit();
