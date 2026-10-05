@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_workspace_title">AI 工作区</string>
+    <string name="ai_workspace_summary">查看 Agent 创建、编辑和备份的文件</string>
+    <string name="ai_tool_round_limit">AI 工具轮次上限</string>
+    <string name="ai_read_tool_scope">正文问 AI 工具范围</string>
+    <string name="ai_thinking_toolbar">显示思考工具栏</string>
+    <string name="ai_thinking_toolbar_summary">关闭后聊天页不显示思考和工具调用过程卡片，不影响后台执行</string>
+    <string name="ai_world_book_manage_title">世界书管理</string>
+    <string name="ai_world_book_empty">未配置世界书</string>
+    <string name="ai_default_models_title">默认模型</string>
+    <string name="ai_read_tools_all">全量工具</string>
+    <string name="ai_read_tools_safe">阅读安全工具</string>
+    <string name="ai_read_tools_enabled">使用已启用工具</string>
+    <string name="ai_ask_model_title">正文问 AI 模型</string>
+    <string name="ai_summary_model_title">文章总结模型</string>
+    <string name="ai_role_model_title">多角色模型</string>
+    <string name="ai_default_image_provider_title">图像生成供应商</string>
+    <string name="ai_not_configured">未配置</string>
+    <string name="ai_compression_disable">关闭上下文压缩</string>
+    <string name="ai_compression_enable">启用上下文压缩</string>
+    <string name="ai_tool_round_count">%1$d 轮</string>
+    <string name="ai_world_book_counts">%1$d/%2$d 启用 · %3$d 条目</string>
+    <string name="ai_default_models_summary">问AI %1$s / 总结 %2$s / 多角色 %3$s / 生图 %4$s</string>
+    <string name="ai_ask_model_value">正文问 AI：%1$s</string>
+    <string name="ai_summary_model_value">文章总结：%1$s</string>
+    <string name="ai_role_model_value">多角色：%1$s</string>
+    <string name="ai_image_provider_value">图像生成供应商：%1$s</string>
+    <string name="ai_context_tokens_value">上下文长度: %1$d</string>
+    <string name="ai_thinking_tokens_value">思考上下文: %1$d</string>
+    <string name="ai_skill_unavailable">No available SKILL.md</string>
+</resources>

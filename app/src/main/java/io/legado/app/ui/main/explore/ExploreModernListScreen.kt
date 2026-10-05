@@ -52,6 +52,7 @@ import io.legado.app.ui.widget.compose.BookCoverImage
 import io.legado.app.ui.widget.compose.ComposeLazyListFastScroller
 import io.legado.app.ui.widget.compose.SearchBookListItem
 import io.legado.app.ui.widget.compose.SearchBookPreviewOverlay
+import io.legado.app.ui.widget.compose.translatedText
 import io.legado.app.ui.widget.compose.SearchBookPreviewState
 import io.legado.app.ui.widget.image.CoverImageView
 
@@ -342,7 +343,7 @@ private fun ExploreGridBookItem(
             )
         }
         Text(
-            text = book.name,
+            text = translatedText(book.name),
             color = palette.primaryText,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,

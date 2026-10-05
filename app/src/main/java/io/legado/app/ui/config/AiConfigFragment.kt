@@ -82,12 +82,12 @@ class AiConfigFragment : ComposeSettingFragment() {
             titleRes = titleRes,
             sections = listOf(
                 SettingSectionSpec(
-                    title = getString(R.string.ai_assistant),
+                    title = uiString(R.string.ai_assistant),
                     items = listOf(
                         SettingSwitchSpec(
                             key = PreferKey.aiAssistantEnabled,
-                            title = getString(R.string.ai_enable),
-                            summary = getString(
+                            title = uiString(R.string.ai_enable),
+                            summary = uiString(
                                 if (canEnable) {
                                     R.string.ai_enable_summary
                                 } else {
@@ -100,17 +100,17 @@ class AiConfigFragment : ComposeSettingFragment() {
                         ),
                         SettingActionSpec(
                             key = KEY_IMPORT_DEFAULT_SKILL,
-                            title = getString(R.string.ai_import_default_skill),
-                            summary = getString(R.string.ai_import_default_skill_summary),
+                            title = uiString(R.string.ai_import_default_skill),
+                            summary = uiString(R.string.ai_import_default_skill_summary),
                             onClick = ::importDefaultSkill
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiSkillPrompt,
-                            title = getString(R.string.ai_skill_prompt),
+                            title = uiString(R.string.ai_skill_prompt),
                             summary = if (skills.isEmpty()) {
-                                getString(R.string.ai_skill_prompt_summary_empty)
+                                uiString(R.string.ai_skill_prompt_summary_empty)
                             } else {
-                                getString(
+                                uiString(
                                     R.string.ai_skill_prompt_summary,
                                     enabledSkillCount,
                                     skills.size
@@ -120,57 +120,57 @@ class AiConfigFragment : ComposeSettingFragment() {
                         ),
                         SettingActionSpec(
                             key = KEY_MANAGE_NATIVE_TOOLS,
-                            title = getString(R.string.ai_manage_native_tools),
-                            summary = "${getString(R.string.ai_manage_native_tools_summary)} · ${AiToolRegistry.effectiveEnabledToolNames().size}",
+                            title = uiString(R.string.ai_manage_native_tools),
+                            summary = "${uiString(R.string.ai_manage_native_tools_summary)} · ${AiToolRegistry.effectiveEnabledToolNames().size}",
                             onClick = ::showManageNativeToolsDialog
                         ),
                         SettingActionSpec(
                             key = KEY_AI_WORKSPACE,
-                            title = "AI 工作区",
-                            summary = "查看 Agent 创建、编辑和备份的文件",
+                            title = uiString(R.string.ai_workspace_title),
+                            summary = uiString(R.string.ai_workspace_summary),
                             onClick = ::openAiWorkspace
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiAgentMaxToolRounds,
-                            title = "AI 工具轮次上限",
-                            summary = "${AppConfig.aiAgentMaxToolRounds} 轮",
+                            title = uiString(R.string.ai_tool_round_limit),
+                            summary = uiString(R.string.ai_tool_round_count, AppConfig.aiAgentMaxToolRounds),
                             onClick = ::showAgentMaxToolRoundsDialog
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiReadToolMode,
-                            title = "正文问 AI 工具范围",
+                            title = uiString(R.string.ai_read_tool_scope),
                             summary = readToolModeLabel(),
                             onClick = ::showReadToolModeDialog
                         ),
                         switch(
                             key = PreferKey.aiEnterToSend,
-                            title = getString(R.string.ai_enter_to_send),
-                            summary = getString(R.string.ai_enter_to_send_summary),
+                            title = uiString(R.string.ai_enter_to_send),
+                            summary = uiString(R.string.ai_enter_to_send_summary),
                             defaultValue = true
                         ),
                         switch(
                             key = PreferKey.aiThinkingToolbarEnabled,
-                            title = "显示思考工具栏",
-                            summary = "关闭后聊天页不显示思考和工具调用过程卡片，不影响后台执行",
+                            title = uiString(R.string.ai_thinking_toolbar),
+                            summary = uiString(R.string.ai_thinking_toolbar_summary),
                             defaultValue = true
                         ),
                         SettingActionSpec(
                             key = KEY_CONTEXT_COMPRESSION,
-                            title = getString(R.string.ai_context_compression),
+                            title = uiString(R.string.ai_context_compression),
                             summary = if (AppConfig.aiContextCompressionEnabled) {
                                 "${AppConfig.aiContextWindowTokens} / ${AppConfig.aiThinkingContextTokens}"
                             } else {
-                                getString(R.string.ai_context_compression_summary_default)
+                                uiString(R.string.ai_context_compression_summary_default)
                             },
                             onClick = ::showContextCompressionDialog
                         ),
                         SettingActionSpec(
                             key = KEY_WORLD_BOOK_MANAGE,
-                            title = "世界书管理",
+                            title = uiString(R.string.ai_world_book_manage_title),
                             summary = if (worldBooks.isEmpty()) {
-                                "未配置世界书"
+                                uiString(R.string.ai_world_book_empty)
                             } else {
-                                "${worldBooks.count { it.enabled }}/${worldBooks.size} 启用 · ${worldBooks.sumOf { it.entries.size }} 条目"
+                                uiString(R.string.ai_world_book_counts, worldBooks.count { it.enabled }, worldBooks.size, worldBooks.sumOf { it.entries.size })
                             },
                             onClick = {
                                 startActivity(Intent(requireContext(), AiWorldBookManageActivity::class.java))
@@ -178,25 +178,25 @@ class AiConfigFragment : ComposeSettingFragment() {
                         ),
                         SettingActionSpec(
                             key = KEY_DEFAULT_MODEL_SETTINGS,
-                            title = "默认模型",
-                            summary = "问AI ${modelLabel(AppConfig.aiAskModelConfig)} / 总结 ${modelLabel(AppConfig.aiSummaryModelConfig)} / 多角色 ${modelLabel(AppConfig.aiReadAloudRoleModelConfig)} / 生图 ${imageProviderLabel()}",
+                            title = uiString(R.string.ai_default_models_title),
+                            summary = uiString(R.string.ai_default_models_summary, modelLabel(AppConfig.aiAskModelConfig), modelLabel(AppConfig.aiSummaryModelConfig), modelLabel(AppConfig.aiReadAloudRoleModelConfig), imageProviderLabel()),
                             onClick = ::showDefaultModelSettingsDialog
                         ),
                         SettingActionSpec(
                             key = KEY_IMAGE_GALLERY,
-                            title = getString(R.string.ai_image_gallery),
-                            summary = getString(R.string.ai_image_gallery_summary),
+                            title = uiString(R.string.ai_image_gallery),
+                            summary = uiString(R.string.ai_image_gallery_summary),
                             onClick = {
                                 startActivity(Intent(requireContext(), AiImageGalleryActivity::class.java))
                             }
                         ),
                         SettingActionSpec(
                             key = KEY_IMAGE_PROVIDER_MANAGE,
-                            title = getString(R.string.ai_image_provider_manage),
+                            title = uiString(R.string.ai_image_provider_manage),
                             summary = if (imageProviders.isEmpty()) {
-                                getString(R.string.ai_image_provider_summary_empty)
+                                uiString(R.string.ai_image_provider_summary_empty)
                             } else {
-                                getString(
+                                uiString(
                                     R.string.ai_image_provider_summary,
                                     imageProviders.count { it.enabled },
                                     imageProviders.size
@@ -209,18 +209,18 @@ class AiConfigFragment : ComposeSettingFragment() {
                     )
                 ),
                 SettingSectionSpec(
-                    title = getString(R.string.ai_provider),
+                    title = uiString(R.string.ai_provider),
                     items = listOf(
                         SettingActionSpec(
                             key = KEY_MANAGE_PROVIDERS,
-                            title = getString(R.string.ai_manage_providers),
+                            title = uiString(R.string.ai_manage_providers),
                             summary = if (AppConfig.aiProviderList.isEmpty()) {
-                                getString(R.string.ai_no_providers)
+                                uiString(R.string.ai_no_providers)
                             } else {
                                 buildString {
-                                    append(currentProvider?.name ?: getString(R.string.ai_current_provider_summary_empty))
+                                    append(currentProvider?.name ?: uiString(R.string.ai_current_provider_summary_empty))
                                     append(" · ")
-                                    append(getString(R.string.ai_manage_providers_summary, AppConfig.aiProviderList.size))
+                                    append(uiString(R.string.ai_manage_providers_summary, AppConfig.aiProviderList.size))
                                 }
                             },
                             onClick = {
@@ -230,21 +230,21 @@ class AiConfigFragment : ComposeSettingFragment() {
                     )
                 ),
                 SettingSectionSpec(
-                    title = getString(R.string.ai_mcp),
+                    title = uiString(R.string.ai_mcp),
                     items = listOf(
                         SettingActionSpec(
                             key = KEY_ADD_MCP_SERVER,
-                            title = getString(R.string.ai_add_mcp_server),
-                            summary = getString(R.string.ai_add_mcp_server_summary),
+                            title = uiString(R.string.ai_add_mcp_server),
+                            summary = uiString(R.string.ai_add_mcp_server_summary),
                             onClick = { showEditMcpServerDialog() }
                         ),
                         SettingActionSpec(
                             key = KEY_MANAGE_MCP_SERVERS,
-                            title = getString(R.string.ai_manage_mcp_servers),
+                            title = uiString(R.string.ai_manage_mcp_servers),
                             summary = if (mcpServers.isEmpty()) {
-                                getString(R.string.ai_no_mcp_servers)
+                                uiString(R.string.ai_no_mcp_servers)
                             } else {
-                                getString(
+                                uiString(
                                     R.string.ai_manage_mcp_servers_summary,
                                     enabledMcpCount,
                                     mcpServers.size
@@ -255,12 +255,12 @@ class AiConfigFragment : ComposeSettingFragment() {
                     )
                 ),
                 SettingSectionSpec(
-                    title = getString(R.string.ai_web_tools),
+                    title = uiString(R.string.ai_web_tools),
                     items = listOf(
                         SettingSwitchSpec(
                             key = PreferKey.aiTavilyEnabled,
-                            title = getString(R.string.ai_tavily_enable),
-                            summary = getString(
+                            title = uiString(R.string.ai_tavily_enable),
+                            summary = uiString(
                                 if (AppConfig.aiTavilyApiKey.isBlank()) {
                                     R.string.ai_tavily_enable_summary_missing
                                 } else {
@@ -272,35 +272,35 @@ class AiConfigFragment : ComposeSettingFragment() {
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiTavilyApiKey,
-                            title = getString(R.string.ai_tavily_api_key),
+                            title = uiString(R.string.ai_tavily_api_key),
                             summary = if (AppConfig.aiTavilyApiKey.isBlank()) {
-                                getString(R.string.ai_tavily_api_key_summary)
+                                uiString(R.string.ai_tavily_api_key_summary)
                             } else {
-                                getString(R.string.ai_tavily_api_key_summary_ready)
+                                uiString(R.string.ai_tavily_api_key_summary_ready)
                             },
                             onClick = ::showTavilyApiKeyDialog
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiTavilyBaseUrl,
-                            title = getString(R.string.ai_tavily_base_url),
+                            title = uiString(R.string.ai_tavily_base_url),
                             summary = AppConfig.aiTavilyBaseUrl,
                             onClick = ::showTavilyBaseUrlDialog
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiTavilyTopic,
-                            title = getString(R.string.ai_tavily_topic),
+                            title = uiString(R.string.ai_tavily_topic),
                             summary = tavilyTopicLabel(),
                             onClick = ::showTavilyTopicDialog
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiTavilySearchDepth,
-                            title = getString(R.string.ai_tavily_search_depth),
+                            title = uiString(R.string.ai_tavily_search_depth),
                             summary = tavilySearchDepthLabel(),
                             onClick = ::showTavilySearchDepthDialog
                         ),
                         SettingActionSpec(
                             key = PreferKey.aiTavilyMaxResults,
-                            title = getString(R.string.ai_tavily_max_results),
+                            title = uiString(R.string.ai_tavily_max_results),
                             summary = AppConfig.aiTavilyMaxResults.toString(),
                             onClick = ::showTavilyMaxResultsDialog
                         )
@@ -321,18 +321,25 @@ class AiConfigFragment : ComposeSettingFragment() {
         }
     }
 
+    private fun uiString(@androidx.annotation.StringRes id: Int, vararg args: Any): String =
+        if (io.legado.app.utils.UiTranslation.isEnabled()) {
+            io.legado.app.utils.UiTranslation.vietnameseString(id, *args)
+        } else {
+            getString(id, *args)
+        }
+
     private fun openAiWorkspace() {
         val root = File(requireContext().filesDir, "ai_workspace").apply { mkdirs() }
         startActivity(
             Intent(requireContext(), FileManageActivity::class.java)
                 .putExtra(FileManageActivity.EXTRA_ROOT_PATH, root.absolutePath)
-                .putExtra(FileManageActivity.EXTRA_TITLE, "AI 工作区")
+                .putExtra(FileManageActivity.EXTRA_TITLE, uiString(R.string.ai_workspace_title))
         )
     }
 
     private fun showAgentMaxToolRoundsDialog() {
         showComposeNumberPickerDialog(
-            title = "AI 工具轮次上限",
+            title = uiString(R.string.ai_tool_round_limit),
             value = AppConfig.aiAgentMaxToolRounds,
             minValue = 4,
             maxValue = 64,
@@ -360,14 +367,14 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun readToolModeLabel(): String {
         return when (AppConfig.aiReadToolMode) {
-            AppConfig.AI_READ_TOOL_MODE_ALL -> "全量工具"
-            AppConfig.AI_READ_TOOL_MODE_SAFE -> "阅读安全工具"
-            else -> "使用已启用工具"
+            AppConfig.AI_READ_TOOL_MODE_ALL -> uiString(R.string.ai_read_tools_all)
+            AppConfig.AI_READ_TOOL_MODE_SAFE -> uiString(R.string.ai_read_tools_safe)
+            else -> uiString(R.string.ai_read_tools_enabled)
         }
     }
 
     private fun tavilyTopicLabel(): String {
-        return getString(
+        return uiString(
             when (AppConfig.aiTavilyTopic) {
                 "news" -> R.string.ai_tavily_topic_news
                 "finance" -> R.string.ai_tavily_topic_finance
@@ -377,7 +384,7 @@ class AiConfigFragment : ComposeSettingFragment() {
     }
 
     private fun tavilySearchDepthLabel(): String {
-        return getString(
+        return uiString(
             when (AppConfig.aiTavilySearchDepth) {
                 "advanced" -> R.string.ai_tavily_search_depth_advanced
                 "ultra-fast" -> R.string.ai_tavily_search_depth_ultra_fast
@@ -393,12 +400,12 @@ class AiConfigFragment : ComposeSettingFragment() {
             AppConfig.AI_READ_TOOL_MODE_ALL
         )
         val labels = listOf(
-            "使用已启用工具",
-            "阅读安全工具",
-            "全量工具"
+            uiString(R.string.ai_read_tools_enabled),
+            uiString(R.string.ai_read_tools_safe),
+            uiString(R.string.ai_read_tools_all)
         )
         showComposeActionListDialog(
-            title = "正文问 AI 工具范围",
+            title = uiString(R.string.ai_read_tool_scope),
             labels = labels.mapIndexed { index, label ->
                 if (values[index] == AppConfig.aiReadToolMode) "$label ✓" else label
             }
@@ -410,23 +417,23 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun showDefaultModelSettingsDialog() {
         val items = listOf(
-            "正文问 AI：${modelLabel(AppConfig.aiAskModelConfig)}",
-            "文章总结：${modelLabel(AppConfig.aiSummaryModelConfig)}",
-            "多角色：${modelLabel(AppConfig.aiReadAloudRoleModelConfig)}",
-            "图像生成供应商：${imageProviderLabel()}"
+            uiString(R.string.ai_ask_model_value, modelLabel(AppConfig.aiAskModelConfig)),
+            uiString(R.string.ai_summary_model_value, modelLabel(AppConfig.aiSummaryModelConfig)),
+            uiString(R.string.ai_role_model_value, modelLabel(AppConfig.aiReadAloudRoleModelConfig)),
+            uiString(R.string.ai_image_provider_value, imageProviderLabel())
         )
         showComposeActionListDialog(
-            title = "默认模型",
+            title = uiString(R.string.ai_default_models_title),
             labels = items
         ) { index ->
             when (index) {
-                0 -> selectDefaultModel("正文问 AI 模型", AppConfig.aiAskModelId) {
+                0 -> selectDefaultModel(uiString(R.string.ai_ask_model_title), AppConfig.aiAskModelId) {
                     AppConfig.aiAskModelId = it
                 }
-                1 -> selectDefaultModel("文章总结模型", AppConfig.aiSummaryModelId) {
+                1 -> selectDefaultModel(uiString(R.string.ai_summary_model_title), AppConfig.aiSummaryModelId) {
                     AppConfig.aiSummaryModelId = it
                 }
-                2 -> selectDefaultModel("多角色模型", AppConfig.aiReadAloudRoleModelId) {
+                2 -> selectDefaultModel(uiString(R.string.ai_role_model_title), AppConfig.aiReadAloudRoleModelId) {
                     AppConfig.aiReadAloudRoleModelId = it
                 }
                 3 -> selectDefaultImageProvider()
@@ -467,7 +474,7 @@ class AiConfigFragment : ComposeSettingFragment() {
         }
         val currentId = AppConfig.aiCurrentImageProvider?.id
         showComposeActionListDialog(
-            title = "图像生成供应商",
+            title = uiString(R.string.ai_default_image_provider_title),
             labels = providers.map { provider ->
                 val label = provider.displayName()
                 if (provider.id == currentId) "$label ✓" else label
@@ -479,7 +486,7 @@ class AiConfigFragment : ComposeSettingFragment() {
     }
 
     private fun modelLabel(model: AiModelConfig?): String {
-        model ?: return "未配置"
+        model ?: return uiString(R.string.ai_not_configured)
         val providerName = AppConfig.aiProviderList.firstOrNull { it.id == model.providerId }
             ?.name
             ?.takeIf { it.isNotBlank() }
@@ -487,18 +494,18 @@ class AiConfigFragment : ComposeSettingFragment() {
     }
 
     private fun imageProviderLabel(): String {
-        return AppConfig.aiCurrentImageProvider?.displayName() ?: "未配置"
+        return AppConfig.aiCurrentImageProvider?.displayName() ?: uiString(R.string.ai_not_configured)
     }
 
     private fun showEditMcpServerDialog(server: AiMcpServerConfig? = null) {
         showComposeTextFormDialogWithChecks(
-            title = getString(
+            title = uiString(
                 if (server == null) R.string.ai_add_mcp_server else R.string.ai_edit_mcp_server
             ),
             labels = listOf(
-                getString(R.string.ai_mcp_server_name),
-                getString(R.string.ai_mcp_server_endpoint),
-                getString(R.string.ai_api_key)
+                uiString(R.string.ai_mcp_server_name),
+                uiString(R.string.ai_mcp_server_endpoint),
+                uiString(R.string.ai_api_key)
             ),
             initialValues = listOf(
                 server?.name.orEmpty(),
@@ -506,7 +513,7 @@ class AiConfigFragment : ComposeSettingFragment() {
                 server?.apiKey.orEmpty()
             ),
             passwordFields = setOf(2),
-            checkboxLabels = listOf(getString(R.string.ai_mcp_server_enabled)),
+            checkboxLabels = listOf(uiString(R.string.ai_mcp_server_enabled)),
             checkedIndices = if (server?.enabled != false) setOf(0) else emptySet(),
             validateInput = { values ->
                 val name = values.getOrNull(0).orEmpty().trim()
@@ -560,11 +567,11 @@ class AiConfigFragment : ComposeSettingFragment() {
             return
         }
         showComposeActionListDialog(
-            title = getString(R.string.ai_manage_mcp_servers),
+            title = uiString(R.string.ai_manage_mcp_servers),
             labels = servers.map { server ->
                 buildString {
                     append(server.name)
-                    if (!server.enabled) append(" (off)")
+                    if (!server.enabled) append(" (${uiString(R.string.disabled)})")
                 }
             }
         ) { index ->
@@ -572,15 +579,15 @@ class AiConfigFragment : ComposeSettingFragment() {
             showComposeActionListDialog(
                 title = server.name,
                 labels = listOf(
-                    getString(
+                    uiString(
                         if (server.enabled) {
                             R.string.ai_disable_mcp_server
                         } else {
                             R.string.ai_enable_mcp_server
                         }
                     ),
-                    getString(R.string.ai_edit_mcp_server),
-                    getString(R.string.ai_remove_mcp_server)
+                    uiString(R.string.ai_edit_mcp_server),
+                    uiString(R.string.ai_remove_mcp_server)
                 )
             ) { action ->
                 when (action) {
@@ -601,7 +608,7 @@ class AiConfigFragment : ComposeSettingFragment() {
     private fun confirmRemoveMcpServer(server: AiMcpServerConfig) {
         showComposeConfirmDialog(
             title = server.name,
-            message = getString(R.string.ai_remove_mcp_server_confirm),
+            message = uiString(R.string.ai_remove_mcp_server_confirm),
             onPositive = {
                 AppConfig.aiMcpServerList = AppConfig.aiMcpServerList.filterNot { it.id == server.id }
                 refreshUi()
@@ -612,13 +619,13 @@ class AiConfigFragment : ComposeSettingFragment() {
 
 
     private fun showContextCompressionDialog() {
-        val enabledText = if (AppConfig.aiContextCompressionEnabled) "关闭上下文压缩" else "启用上下文压缩"
+        val enabledText = if (AppConfig.aiContextCompressionEnabled) uiString(R.string.ai_compression_disable) else uiString(R.string.ai_compression_enable)
         showComposeActionListDialog(
-            title = getString(R.string.ai_context_compression),
+            title = uiString(R.string.ai_context_compression),
             labels = listOf(
                 enabledText,
-                "上下文长度: ${AppConfig.aiContextWindowTokens}",
-                "思考上下文: ${AppConfig.aiThinkingContextTokens}"
+                uiString(R.string.ai_context_tokens_value, AppConfig.aiContextWindowTokens),
+                uiString(R.string.ai_thinking_tokens_value, AppConfig.aiThinkingContextTokens)
             )
         ) { index ->
             when (index) {
@@ -639,7 +646,7 @@ class AiConfigFragment : ComposeSettingFragment() {
             listOf(0, 32_000, 64_000, 128_000, 258_000)
         }
         showComposeActionListDialog(
-            title = if (contextWindow) getString(R.string.ai_context_tokens) else getString(R.string.ai_thinking_context_tokens),
+            title = if (contextWindow) uiString(R.string.ai_context_tokens) else uiString(R.string.ai_thinking_context_tokens),
             labels = values.map { it.toString() }
         ) { index ->
             if (contextWindow) AppConfig.aiContextWindowTokens = values[index]
@@ -674,11 +681,11 @@ class AiConfigFragment : ComposeSettingFragment() {
                 .filter { i -> toolNames[i] in enabledToolNames }
                 .toSet()
             showComposeMultiChoiceDialog(
-                title = getString(R.string.ai_manage_native_tools),
+                title = uiString(R.string.ai_manage_native_tools),
                 labels = toolLabels,
                 checkedIndices = checkedIndices,
-                positiveText = getString(android.R.string.ok),
-                negativeText = getString(R.string.cancel),
+                positiveText = uiString(android.R.string.ok),
+                negativeText = uiString(R.string.cancel),
                 onPositive = { checked ->
                     val newEnabled = mutableSetOf<String>()
                     checked.forEachIndexed { index, isChecked ->
@@ -711,8 +718,8 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun showTavilyApiKeyDialog() {
         showComposeTextInputDialog(
-            title = getString(R.string.ai_tavily_api_key),
-            hint = getString(R.string.ai_tavily_api_key_hint),
+            title = uiString(R.string.ai_tavily_api_key),
+            hint = uiString(R.string.ai_tavily_api_key_hint),
             initialValue = AppConfig.aiTavilyApiKey,
             onPositive = { text ->
                 AppConfig.aiTavilyApiKey = text
@@ -723,10 +730,10 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun showTavilyBaseUrlDialog() {
         showComposeTextInputDialog(
-            title = getString(R.string.ai_tavily_base_url),
+            title = uiString(R.string.ai_tavily_base_url),
             hint = "https://api.tavily.com/search",
             initialValue = AppConfig.aiTavilyBaseUrl,
-            neutralText = getString(R.string.restore_default),
+            neutralText = uiString(R.string.restore_default),
             onPositive = { text ->
                 AppConfig.aiTavilyBaseUrl = text
                 refreshUi()
@@ -741,12 +748,12 @@ class AiConfigFragment : ComposeSettingFragment() {
     private fun showTavilyTopicDialog() {
         val values = listOf("general", "news", "finance")
         val labels = listOf(
-            getString(R.string.ai_tavily_topic_general),
-            getString(R.string.ai_tavily_topic_news),
-            getString(R.string.ai_tavily_topic_finance)
+            uiString(R.string.ai_tavily_topic_general),
+            uiString(R.string.ai_tavily_topic_news),
+            uiString(R.string.ai_tavily_topic_finance)
         )
         showComposeActionListDialog(
-            title = getString(R.string.ai_tavily_topic),
+            title = uiString(R.string.ai_tavily_topic),
             labels = labels
         ) { index ->
             AppConfig.aiTavilyTopic = values[index]
@@ -757,12 +764,12 @@ class AiConfigFragment : ComposeSettingFragment() {
     private fun showTavilySearchDepthDialog() {
         val values = listOf("basic", "advanced", "ultra-fast")
         val labels = listOf(
-            getString(R.string.ai_tavily_search_depth_basic),
-            getString(R.string.ai_tavily_search_depth_advanced),
-            getString(R.string.ai_tavily_search_depth_ultra_fast)
+            uiString(R.string.ai_tavily_search_depth_basic),
+            uiString(R.string.ai_tavily_search_depth_advanced),
+            uiString(R.string.ai_tavily_search_depth_ultra_fast)
         )
         showComposeActionListDialog(
-            title = getString(R.string.ai_tavily_search_depth),
+            title = uiString(R.string.ai_tavily_search_depth),
             labels = labels
         ) { index ->
             AppConfig.aiTavilySearchDepth = values[index]
@@ -772,7 +779,7 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun showTavilyMaxResultsDialog() {
         showComposeNumberPickerDialog(
-            title = getString(R.string.ai_tavily_max_results),
+            title = uiString(R.string.ai_tavily_max_results),
             value = AppConfig.aiTavilyMaxResults,
             minValue = 1,
             maxValue = 10,
@@ -799,7 +806,7 @@ class AiConfigFragment : ComposeSettingFragment() {
                             lastError = "${response.code} ${response.message}"
                         }
                     }
-                    error(lastError.ifBlank { "No available SKILL.md" })
+                    error(lastError.ifBlank { uiString(R.string.ai_skill_unavailable) })
                 }
             }
             result.onSuccess { (skillUrl, skill) ->
@@ -814,27 +821,27 @@ class AiConfigFragment : ComposeSettingFragment() {
                 refreshUi()
                 toastOnUi(R.string.ai_skill_imported)
             }.onFailure {
-                toastOnUi(getString(R.string.ai_skill_import_failed, it.localizedMessage ?: "Error"))
+                toastOnUi(uiString(R.string.ai_skill_import_failed, it.localizedMessage ?: uiString(R.string.error)))
             }
         }
     }
 
     private fun showManageSkillsDialog() {
         val skills = AppConfig.aiSkillList
-        val actions = mutableListOf(getString(R.string.ai_add_skill_manual))
+        val actions = mutableListOf(uiString(R.string.ai_add_skill_manual))
         actions += skills.map { skill ->
             buildString {
                 append(skill.name)
                 append(" · ")
                 append(
-                    getString(
+                    uiString(
                         if (skill.enabled) R.string.enabled else R.string.disabled
                     )
                 )
             }
         }
         showComposeActionListDialog(
-            title = getString(R.string.ai_manage_skills),
+            title = uiString(R.string.ai_manage_skills),
             labels = actions
         ) { index ->
             if (index == 0) {
@@ -849,9 +856,9 @@ class AiConfigFragment : ComposeSettingFragment() {
         showComposeActionListDialog(
             title = skill.name,
             labels = listOf(
-                getString(if (skill.enabled) R.string.disable else R.string.enable),
-                getString(R.string.edit),
-                getString(R.string.delete)
+                uiString(if (skill.enabled) R.string.disable else R.string.enable),
+                uiString(R.string.edit),
+                uiString(R.string.delete)
             )
         ) { action ->
             when (action) {
@@ -870,8 +877,8 @@ class AiConfigFragment : ComposeSettingFragment() {
 
     private fun showSkillEditDialog(skill: AiSkillConfig? = null) {
         showComposeTextInputDialog(
-            title = getString(R.string.ai_skill_prompt),
-            hint = getString(R.string.ai_skill_prompt_hint),
+            title = uiString(R.string.ai_skill_prompt),
+            hint = uiString(R.string.ai_skill_prompt_hint),
             initialValue = skill?.content.orEmpty(),
             minLines = 8,
             maxLines = 16,
@@ -901,7 +908,7 @@ class AiConfigFragment : ComposeSettingFragment() {
     private fun confirmRemoveSkill(skill: AiSkillConfig) {
         showComposeConfirmDialog(
             title = skill.name,
-            message = getString(R.string.ai_remove_skill_confirm),
+            message = uiString(R.string.ai_remove_skill_confirm),
             onPositive = {
                 AppConfig.aiSkillList = AppConfig.aiSkillList.filterNot { it.id == skill.id }
                 refreshUi()

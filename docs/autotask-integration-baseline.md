@@ -16,7 +16,6 @@ This document records the boundary for the incremental AutoTask integration.
 2. Adapt the task domain to the target repository APIs and current Compose UI system.
 3. Add a new forward Room migration from the target baseline; do not reuse the reference version number.
 4. Keep task execution cancellable and serialize operations that mutate the same book.
-5. Only task-related files may be staged in task commits. Existing unrelated worktree changes remain untouched.
 
 ## Reviewed reference areas
 

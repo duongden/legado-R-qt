@@ -1,10 +1,6 @@
-# Compose Migration Skill Guide
+# Compose UI Reference
 
-## 目标
-将"我的"页面及其衍生页面/弹窗从传统 View/XML 迁移到 Jetpack Compose。
-
-## 分支
-`codex/compose-dialog-ui-20260608`
+Technical reference for the shared settings and dialog components.
 
 ## 设计规范速查
 
@@ -35,22 +31,3 @@
 - Modifier: appSettingPanelBackground, appSettingRowDecoration
 - 快捷函数: showComposeConfirmDialog, showComposeTextInputDialog, showComposeTextFormDialog, showComposeNumberPickerDialog, showComposeMultiChoiceDialog, showComposeSingleChoiceDialog, showComposeActionListDialog, showComposeChoiceListDialog
 - 设置页框架: ComposeSettingFragment, SettingSpecScreen, SettingPageSpec/SettingSectionSpec/SettingItemSpec
-
-## 迁移策略
-1. 复用已有组件 > 抽象新组件 > 逐页替换
-2. 管理类 Activity → LazyColumn + 分组卡片模式
-3. legacy 弹窗 → showCompose*Dialog 或 ComposeDialogFragment
-4. XML 外壳 → Compose TopAppBar
-
-## 迁移阶段
-- Phase 0: 基础设施补全（ComposeManageScreen 框架、ComposeEditDialog 基类、ComposeImportDialog 基类）
-- Phase 1: 高收益低风险（AiConfigFragment 弹窗、通用弹窗、子弹窗补全）
-- Phase 2: MyFragment + ConfigActivity 外壳去 XML
-- Phase 3: 管理类 Activity 批量迁移（从简单到复杂）
-- Phase 4: 收尾（AboutActivity 外壳、ReadRecordActivity、ReadStyleDialog）
-
-## 每步要求
-1. 迁移一个完整组件
-2. 验证无编译错误
-3. 提交代码
-4. 可选：打包 debug APK 验证

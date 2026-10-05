@@ -141,5 +141,5 @@ Lúc đó bổ sung 5 endpoint trên vào Android `RelayReadAllowlist` + Worker 
 
 **Thứ tự quan trọng là:** `ExploreController → API LAN → test bằng curl → Web UI → APK test → Relay`. Đừng làm frontend hoặc Cloudflare trước khi API Discovery read-only chạy ổn trên Web Service.
 
-Nếu giao cho Codex thực hiện, mình khuyên chia thành **2 task riêng**: Task 1 chỉ backend/API + tests; Task 2 mới Web UI. Như vậy nếu có lỗi sẽ biết chính xác nằm ở engine/API hay frontend.
+Kế hoạch gồm hai giai đoạn độc lập: backend/API và kiểm thử trước, Web UI sau. Ranh giới này giúp phân biệt lỗi engine/API với lỗi frontend.
 

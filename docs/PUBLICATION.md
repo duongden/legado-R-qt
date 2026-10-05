@@ -2,10 +2,9 @@
 
 ## Distribution scope
 
-Prepared on 2026-10-04 for the new public repository `legado-R-qt`, retaining
-GPL-3.0 and the requested educational/research purpose statement.
+Public source snapshot prepared on 2026-10-04 for `legado-R-qt` under GPL-3.0.
 
-At the owner's request, this distribution excludes all four translation data
+This distribution excludes all four translation data
 files (Names.dat, VietPhrase.dat, ChinesePhienAmWords.txt and Rule.txt), plus the
 Asuka, Doraemon and Minecraft theme artwork, embedded template JSON, associated
 source folders and artwork fetching/building scripts. Original notices are kept
@@ -36,7 +35,7 @@ The translation port's source provenance includes
 [legado-qt](https://github.com/duongden/legado-qt/tree/47d062ca3186956c397ef2d05d6ec09c3bf8b4f9)
 and the GPL-3.0
 [VietPhrase rule engine](https://github.com/duongden/duongden-vietphrase-translator/tree/06d9793ac757dd74e92aa175488ea6c3b1b8be20).
-This attribution does not change the owner's explicit decision to omit the data.
+The translation data is distributed separately from this source snapshot.
 
 ## Provenance and scope
 

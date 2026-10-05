@@ -1,53 +1,64 @@
-# Reading Archive
+# Legado-R-qt
 
-[English](English.md) · [中文](README.md)
+[Tiếng Việt](README.md) · [English](English.md)
 
-Reading Archive builds on the Legado branch maintained by Lyc, extending the open-source Android reader with reading layouts, themes, text-to-speech, AI tools and scheduled tasks.
+<p align="center"><img width="125" height="125" src="docs/archive_icon.svg" alt="Reading Archive"></p>
 
-The app does not include books or book sources. Add your own sources or import local TXT and EPUB files.
+Legado-R-qt builds on [Legado-R / Reading Archive](https://github.com/duongden/legado-R), extending the Legado branch maintained by Lyc on the foundation of [Legado](https://github.com/gedoor/legado). It supports text and EPUB reading, themes, text-to-speech, AI and scheduled tasks.
 
-## Downloads
+The qt fork adds Vietnamese UI localization and offline Chinese-to-Vietnamese dictionary translation for text novels. Translation is applied for display while preserving original book data. Its quality depends on imported dictionaries; UI localization remains in progress.
 
-- [GitHub Releases](https://github.com/Rimchars/legado/releases)
-- [Gitee Releases](https://gitee.com/zziji/legado/releases)
-- [Gitee update channel](https://gitee.com/zziji/legado/releases/tag/latest-arm64-release)
+The app does not supply book content. Add your own book sources or import local TXT and EPUB files.
 
-Version 15, `3.26.09242230`, is available as an arm64-v8a APK. See the release pages for downloads and full release notes.
+## Downloads and updates
+
+- [Legado-R-qt Releases](https://github.com/duongden/legado-R-qt/releases): APKs and release notes for this fork.
+- [Legado-R-qt source](https://github.com/duongden/legado-R-qt).
+- [Reading Archive upstream](https://github.com/Rimchars/legado): the upstream project and its releases.
+
+Each release records its version and changes. Reading Archive upstream APKs are distributed independently of Legado-R-qt.
+
+## Additions in the qt fork
+
+- Vietnamese localization for Android, dialogs and the Web interface.
+- Chinese-to-Vietnamese translation using Names, VietPhrase, phonetic dictionaries and Rule.txt, with TXT import through dictionary management.
+- Translation in native and Direct text reading and supported book metadata displays.
+- A Web translation option independent of the Android translation switch.
+
+Offline dictionary translation is separate from AI services. See the [translation implementation notes](docs/translation-implementation.md) for details and reading-mode limitations.
 
 ## Features
 
-- Read from configurable book sources or local files, with bookmarks, chapter caching and reading progress.
-- Organize books with groups, custom tags, batch management and an immersive details page.
-- Use native rendering or EPUB rendering for ordinary text, with separate layout settings.
-- Import local Reeden `.red` highlight rules, search and edit rules, and select fonts and background images.
-- Customize first and continuation pages with HTML, CSS and JavaScript. Built-in themes include Minecraft, Asuka, Lord of the Mysteries and Doraemon. Scrolling templates keep the frame fixed while the text scrolls.
-- Customize EPUB loading screens in My → Interface settings. Camellia is the default, with day/night palettes and artwork extending behind the status bar.
-- Share locally imported images and fonts between highlight rules and page templates.
-- Preload nearby chapters and reuse laid-out WebViews to reduce work during page turns. Smooth mode prepares up to four nearby chapters; Extreme mode prepares up to six.
-- Configure themes, backgrounds, advanced headers and footers, comment bubbles and reading controls.
-- Use system or network TTS, text following, floating playback controls, and comic or video entry points.
-- Configure AI services and reading tools, scheduled tasks, backups, WebDAV and object storage.
-- Configure DNS/DoH providers, routing by feature, domain exceptions and DNS measurements.
+- Configurable book sources and local books, native and EPUB rendering, page-turn animations, reading styles, bookmarks and progress.
+- Bookshelf lists and grids, groups, tags, batch management, book details, chapter lists and scheduled updates.
+- Local RED highlight rules, image patterns, fonts, HTML/CSS/JavaScript page templates, horizontal and vertical layouts.
+- Shared image/font libraries, day/night themes, backgrounds, advanced titles, headers, footers and comment bubbles.
+- System and network TTS, text following, floating controls, comic and video entry points.
+- Configurable AI services, book-source search, book and chapter reading, reading-history queries and web tools.
+- Scheduled tasks, caching, backup/restore, WebDAV, object storage and storage management.
+- DNS/DoH selection, per-feature routing, domain exceptions, service configuration and speed tests.
 
-## Rendering differences
-
-Complex highlight artwork and CSS use EPUB rendering; native text supports basic text highlighting. Ordinary text in EPUB mode currently does not run paragraph rules or `pclick`; original image `click` actions and replacement rules remain supported. Page templates apply to ordinary text in EPUB mode and have a separate library backup.
-
-DoH is off by default and configuration changes require an app restart. Requests made internally by WebView pages and system or third-party TTS do not automatically follow native-client DNS routing.
+Core features are inherited from Legado / Reading Archive. See the [feature and mode guide](docs/features.md).
 
 ## Documentation
 
-- [Full feature guide (Chinese)](docs/features.md)
-- [Version 15 release notes (Chinese)](docs/releases/2026-09-24-v15.md)
-- [Page templates](docs/reader-templates.md)
+- [Reader templates: use, sharing and authoring](docs/reader-templates.md)
 - [Network and DNS](docs/doh-network.md)
-- [Changelog](CHANGELOG.md)
-- [API](api.md)
+- [Visual resource packages](docs/visual-resource-packages.md)
+- [Paragraph rules and comment packages](docs/online-package-import.md)
+- [Web and Content Provider API](api.md)
+- [Legado help](https://www.yuque.com/legado/wiki)
 
-This release has passed automated checks, browser rendering comparisons and APK validation. Android device appearance, touch responsiveness and whole-app frame rate have not been measured.
+Highlight rules are imported from local `.red` files. Complex image and CSS effects use EPUB rendering. EPUB rendering for ordinary text currently disables paragraph rules and `pclick`; original image `click` actions and replacement rules remain supported. Page templates have a separate backup library.
 
-## Credits
+Bug reports should include the app version, rendering mode and reproduction steps. Test notes have their own dates and scope and do not replace verification on the device in use.
 
-Thanks to [gedoor/legado](https://github.com/gedoor/legado), [Luoyacheng/legado](https://github.com/Luoyacheng/legado) and their contributors. Thanks to Mingyue for the scheduled task contribution.
+## Open source and acknowledgements
 
-See [LICENSE](LICENSE) and the [third-party license notices](app/src/main/assets/LICENSE.md).
+This README follows the [original duongden/legado-R README](https://github.com/duongden/legado-R/blob/main/README.md). Thanks to [gedoor/legado](https://github.com/gedoor/legado), [Luoyacheng/legado](https://github.com/Luoyacheng/legado), [Rimchars/legado](https://github.com/Rimchars/legado) and their contributors. Scheduled-task functionality includes contributions and support from 明月.
+
+Translation source includes [legado-qt](https://github.com/duongden/legado-qt) and [VietPhrase translator](https://github.com/duongden/duongden-vietphrase-translator).
+
+The project uses Rhino, Jsoup, OkHttp, Glide, Miuix, Paged.js and other open-source components. See [LICENSE](LICENSE) for the project license and [third-party notices](app/src/main/assets/LICENSE.md) for component licenses.
+
+Upstream history is retained in the [changelog](CHANGELOG.md), [July 2026 notes](docs/changelog/2026-07.md) and [Legado history](docs/changelog/upstream-2022.md).
