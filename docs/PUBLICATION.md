@@ -32,8 +32,7 @@ regression cases skip when their optional local data is absent; synthetic parser
 engine and import tests remain runnable.
 
 The translation port's source provenance includes
-[dat-bi/legado-qt](https://github.com/dat-bi/legado-qt),
-[duongden/legado-qt](https://github.com/duongden/legado-qt/tree/47d062ca3186956c397ef2d05d6ec09c3bf8b4f9)
+[dat-bi/legado-qt](https://github.com/dat-bi/legado-qt)
 and the GPL-3.0
 [VietPhrase rule engine](https://github.com/duongden/duongden-vietphrase-translator/tree/06d9793ac757dd74e92aa175488ea6c3b1b8be20).
 The translation data is distributed separately from this source snapshot.
