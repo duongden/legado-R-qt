@@ -688,7 +688,7 @@ private fun ReadMenuButton(
     onLongClick: () -> Boolean,
     modifier: Modifier = Modifier
 ) {
-    val title = readMenuButtonTitle(ref, customButtonMetadata)
+    val title = readMenuButtonTitle(ref, customButtonMetadata, isNightTheme)
     val iconRes = readMenuButtonIconRes(ref, autoPageActive, isNightTheme)
     val customIconPath = if (ref.type == ReadMenuButtonConfig.TYPE_CUSTOM) {
         ref.id.toLongOrNull()?.let { customButtonMetadata[it]?.iconPath }
@@ -751,9 +751,11 @@ fun ReadMenuDivider(
     )
 }
 
+@Composable
 private fun readMenuButtonTitle(
     ref: ReadMenuButtonConfig.ButtonRef,
-    customButtonMetadata: Map<Long, ReadMenuCustomButton>
+    customButtonMetadata: Map<Long, ReadMenuCustomButton>,
+    isNightTheme: Boolean
 ): String {
     ref.titleOverride.trim().takeIf { it.isNotBlank() }?.let { return it }
     return when (ref.type) {
@@ -766,7 +768,10 @@ private fun readMenuButtonTitle(
             ReadMenuButtonConfig.Builtin.SEARCH -> "搜索"
             ReadMenuButtonConfig.Builtin.AUTO_PAGE -> "自动"
             ReadMenuButtonConfig.Builtin.REPLACE_RULE -> "替换"
-            ReadMenuButtonConfig.Builtin.NIGHT_THEME -> "夜间"
+            ReadMenuButtonConfig.Builtin.NIGHT_THEME ->
+                io.legado.app.ui.widget.compose.translatedUiString(
+                    if (isNightTheme) R.string.theme_day_short else R.string.theme_night_short
+                )
             ReadMenuButtonConfig.Builtin.CATALOG -> "目录"
             ReadMenuButtonConfig.Builtin.READ_ALOUD -> "朗读"
             ReadMenuButtonConfig.Builtin.READ_STYLE -> "界面"

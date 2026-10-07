@@ -22,11 +22,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
 import io.legado.app.R
 import io.legado.app.base.BaseActivity
+import io.legado.app.constant.AppLog
 import io.legado.app.constant.EventBus
 import io.legado.app.help.ai.AiChatService
 import io.legado.app.help.config.AppConfig
 import io.legado.app.ui.main.ai.AI_API_MODE_CHAT_COMPLETIONS
 import io.legado.app.ui.main.ai.AI_API_MODE_RESPONSES
+import io.legado.app.ui.main.ai.AiChatException
 import io.legado.app.ui.main.ai.AiModelConfig
 import io.legado.app.ui.main.ai.AiProviderConfig
 import io.legado.app.ui.widget.compose.ComposeActionListDialog
@@ -180,7 +182,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
     private fun switchTab(tab: String) {
         currentTab = tab
         if (tab == TAB_MODEL) {
-            if (currentProviderOrSave() == null) {
+            if (saveProvider(showToast = false) == null) {
                 currentTab = TAB_CONFIG
             } else {
                 reloadModels()
@@ -368,7 +370,7 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
     // ── Fetch remote models ──────────────────────────────────────────────────
 
     private fun fetchModels() {
-        val provider = currentProviderOrSave() ?: return
+        val provider = saveProvider(showToast = false) ?: return
         waitDialog.setText(R.string.loading)
         waitDialog.show()
         lifecycleScope.launch {
@@ -379,9 +381,15 @@ class AiProviderEditActivity : BaseActivity<ViewBinding>() {
             result.onSuccess { modelIds ->
                 if (modelIds.isEmpty()) toastOnUi(R.string.ai_fetch_models_empty)
                 else showFetchedModelSelector(provider.id, modelIds)
-            }.onFailure {
+            }.onFailure { error ->
+                val diagnostic = (error as? AiChatException)?.debugLog
+                if (!diagnostic.isNullOrBlank()) {
+                    AppLog.put("AI model discovery failed\n$diagnostic")
+                } else {
+                    AppLog.put("AI model discovery failed: ${error.localizedMessage ?: error.javaClass.simpleName}")
+                }
                 toastOnUi(
-                    uiString(R.string.ai_fetch_models_failed, it.localizedMessage ?: "Error")
+                    uiString(R.string.ai_fetch_models_failed, error.localizedMessage ?: "Error")
                 )
             }
         }

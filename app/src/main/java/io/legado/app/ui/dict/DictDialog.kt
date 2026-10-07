@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.tabs.TabLayout
 import io.legado.app.R
+import io.legado.app.base.AppContextWrapper
 import io.legado.app.base.BaseDialogFragment
 import io.legado.app.data.entities.DictRule
 import io.legado.app.databinding.DialogDictBinding
@@ -171,7 +172,15 @@ class DictDialog() : BaseDialogFragment(R.layout.dialog_dict) {
 
     private fun createDictTabView(name: String, selected: Boolean): TextView {
         return TextView(requireContext()).apply {
-            text = name
+            val labelRes = when (name) {
+                "百度汉语" -> R.string.dict_source_baidu
+                "海词中文" -> R.string.dict_source_haici_chinese
+                "海词英文" -> R.string.dict_source_haici_english
+                "有道" -> R.string.dict_source_youdao
+                "哔哩" -> R.string.dict_source_bilibili
+                else -> null
+            }
+            text = labelRes?.let { AppContextWrapper.wrap(context).getString(it) } ?: name
             gravity = Gravity.CENTER
             maxLines = 1
             includeFontPadding = false

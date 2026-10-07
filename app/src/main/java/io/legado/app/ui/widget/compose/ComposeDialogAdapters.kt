@@ -48,6 +48,7 @@ fun Fragment.showComposeActionListDialog(
     descriptions: List<CharSequence> = emptyList(),
     dangerIndices: Set<Int> = emptySet(),
     negativeText: CharSequence = getString(R.string.cancel),
+    onDismissAction: (() -> Unit)? = null,
     onSelected: (Int) -> Unit
 ) {
     showDialogFragment(
@@ -58,6 +59,7 @@ fun Fragment.showComposeActionListDialog(
             descriptions = descriptions.map { it.toString() },
             dangerIndices = dangerIndices,
             negativeText = negativeText.toString(),
+            onDismissAction = onDismissAction,
             onSelected = onSelected
         )
     )
@@ -172,7 +174,8 @@ fun Fragment.showComposeTextInputDialog(
     maxLines: Int = if (readOnly) 6 else 4,
     validateInput: ((String) -> Boolean)? = null,
     onPositive: (String) -> Unit,
-    onNeutral: (() -> Unit)? = null
+    onNeutral: (() -> Unit)? = null,
+    onNeutralWithText: ((String) -> Unit)? = null
 ) {
     showDialogFragment(
         ComposeTextInputDialog.create(
@@ -188,7 +191,8 @@ fun Fragment.showComposeTextInputDialog(
             maxLines = maxLines,
             validateInput = validateInput,
             onPositive = onPositive,
-            onNeutral = onNeutral
+            onNeutral = onNeutral,
+            onNeutralWithText = onNeutralWithText
         )
     )
 }

@@ -707,7 +707,7 @@
     <string name="ai_image_delete_confirm">删除这张图片？</string>
     <string name="ai_image_prompt_hint">输入图片提示词</string>
     <string name="ai_image_generating">正在生成图片...</string>
-    <string name="ai_image_generated">图片已生成</string>
+    <string name="ai_image_generated">Image generated</string>
     <string name="ai_image_regenerate">重新生成</string>
     <string name="ai_image_optimize_prompt">AI优化</string>
     <string name="ai_image_insert">插入</string>
@@ -1901,6 +1901,11 @@ function login() {
     <string name="ai_add_skill_manual">Import SKILL.md manually</string>
     <string name="ai_skill_default_name">Imported Skill</string>
     <string name="ai_remove_skill_confirm">Remove this skill?</string>
+    <string name="ai_skill_language_chinese">Chinese (Simplified)</string>
+    <string name="ai_skill_language_english">English</string>
+    <string name="ai_skill_language_vietnamese">Vietnamese</string>
+    <string name="ai_skill_use_version">Use this version</string>
+    <string name="ai_skill_version_selected">Currently selected</string>
     <string name="ai_tool_call">Calling tool: %1$s\nArguments: %2$s</string>
     <string name="ai_tool_result">Tool result: %1$s\n%2$s</string>
     <string name="ai_tool_default_name">Tool</string>

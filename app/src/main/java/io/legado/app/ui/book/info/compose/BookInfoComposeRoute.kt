@@ -24,8 +24,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,6 +72,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
@@ -81,6 +80,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -100,6 +100,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.compose.ui.res.painterResource
 import io.legado.app.ui.widget.compose.translatedUiString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -591,19 +592,17 @@ private fun BookInfoStatusStrip(
     }
     val quickActions = configuredActions.takeIf { it.isNotEmpty() }
         ?: defaultBookInfoQuickActions(state, actions, onSelectCloudEntry)
-    val pages = remember(quickActions) { quickActions.chunked(3) }
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        HorizontalPager(
-            state = pagerState,
-            pageSpacing = 9.dp,
-            modifier = Modifier.fillMaxWidth()
-        ) { page ->
+    val rows = quickActions.chunked(3)
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        rows.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(9.dp)
             ) {
-                pages[page].forEach { quickAction ->
+                row.forEach { quickAction ->
                     BookInfoMetricBox(
                         label = quickAction.label,
                         value = quickAction.value,
@@ -617,31 +616,6 @@ private fun BookInfoStatusStrip(
                         },
                         onPressEnd = onPreviewEnd,
                         onClick = quickAction.onClick
-                    )
-                }
-                repeat(3 - pages[page].size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-        if (pages.size > 1) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                pages.indices.forEach { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(if (index == pagerState.currentPage) 7.dp else 5.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (index == pagerState.currentPage) {
-                                    style.colors.accent
-                                } else {
-                                    style.colors.metricSecondaryText.copy(alpha = 0.42f)
-                                }
-                            )
                     )
                 }
             }
@@ -1718,6 +1692,14 @@ private fun BookInfoPosterHero(
     actions: BookInfoActions,
     style: BookInfoComposeStyle
 ) {
+    val textShadow = with(LocalDensity.current) {
+        Shadow(
+            color = Color.Black.copy(alpha = 0.95f),
+            offset = Offset(0f, 1.dp.toPx()),
+            blurRadius = 3.dp.toPx()
+        )
+    }
+    val heroTextStyle = TextStyle(shadow = textShadow)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -1747,6 +1729,7 @@ private fun BookInfoPosterHero(
         ) {
             Text(
                 text = translatedText(state.name).ifBlank { translatedUiString(R.string.book_name) },
+                style = heroTextStyle,
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -1759,6 +1742,7 @@ private fun BookInfoPosterHero(
             )
             Text(
                 text = translatedText(state.author).ifBlank { translatedUiString(R.string.author) },
+                style = heroTextStyle,
                 color = Color.White.copy(alpha = 0.82f),
                 fontSize = 14.sp,
                 maxLines = 1,
@@ -1771,6 +1755,7 @@ private fun BookInfoPosterHero(
             if (state.latestChapterTitle.isNotBlank()) {
                 Text(
                     text = translatedText(state.latestChapterTitle, io.legado.app.utils.TranslateUtils.Kind.TITLE),
+                    style = heroTextStyle,
                     color = Color.White.copy(alpha = 0.72f),
                     fontSize = 12.5.sp,
                     maxLines = 2,
@@ -1780,6 +1765,7 @@ private fun BookInfoPosterHero(
             if (state.readTimeText.isNotBlank()) {
                 Text(
                     text = state.readTimeText,
+                    style = heroTextStyle,
                     color = Color.White.copy(alpha = 0.68f),
                     fontSize = 12.5.sp,
                     maxLines = 1,

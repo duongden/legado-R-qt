@@ -1,5 +1,7 @@
-﻿package io.legado.app.ui.main.ai.compose
+package io.legado.app.ui.main.ai.compose
 
+import io.legado.app.ui.main.ai.displayName
+import io.legado.app.ui.main.ai.aiFlowText
 import android.widget.ImageView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -655,7 +657,7 @@ private fun AiChatTopBar(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = currentCompanion.name.ifBlank { stringResource(R.string.ai) },
+                text = currentCompanion.displayName().ifBlank { stringResource(R.string.ai) },
                 color = style.colors.primaryText,
                 fontSize = if (compactHeader) 24.sp else 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -718,13 +720,13 @@ private fun AiChatTopBar(
                         add(AiTopMenuAction(stringResource(R.string.ai_new_chat)) { actions.onNewChat() })
                         add(AiTopMenuAction(stringResource(R.string.ai_chat_history)) { actions.onOpenHistory() })
                         actions.onOpenWindowAbilities?.let { openAbilities ->
-                            add(AiTopMenuAction("窗口能力", openAbilities))
+                            add(AiTopMenuAction(aiFlowText(R.string.ai_flow_window_abilities), openAbilities))
                         }
                         actions.onOpenWorldBooks?.let { openWorldBooks ->
-                            add(AiTopMenuAction("浏览世界书", openWorldBooks))
+                            add(AiTopMenuAction(aiFlowText(R.string.ai_flow_world_browse), openWorldBooks))
                         }
                         actions.onToggleAutoSpeak?.let { toggleAutoSpeak ->
-                            add(AiTopMenuAction("自动播放语音：${if (autoSpeakEnabled) "开" else "关"}", toggleAutoSpeak))
+                            add(AiTopMenuAction(aiFlowText(R.string.ai_flow_auto_speak, aiFlowText(if (autoSpeakEnabled) R.string.ai_flow_on else R.string.ai_flow_off)), toggleAutoSpeak))
                         }
                         add(AiTopMenuAction(stringResource(R.string.ai_setting)) { actions.onOpenSettings() })
                         actions.onOpenImageGallery?.let { openGallery ->
@@ -876,13 +878,13 @@ private fun AiCompanionDrawer(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "AI 酒馆",
+                            text = aiFlowText(R.string.ai_flow_tavern),
                             color = style.colors.primaryText,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "角色与会话",
+                            text = aiFlowText(R.string.ai_flow_characters_sessions),
                             color = style.colors.secondaryText,
                             fontSize = 12.sp
                         )
@@ -912,7 +914,7 @@ private fun AiCompanionDrawer(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        DrawerSectionTitle("助手", style)
+                        DrawerSectionTitle(aiFlowText(R.string.ai_flow_assistants), style)
                     }
                     items(
                         items = companions,
@@ -1011,7 +1013,7 @@ private fun AiCompanionSessionPanel(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "会话",
+                    text = aiFlowText(R.string.ai_flow_sessions),
                     color = style.colors.secondaryText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1023,7 +1025,7 @@ private fun AiCompanionSessionPanel(
                     color = style.colors.accent.copy(alpha = 0.10f)
                 ) {
                     Text(
-                        text = "新建",
+                        text = aiFlowText(R.string.ai_flow_new),
                         color = style.colors.accent,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -1033,7 +1035,7 @@ private fun AiCompanionSessionPanel(
             }
             if (sessions.isEmpty()) {
                 Text(
-                    text = "还没有历史会话",
+                    text = aiFlowText(R.string.ai_flow_no_history),
                     color = style.colors.secondaryText,
                     fontSize = 12.sp,
                     modifier = Modifier.padding(vertical = 5.dp)
@@ -1050,7 +1052,7 @@ private fun AiCompanionSessionPanel(
                 }
                 if (sessions.size > 8) {
                     Text(
-                        text = "还有 ${sessions.size - 8} 个会话",
+                        text = aiFlowText(R.string.ai_flow_more_chats, sessions.size - 8),
                         color = style.colors.secondaryText,
                         fontSize = 11.sp,
                         modifier = Modifier.padding(horizontal = 4.dp)
@@ -1114,7 +1116,7 @@ private fun AiCompanionDrawerItem(
                 .padding(start = 10.dp)
         ) {
             Text(
-                text = companion.name,
+                text = companion.displayName(),
                 color = style.colors.primaryText,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -1123,9 +1125,9 @@ private fun AiCompanionDrawerItem(
             )
             Text(
                 text = when {
-                    isDefault -> "默认系统提示词"
-                    companion.bookKey.isNotBlank() -> "角色 · ${displayBookKeyLabel(companion.bookKey)}"
-                    else -> "角色"
+                    isDefault -> aiFlowText(R.string.ai_flow_default_prompt)
+                    companion.bookKey.isNotBlank() -> aiFlowText(R.string.ai_flow_character_book, displayBookKeyLabel(companion.bookKey))
+                    else -> aiFlowText(R.string.ai_flow_character)
                 },
                 color = style.colors.secondaryText,
                 fontSize = 11.sp,
@@ -1174,7 +1176,7 @@ private fun AiSessionDrawerItem(
                 .padding(start = 10.dp)
         ) {
             Text(
-                text = session.title.ifBlank { "未命名会话" },
+                text = session.title.ifBlank { aiFlowText(R.string.ai_flow_unnamed_chat) },
                 color = style.colors.primaryText,
                 fontSize = 14.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
@@ -1182,7 +1184,7 @@ private fun AiSessionDrawerItem(
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "${timeFormat.format(java.util.Date(session.updatedAt))} · ${session.messages.size} 条消息",
+                text = aiFlowText(R.string.ai_flow_session_summary, timeFormat.format(java.util.Date(session.updatedAt)), session.messages.size),
                 color = style.colors.secondaryText,
                 fontSize = 11.sp,
                 maxLines = 1,
@@ -1204,7 +1206,7 @@ private fun AiCompanionAvatar(
     if (companion.avatar.isNotBlank()) {
         CharacterAvatar(
             path = companion.avatar,
-            contentDescription = companion.name,
+            contentDescription = companion.displayName(),
             sizeDp = sizeDp,
             modifier = Modifier.combinedClickable(
                 onClick = {},
@@ -1698,14 +1700,14 @@ private fun AiSearchBookInlinePart(
     onToolPreview: (AiToolDisplayPayload) -> Unit
 ) {
     AiInfoPill(
-        text = "书籍结果 ${part.books.size} 条",
+        text = aiFlowText(R.string.ai_flow_book_count, part.books.size),
         style = style,
         onClick = {
             onToolPreview(
                 AiToolDisplayPayload(
                     type = AiToolPreviewType.BookResults,
-                    title = "书籍结果",
-                    summary = "共 ${part.books.size} 条",
+                    title = aiFlowText(R.string.ai_flow_book_results),
+                    summary = aiFlowText(R.string.ai_flow_result_count, part.books.size),
                     raw = "",
                     books = part.books
                 )
@@ -1721,14 +1723,14 @@ private fun AiImageInlinePart(
     onToolPreview: (AiToolDisplayPayload) -> Unit
 ) {
     AiInfoPill(
-        text = "图片结果 ${part.images.size} 张",
+        text = aiFlowText(R.string.ai_flow_image_count, part.images.size),
         style = style,
         onClick = {
             onToolPreview(
                 AiToolDisplayPayload(
                     type = AiToolPreviewType.ImageResult,
-                    title = "图片结果",
-                    summary = "共 ${part.images.size} 张",
+                    title = aiFlowText(R.string.ai_flow_image_results),
+                    summary = aiFlowText(R.string.ai_flow_image_total, part.images.size),
                     raw = "",
                     images = part.images
                 )

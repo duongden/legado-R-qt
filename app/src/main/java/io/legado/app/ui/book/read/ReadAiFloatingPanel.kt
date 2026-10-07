@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,6 +70,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LifecycleOwner
 import io.legado.app.R
+import io.legado.app.constant.AppLog
 import io.legado.app.data.entities.AiAgentJob
 import io.legado.app.data.entities.AiAgentSession
 import io.legado.app.data.entities.AiMemoryItem
@@ -84,6 +86,7 @@ import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.dialogs.selector
 import io.legado.app.ui.config.AiWorldBookManageActivity
 import io.legado.app.ui.main.ai.AiChatMessage
+import io.legado.app.ui.main.ai.AiChatException
 import io.legado.app.ui.main.ai.AiWorldBookBinding
 import io.legado.app.ui.main.ai.compose.AiComposeMarkdownText
 import io.legado.app.ui.main.ai.compose.AiComposeStyle
@@ -146,6 +149,11 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
     private var startX = 0f
     private var startY = 0f
     private var imeBottomInset = 0
+    private var safeTopInset = 0
+    private var safeBottomInset = 0
+    private var safeLeftInset = 0
+    private var safeRightInset = 0
+    private var hasUserPosition = false
     private var savedWindowState: FloatingWindowState? = null
 
     private var messages by mutableStateOf<List<ReadAiMessage>>(emptyList())
@@ -197,6 +205,7 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
         }
         ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
             updateImeBottomInset(insets)
+            updateSafeInsets(insets)
             if (visibility == VISIBLE) {
                 ensureInsideParent()
             }
@@ -226,8 +235,9 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
         }
         bringToFront()
         doOnLayoutCompat {
-            if (anchor != null && !fullscreen) {
-                placeNearAnchor(anchor)
+            refreshImeBottomInset()
+            if (!fullscreen && !hasUserPosition) {
+                if (anchor != null) placeNearAnchor(anchor) else placeAtCenter()
             }
             ensureInsideParent()
             if (alpha < 1f) {
@@ -414,6 +424,10 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
                                     AiAgentInterruption.systemCancellationMessage(throwable)
                                 }
                             } else {
+                                (throwable as? AiChatException)
+                                    ?.debugLog
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?.let { AppLog.put("Ask AI request failed\n$it") }
                                 resources.getString(
                                     R.string.ai_request_failed,
                                     throwable.localizedMessage
@@ -639,8 +653,9 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val targetX = startX + event.rawX - downRawX
                 val targetY = startY + event.rawY - downRawY
-                x = targetX.coerceIn(0f, max(0, parentView.width - width).toFloat())
-                y = targetY.coerceIn(0f, maxPanelY(parentView))
+                x = targetX.coerceIn(minPanelX(), maxPanelX(parentView))
+                y = targetY.coerceIn(minPanelY(), maxPanelY(parentView))
+                hasUserPosition = true
                 return true
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -656,8 +671,8 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
         if (fullscreen) return
         val parentView = parent as? ViewGroup ?: return
         if (width <= 0 || height <= 0 || parentView.width <= 0 || parentView.height <= 0) return
-        x = min(max(0f, x), max(0, parentView.width - width).toFloat())
-        y = min(max(0f, y), maxPanelY(parentView))
+        x = x.coerceIn(minPanelX(), maxPanelX(parentView))
+        y = y.coerceIn(minPanelY(), maxPanelY(parentView))
     }
 
     private fun ensureAboveIme() {
@@ -674,15 +689,42 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
     }
 
     private fun maxPanelY(parentView: ViewGroup): Float {
-        val margin = if (imeBottomInset > 0) 8.dpToPx() else 0
-        return max(0, parentView.height - height - imeBottomInset - margin).toFloat()
+        val margin = 8.dpToPx()
+        return max(minPanelY().toInt(), parentView.height - height - imeBottomInset - safeBottomInset - margin).toFloat()
+    }
+
+    private fun minPanelY(): Float = (safeTopInset + 8.dpToPx()).toFloat()
+
+    private fun minPanelX(): Float = (safeLeftInset + 8.dpToPx()).toFloat()
+
+    private fun maxPanelX(parentView: ViewGroup): Float =
+        max(minPanelX().toInt(), parentView.width - width - safeRightInset - 8.dpToPx()).toFloat()
+
+    private fun placeAtCenter() {
+        val parentView = parent as? ViewGroup ?: return
+        if (width <= 0 || height <= 0 || parentView.width <= 0 || parentView.height <= 0) return
+        x = ((parentView.width - width) / 2f).coerceIn(minPanelX(), maxPanelX(parentView))
+        val availableHeight = parentView.height - safeTopInset - safeBottomInset - height
+        y = (safeTopInset.toFloat() + max(8.dpToPx().toFloat(), availableHeight / 3f))
+            .coerceIn(minPanelY(), maxPanelY(parentView))
     }
 
     private fun refreshImeBottomInset() {
         val insets = ViewCompat.getRootWindowInsets(this) ?: ViewCompat.getRootWindowInsets(rootView)
         if (insets != null) {
             updateImeBottomInset(insets)
+            updateSafeInsets(insets)
         }
+    }
+
+    private fun updateSafeInsets(insets: WindowInsetsCompat) {
+        val safe = insets.getInsets(
+            WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+        )
+        safeTopInset = safe.top
+        safeBottomInset = safe.bottom
+        safeLeftInset = safe.left
+        safeRightInset = safe.right
     }
 
     private fun updateImeBottomInset(insets: WindowInsetsCompat) {
@@ -699,16 +741,18 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
         if (width <= 0 || height <= 0 || parentView.width <= 0 || parentView.height <= 0) return
         val margin = 10.dpToPx()
         val preferredX = anchor.centerX - width / 2
-        val maxX = (parentView.width - width - margin).coerceAtLeast(margin)
-        x = preferredX.toFloat().coerceIn(margin.toFloat(), maxX.toFloat())
-        val spaceAbove = anchor.topY - margin
-        val spaceBelow = parentView.height - anchor.bottomY - margin
+        val minX = minPanelX().toInt()
+        val maxX = maxPanelX(parentView).toInt()
+        x = preferredX.toFloat().coerceIn(minX.toFloat(), maxX.toFloat())
+        val minY = minPanelY().toInt()
+        val spaceAbove = anchor.topY - minY - margin
+        val spaceBelow = parentView.height - safeBottomInset - anchor.bottomY - margin
         y = if (spaceBelow >= height || spaceBelow >= spaceAbove) {
             (anchor.bottomY + margin).toFloat()
-                .coerceAtMost((parentView.height - height - margin).toFloat())
+                .coerceIn(minY.toFloat(), maxPanelY(parentView))
         } else {
             (anchor.topY - height - margin).toFloat()
-                .coerceAtLeast(margin.toFloat())
+                .coerceIn(minY.toFloat(), maxPanelY(parentView))
         }
     }
 
@@ -724,7 +768,10 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
         if (fullscreen == enabled) return
         animate().cancel()
         translationY = 0f
+        refreshImeBottomInset()
+        if (!enabled) ensureInsideParent()
         if (enabled) {
+            ensureInsideParent()
             savedWindowState = FloatingWindowState(
                 width = layoutParams?.width ?: 320.dpToPx(),
                 height = layoutParams?.height ?: ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -751,9 +798,21 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
                 state?.composeWidth ?: LayoutParams.MATCH_PARENT,
                 state?.composeHeight ?: LayoutParams.WRAP_CONTENT
             )
-            x = state?.x ?: x
-            y = state?.y ?: y
-            post { ensureInsideParent() }
+            val parentView = parent as? ViewGroup
+            val restoreState = state?.takeIf {
+                it.x >= minPanelX() && it.y >= minPanelY()
+            }
+            if (restoreState != null) {
+                x = restoreState.x
+                y = restoreState.y
+            } else if (parentView != null) {
+                x = (parentView.width - (state?.width ?: width)) / 2f
+                y = minPanelY() + (parentView.height / 4f)
+            }
+            post {
+                refreshImeBottomInset()
+                ensureInsideParent()
+            }
         }
         requestLayout()
     }
@@ -957,7 +1016,7 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
     }
 
     private fun buildPrompt(context: ReadContext, question: String): String {
-        return resources.getString(
+        val readingPrompt = resources.getString(
             R.string.ai_read_prompt_template,
             context.bookName,
             context.author.ifBlank { resources.getString(R.string.unknown) },
@@ -967,6 +1026,7 @@ class ReadAiFloatingPanel @JvmOverloads constructor(
             question,
             context.bookUrl
         )
+        return "${AiChatService.responseLanguageInstruction()}\n\n$readingPrompt"
     }
 
     private fun buildRequestMessages(context: ReadContext, question: String): List<AiChatMessage> {
@@ -1320,6 +1380,22 @@ private fun ReadAiPanelContent(
                     bottom = if (fullscreen) 14.dp else 12.dp
                 )
         ) {
+            if (!fullscreen) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(14.dp)
+                        .pointerInteropFilter(onTouchEvent = onTopDrag),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(width = 42.dp, height = 4.dp)
+                            .clip(CircleShape)
+                            .background(style.colors.secondaryText.copy(alpha = 0.45f))
+                    )
+                }
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1346,7 +1422,10 @@ private fun ReadAiPanelContent(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = contextLabel,
+                        text = io.legado.app.ui.widget.compose.translatedText(
+                            contextLabel,
+                            io.legado.app.utils.TranslateUtils.Kind.TITLE
+                        ),
                         color = style.colors.secondaryText,
                         fontSize = 12.sp,
                         lineHeight = 16.sp,

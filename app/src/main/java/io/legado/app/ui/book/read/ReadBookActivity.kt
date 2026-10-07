@@ -94,6 +94,8 @@ import io.legado.app.help.book.usesDirectReader
 import io.legado.app.help.book.ReaderTextPositionStore
 import io.legado.app.model.localBook.epubcore.direct.TextReaderSessionProvider
 import io.legado.app.model.localBook.epubcore.direct.TextReaderImageActionRequest
+import io.legado.app.model.TranslationEngine
+import io.legado.app.model.TranslationLoader
 import io.legado.app.help.book.isLocal
 import io.legado.app.help.book.isLocalTxt
 import io.legado.app.help.book.isMobi
@@ -270,6 +272,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -1694,9 +1697,63 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     private fun askAiBySelection() {
-        val prompt = selectedText.trim()
-        if (prompt.isEmpty()) return
+        val prompt = selectedTextForAskAi()
+        if (prompt.isBlank()) {
+            toastOnUi(R.string.ai_image_no_selection)
+            return
+        }
         openReadAiPanel(prompt)
+    }
+
+    private fun selectedTextForAskAi(): String {
+        val selected = selectedText.trim()
+        if (selected.isBlank() || epubCoreActive) return selected
+        val book = ReadBook.book ?: return selected
+        val textChapter = ReadBook.curTextChapter
+            ?.takeIf { it.translationApplied }
+            ?: return selected
+        val selectedRanges = binding.readView.getSelectedSourceRanges()
+        if (selectedRanges.isEmpty()) return ""
+        val rawContent = runCatching { BookHelp.getContent(book, textChapter.chapter).orEmpty() }
+            .onFailure { AppLog.put("Ask AI could not load original chapter content", it) }
+            .getOrNull()
+            .orEmpty()
+        if (rawContent.isBlank()) return ""
+        val sourceParagraphs = runCatching {
+            ContentProcessor.get(book.name, book.origin).getContent(
+                book = book,
+                chapter = textChapter.chapter,
+                content = rawContent,
+                includeTitle = false,
+                chineseConvert = false,
+                translate = false
+            ).textList
+        }.onFailure {
+            AppLog.put("Ask AI source-text recovery failed", it)
+        }.getOrNull() ?: return ""
+        return runCatching {
+            val translationData = runBlocking { TranslationLoader.load().data }
+            selectedRanges.mapNotNull { range ->
+                val source = if (range.sourceIndex < 0) textChapter.chapter.title
+                    else sourceParagraphs.getOrNull(range.sourceIndex)
+                val display = if (range.sourceIndex < 0) textChapter.title
+                    else textChapter.paragraphs.firstOrNull {
+                        it.realNum == range.paragraphNumber && it.sourceIndex == range.sourceIndex
+                    }?.text
+                if (source.isNullOrBlank() || display.isNullOrBlank()) return@mapNotNull null
+                TranslationEngine.sourceSpansForSelection(
+                    displayText = display,
+                    sourceText = source,
+                    selectionStart = range.start,
+                    selectionEndExclusive = range.endExclusive,
+                    data = translationData
+                ).mapNotNull { span ->
+                    source.substring(span.start.coerceIn(0, source.length), span.endExclusive.coerceIn(0, source.length))
+                        .takeIf { it.isNotBlank() }
+                }.joinToString("")
+            }.filter { it.isNotBlank() }.distinct().joinToString(" ").trim()
+        }.onFailure { AppLog.put("Ask AI selected-text source mapping failed", it) }
+            .getOrNull().orEmpty()
     }
 
     private fun generateImageBySelection() {

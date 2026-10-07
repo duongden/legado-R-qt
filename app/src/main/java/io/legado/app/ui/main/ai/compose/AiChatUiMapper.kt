@@ -1,5 +1,6 @@
 package io.legado.app.ui.main.ai.compose
 
+import io.legado.app.ui.main.ai.aiFlowText
 import android.content.Context
 import android.util.LruCache
 import androidx.compose.runtime.Immutable
@@ -396,9 +397,9 @@ private fun parseToolDisplayPayload(
                 type = AiToolPreviewType.BookResults,
                 title = context.getString(R.string.ai_tool_book_source_search),
                 summary = if (books.isNotEmpty()) {
-                    "找到 ${books.size} 条结果"
+                    aiFlowText(R.string.ai_flow_found_books, books.size)
                 } else {
-                    root?.optString("keyword")?.takeIf { it.isNotBlank() }?.let { "搜索：$it" }
+                    root?.optString("keyword")?.takeIf { it.isNotBlank() }?.let { aiFlowText(R.string.ai_flow_search_query, it) }
                         ?: summarizeProcessDetail(raw, context.getString(R.string.ai_tool_status_calling))
                 },
                 raw = raw,
@@ -424,9 +425,9 @@ private fun parseToolDisplayPayload(
                 type = AiToolPreviewType.WebResults,
                 title = context.getString(R.string.ai_tool_web_search),
                 summary = if (webResults.isNotEmpty()) {
-                    "找到 ${webResults.size} 条网页"
+                    aiFlowText(R.string.ai_flow_found_web, webResults.size)
                 } else {
-                    root?.optString("query")?.takeIf { it.isNotBlank() }?.let { "搜索：$it" }
+                    root?.optString("query")?.takeIf { it.isNotBlank() }?.let { aiFlowText(R.string.ai_flow_search_query, it) }
                         ?: summarizeProcessDetail(raw, context.getString(R.string.ai_tool_status_calling))
                 },
                 raw = raw,
@@ -448,8 +449,8 @@ private fun parseToolDisplayPayload(
             val image = parseImageResult(raw)
             AiToolDisplayPayload(
                 type = AiToolPreviewType.ImageResult,
-                title = "角色头像",
-                summary = image?.prompt?.takeIf { it.isNotBlank() } ?: "已更新角色头像",
+                title = aiFlowText(R.string.ai_flow_avatar),
+                summary = image?.prompt?.takeIf { it.isNotBlank() } ?: aiFlowText(R.string.ai_flow_avatar_updated),
                 raw = raw,
                 images = listOfNotNull(image)
             )
@@ -459,15 +460,15 @@ private fun parseToolDisplayPayload(
             if (images.isNotEmpty()) {
                 AiToolDisplayPayload(
                     type = AiToolPreviewType.ImageResult,
-                    title = "角色头像",
-                    summary = "找到 ${images.size} 张角色头像",
+                    title = aiFlowText(R.string.ai_flow_avatar),
+                    summary = aiFlowText(R.string.ai_flow_found_avatars, images.size),
                     raw = raw,
                     images = images
                 )
             } else {
                 AiToolDisplayPayload(
                     type = AiToolPreviewType.Generic,
-                    title = "角色资料",
+                    title = aiFlowText(R.string.ai_flow_character_info),
                     summary = summarizeProcessDetail(raw, context.getString(R.string.ai_tool_status_done)),
                     raw = raw
                 )
@@ -487,7 +488,7 @@ private fun JSONObject.toSearchBookUi(): AiSearchBookUi? {
     val origin = optString("origin")
     if (bookUrl.isBlank() || origin.isBlank()) return null
     return AiSearchBookUi(
-        name = optString("name").ifBlank { "未命名" },
+        name = optString("name").ifBlank { aiFlowText(R.string.ai_flow_unnamed) },
         author = optString("author"),
         originName = optString("originName"),
         kind = optString("kind"),

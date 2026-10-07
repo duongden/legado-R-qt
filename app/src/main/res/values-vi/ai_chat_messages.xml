@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ai_chat_cancelled">Đã dừng tạo phản hồi</string>
+    <string name="ai_chat_empty">Bắt đầu cuộc trò chuyện mới.</string>
+    <string name="ai_chat_hint">Hỏi AI</string>
+    <string name="ai_chat_history">Lịch sử trò chuyện</string>
+    <string name="ai_chat_send">Gửi</string>
+    <string name="ai_chat_stop">Dừng</string>
+    <string name="ai_chat_thinking">Đang suy nghĩ…</string>
+    <string name="ai_chat_thinking_done">Đã suy nghĩ xong, nhấn để mở rộng</string>
+    <string name="ai_chat_wait_current">Chờ phản hồi hiện tại hoàn tất trước</string>
+    <string name="ai_history_clear_all">Xóa mọi cuộc trò chuyện</string>
+    <string name="ai_history_clear_all_confirm">Xóa toàn bộ lịch sử trò chuyện AI?</string>
+    <string name="ai_history_delete">Xóa cuộc trò chuyện</string>
+    <string name="ai_history_delete_confirm">Xóa “%s”?</string>
+    <string name="ai_history_empty">Chưa có lịch sử trò chuyện</string>
+    <string name="ai_history_open">Mở cuộc trò chuyện</string>
+    <string name="ai_image_generated">Đã tạo ảnh</string>
+    <string name="ai_missing_config">Hãy thiết lập nhà cung cấp và mô hình trước.</string>
+    <string name="ai_new_chat">Cuộc trò chuyện mới</string>
+    <string name="ai_request_failed">Yêu cầu thất bại: %s</string>
+    <string name="ai_tool_book_source_search">Tìm trong nguồn sách</string>
+    <string name="ai_tool_default_name">Công cụ</string>
+    <string name="ai_tool_status_calling">Đang gọi</string>
+    <string name="ai_tool_status_done">Hoàn tất</string>
+    <string name="ai_tool_status_failed">Thất bại</string>
+    <string name="ai_tool_web_search">Tìm kiếm web</string>
+</resources>

@@ -891,6 +891,11 @@ class ReadView(context: Context, attrs: AttributeSet) :
         return curPage.selectedText
     }
 
+    fun getSelectedSourceIndexes(): List<Int> = curPage.getSelectedSourceIndexes()
+
+    fun getSelectedSourceRanges(): List<ContentTextView.SelectedSourceRange> =
+        curPage.getSelectedSourceRanges()
+
     fun getCurVisiblePage(): TextPage {
         return curPage.getCurVisiblePage()
     }
