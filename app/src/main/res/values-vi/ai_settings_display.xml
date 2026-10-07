@@ -54,6 +54,11 @@
     <string name="ai_skill_prompt_hint">Dán nội dung SKILL.md</string>
     <string name="ai_skill_prompt_summary">Đã bật %1$d, đã cài %2$d kỹ năng</string>
     <string name="ai_skill_prompt_summary_empty">Chưa cài kỹ năng</string>
+    <string name="ai_skill_language_chinese">Tiếng Trung (Giản thể)</string>
+    <string name="ai_skill_language_english">Tiếng Anh</string>
+    <string name="ai_skill_language_vietnamese">Tiếng Việt</string>
+    <string name="ai_skill_use_version">Dùng bản này</string>
+    <string name="ai_skill_version_selected">Đang được chọn</string>
     <string name="ai_tavily_api_key">Khóa API Tavily</string>
     <string name="ai_tavily_api_key_hint">tvly-...</string>
     <string name="ai_tavily_api_key_summary">Nhấn để nhập khóa API Tavily.</string>

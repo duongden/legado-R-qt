@@ -2,6 +2,8 @@ package io.legado.app.ui.widget.compose
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -338,6 +340,7 @@ class ComposeTextInputDialog : ComposeDialogFragment() {
     private var validateInput: ((String) -> Boolean)? = null
     private var onPositive: ((String) -> Unit)? = null
     private var onNeutral: (() -> Unit)? = null
+    private var onNeutralWithText: ((String) -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -384,13 +387,27 @@ class ComposeTextInputDialog : ComposeDialogFragment() {
                         val palette = style.toMiuixPalette()
                         val neutralLabel = neutralText
                         val neutralCallback = onNeutral
-                        if (neutralLabel != null && neutralCallback != null) {
+                        val neutralWithTextCallback = onNeutralWithText
+                        if (neutralLabel != null && (neutralCallback != null || neutralWithTextCallback != null)) {
                             LegadoMiuixActionButton(
                                 text = neutralLabel,
                                 palette = palette,
                                 onClick = {
-                                    dismissAllowingStateLoss()
-                                    neutralCallback.invoke()
+                                    val currentText = text
+                                    if (neutralWithTextCallback != null) {
+                                        dismissAllowingStateLoss()
+                                        Handler(Looper.getMainLooper()).post {
+                                            neutralWithTextCallback.invoke(currentText)
+                                        }
+                                    } else {
+                                        dismissAllowingStateLoss()
+                                        val callback = Runnable {
+                                            neutralCallback?.invoke()
+                                        }
+                                        if (this@ComposeTextInputDialog.view?.post(callback) != true) {
+                                            callback.run()
+                                        }
+                                    }
                                 },
                                 cornerRadius = style.actionRadius
                             )
@@ -438,7 +455,8 @@ class ComposeTextInputDialog : ComposeDialogFragment() {
             maxLines: Int = if (readOnly) 6 else 4,
             validateInput: ((String) -> Boolean)? = null,
             onPositive: (String) -> Unit,
-            onNeutral: (() -> Unit)? = null
+            onNeutral: (() -> Unit)? = null,
+            onNeutralWithText: ((String) -> Unit)? = null
         ): ComposeTextInputDialog {
             return ComposeTextInputDialog().apply {
                 arguments = Bundle().apply {
@@ -456,6 +474,7 @@ class ComposeTextInputDialog : ComposeDialogFragment() {
                 this.validateInput = validateInput
                 this.onPositive = onPositive
                 this.onNeutral = onNeutral
+                this.onNeutralWithText = onNeutralWithText
             }
         }
 
@@ -1684,6 +1703,13 @@ class ComposeActionListDialog : ComposeDialogFragment() {
     override val dialogSize: AppDialogSize = AppDialogSize.Form
 
     private var onSelected: ((Int) -> Unit)? = null
+    private var onDismissAction: (() -> Unit)? = null
+    private var handledSelection = false
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if (!handledSelection) onDismissAction?.invoke()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -1730,6 +1756,7 @@ class ComposeActionListDialog : ComposeDialogFragment() {
                                         text = label,
                                         palette = palette,
                                         onClick = {
+                                            handledSelection = true
                                             dismissAllowingStateLoss()
                                             onSelected?.invoke(index)
                                         },
@@ -1763,6 +1790,7 @@ class ComposeActionListDialog : ComposeDialogFragment() {
             descriptions: List<String> = emptyList(),
             dangerIndices: Set<Int> = emptySet(),
             negativeText: String,
+            onDismissAction: (() -> Unit)? = null,
             onSelected: (Int) -> Unit
         ): ComposeActionListDialog {
             require(labels.size <= MAX_ACTION_LIST_ITEMS) {
@@ -1785,6 +1813,7 @@ class ComposeActionListDialog : ComposeDialogFragment() {
                     putString(ARG_NEGATIVE_TEXT, negativeText)
                 }
                 this.onSelected = onSelected
+                this.onDismissAction = onDismissAction
             }
         }
 

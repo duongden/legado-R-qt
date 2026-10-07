@@ -1,5 +1,6 @@
 package io.legado.app.ui.main.ai.compose
 
+import io.legado.app.ui.main.ai.aiFlowText
 import io.legado.app.ui.widget.compose.fixedUiText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -160,7 +161,7 @@ fun AiWorldBookManageRoute(
             if (imported.id in existingIds) {
                 imported.copy(
                     id = AiWorldBookConfig(name = imported.name).id,
-                    name = "${imported.name} 副本"
+                    name = aiFlowText(R.string.ai_flow_copy_name, imported.name)
                 )
             } else {
                 imported
@@ -169,9 +170,9 @@ fun AiWorldBookManageRoute(
             persist(books + saving)
             expandedBookId = saving.id
             jsonEditor = null
-            context.toastOnUi("世界书已导入")
+            context.toastOnUi(aiFlowText(R.string.ai_flow_world_imported))
         }.onFailure {
-            context.toastOnUi(it.localizedMessage ?: "世界书 JSON 解析失败")
+            context.toastOnUi(it.localizedMessage ?: aiFlowText(R.string.ai_flow_world_parse_failed))
         }
     }
 
@@ -249,7 +250,7 @@ fun AiWorldBookManageRoute(
                 onEditBook = { book -> editingBook = book.toEditState() },
                 onImportPaste = {
                     jsonEditor = WorldBookJsonState(
-                        title = "导入世界书 JSON",
+                        title = aiFlowText(R.string.ai_flow_import_world_json),
                         text = "",
                         importMode = true
                     )
@@ -257,7 +258,7 @@ fun AiWorldBookManageRoute(
                 onCopyBook = { book ->
                     val copy = book.copy(
                         id = java.util.UUID.randomUUID().toString(),
-                        name = "${book.name} 副本",
+                        name = aiFlowText(R.string.ai_flow_copy_name, book.name),
                         bindings = emptyList(),
                         entries = book.entries.map { it.copy(id = java.util.UUID.randomUUID().toString()) }
                     )
@@ -267,7 +268,7 @@ fun AiWorldBookManageRoute(
                 onDeleteBook = { book -> persist(books.filterNot { it.id == book.id }) },
                 onExportBook = { book ->
                     jsonEditor = WorldBookJsonState(
-                        title = "${book.name} · ${io.legado.app.utils.UiTranslation.builtinLabel("导出 JSON")}",
+                        title = "${book.name} · ${io.legado.app.utils.UiTranslation.builtinLabel(aiFlowText(R.string.ai_flow_export_json))}",
                         text = AiWorldBookManager.exportStandardWorldBook(book).toString(2),
                         importMode = false
                     )
@@ -367,8 +368,8 @@ private fun WorldBookMainScreen(
             .padding(horizontal = 14.dp)
     ) {
         WorldBookTopBar(
-            title = "世界书",
-            subtitle = fixedUiText("%s 个全局启用 · %s 条条目").format(books.count { it.isGloballyEnabled() }, books.sumOf { it.entries.size }),
+            title = aiFlowText(R.string.ai_flow_world_books),
+            subtitle = fixedUiText(aiFlowText(R.string.ai_flow_global_summary)).format(books.count { it.isGloballyEnabled() }, books.sumOf { it.entries.size }),
             style = style,
             onBack = onBack,
             onAdd = onAddBook,
@@ -429,7 +430,7 @@ private fun WorldBookTopBar(
         IconButton(onClick = onBack) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = fixedUiText("返回"),
+                contentDescription = fixedUiText(aiFlowText(R.string.ai_flow_back)),
                 tint = style.colors.primaryText
             )
         }
@@ -454,7 +455,7 @@ private fun WorldBookTopBar(
             IconButton(onClick = it) {
                 Icon(
                     painter = painterResource(R.drawable.ic_refresh_black_24dp),
-                    contentDescription = fixedUiText("刷新"),
+                    contentDescription = fixedUiText(aiFlowText(R.string.ai_flow_refresh)),
                     tint = style.colors.secondaryText
                 )
             }
@@ -465,7 +466,7 @@ private fun WorldBookTopBar(
                 IconButton(onClick = { addMenuExpanded = true }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_add),
-                        contentDescription = fixedUiText("新增"),
+                        contentDescription = fixedUiText(aiFlowText(R.string.ai_flow_new_item)),
                         tint = style.colors.accent
                     )
                 }
@@ -484,24 +485,24 @@ private fun WorldBookTopBar(
                             cornerRadius = style.metrics.chipRadius,
                             insidePadding = PaddingValues(vertical = 6.dp)
                         ) {
-                            WorldBookAddMenuItem("新增世界书", palette, style) {
+                            WorldBookAddMenuItem(aiFlowText(R.string.ai_flow_new_world), palette, style) {
                                 addMenuExpanded = false
                                 addAction()
                             }
                             onImportLocal?.let { action ->
-                                WorldBookAddMenuItem("本地导入", palette, style) {
+                                WorldBookAddMenuItem(aiFlowText(R.string.ai_flow_local_import), palette, style) {
                                     addMenuExpanded = false
                                     action()
                                 }
                             }
                             onImportNetwork?.let { action ->
-                                WorldBookAddMenuItem("网络导入", palette, style) {
+                                WorldBookAddMenuItem(aiFlowText(R.string.ai_flow_network_import), palette, style) {
                                     addMenuExpanded = false
                                     action()
                                 }
                             }
                             onImportPaste?.let { action ->
-                                WorldBookAddMenuItem("粘贴导入", palette, style) {
+                                WorldBookAddMenuItem(aiFlowText(R.string.ai_flow_paste_import), palette, style) {
                                     addMenuExpanded = false
                                     action()
                                 }
@@ -540,7 +541,7 @@ private fun SearchField(
         value = query,
         onValueChange = onQueryChange,
         singleLine = true,
-        placeholder = { Text(fixedUiText("搜索世界书、条目、关键词")) },
+        placeholder = { Text(fixedUiText(aiFlowText(R.string.ai_flow_world_search))) },
         leadingIcon = {
             Icon(
                 painter = painterResource(R.drawable.ic_search),
@@ -590,7 +591,7 @@ private fun WorldBookCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = book.description.ifBlank { "无描述" },
+                    text = book.description.ifBlank { aiFlowText(R.string.ai_flow_no_description) },
                     color = style.colors.secondaryText,
                     fontSize = 12.sp,
                     maxLines = 2,
@@ -605,26 +606,26 @@ private fun WorldBookCard(
                 .padding(top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            InfoChip(if (book.isGloballyEnabled()) "全局启用" else "可角色绑定", style, selected = book.isGloballyEnabled())
-            if (!book.enabled) InfoChip("资料库停用", style)
-            InfoChip(fixedUiText("%s 条目").format(book.entries.size), style)
-            InfoChip(fixedUiText("%s 个绑定").format(book.activeBindingCount()), style)
-            InfoChip(fixedUiText("最多 %s 条").format(book.maxEntries), style)
+            InfoChip(if (book.isGloballyEnabled()) aiFlowText(R.string.ai_flow_globally_enabled) else aiFlowText(R.string.ai_flow_bindable), style, selected = book.isGloballyEnabled())
+            if (!book.enabled) InfoChip(aiFlowText(R.string.ai_flow_library_disabled), style)
+            InfoChip(fixedUiText(aiFlowText(R.string.ai_flow_entries_count)).format(book.entries.size), style)
+            InfoChip(fixedUiText(aiFlowText(R.string.ai_flow_bindings_count)).format(book.activeBindingCount()), style)
+            InfoChip(fixedUiText(aiFlowText(R.string.ai_flow_limit_count)).format(book.maxEntries), style)
         }
         Row(
             modifier = Modifier.padding(top = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            SmallAction("编辑", style, onClick = onEdit)
-            SmallAction("复制", style, onClick = onCopy)
-            SmallAction("导出", style, onClick = onExport)
-            SmallAction("新增条目", style, onClick = onAddEntry)
-            SmallAction("删除", style, danger = true, onClick = onDelete)
+            SmallAction(aiFlowText(R.string.ai_flow_edit), style, onClick = onEdit)
+            SmallAction(aiFlowText(R.string.ai_flow_copy), style, onClick = onCopy)
+            SmallAction(aiFlowText(R.string.ai_flow_export), style, onClick = onExport)
+            SmallAction(aiFlowText(R.string.ai_flow_new_entry), style, onClick = onAddEntry)
+            SmallAction(aiFlowText(R.string.ai_flow_delete), style, danger = true, onClick = onDelete)
         }
         if (expanded) {
             Spacer(modifier = Modifier.height(10.dp))
             if (book.entries.isEmpty()) {
-                Text(fixedUiText("暂无条目"), color = style.colors.secondaryText, fontSize = 13.sp)
+                Text(fixedUiText(aiFlowText(R.string.ai_flow_no_entries)), color = style.colors.secondaryText, fontSize = 13.sp)
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     book.entries.forEach { entry ->
@@ -682,15 +683,15 @@ private fun EntryRow(
                 .padding(top = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            if (entry.constant) InfoChip("常驻", style, selected = true)
-            if (entry.regexEnabled) InfoChip("正则", style)
+            if (entry.constant) InfoChip(aiFlowText(R.string.ai_flow_constant), style, selected = true)
+            if (entry.regexEnabled) InfoChip(aiFlowText(R.string.ai_flow_regex), style)
             InfoChip("P${entry.priority}", style)
-            InfoChip(fixedUiText("扫 %s").format(entry.scanDepth), style)
+            InfoChip(fixedUiText(aiFlowText(R.string.ai_flow_scan_count)).format(entry.scanDepth), style)
             entry.keys.take(4).forEach { InfoChip(it, style) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp)) {
-            SmallAction("编辑", style, onClick = onEdit)
-            SmallAction("删除", style, danger = true, onClick = onDelete)
+            SmallAction(aiFlowText(R.string.ai_flow_edit), style, onClick = onEdit)
+            SmallAction(aiFlowText(R.string.ai_flow_delete), style, danger = true, onClick = onDelete)
         }
     }
 }
@@ -713,7 +714,7 @@ private fun WorldBookJsonEditor(
     ) {
         WorldBookTopBar(
             title = state.title,
-            subtitle = fixedUiText(if (state.importMode) "粘贴 RikkaHub lorebook JSON" else "标准 lorebook JSON"),
+            subtitle = fixedUiText(if (state.importMode) aiFlowText(R.string.ai_flow_paste_lorebook) else aiFlowText(R.string.ai_flow_standard_lorebook)),
             style = style,
             onBack = onBack
         )
@@ -759,18 +760,18 @@ private fun WorldBookEditor(
             .padding(horizontal = 14.dp)
     ) {
         WorldBookTopBar(
-            title = fixedUiText(if (state.id == null) "新增世界书" else "编辑世界书"),
-            subtitle = "资料库设置",
+            title = fixedUiText(if (state.id == null) aiFlowText(R.string.ai_flow_new_world) else aiFlowText(R.string.ai_flow_edit_world)),
+            subtitle = aiFlowText(R.string.ai_flow_library_settings),
             style = style,
             onBack = onBack
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                LabeledSwitch("资料库可用", enabled, style) { enabled = it }
-                LabeledField("名称", name, style, onValueChange = { name = it })
-                LabeledField("描述", description, style, minLines = 3, onValueChange = { description = it })
+                LabeledSwitch(aiFlowText(R.string.ai_flow_library_available), enabled, style) { enabled = it }
+                LabeledField(aiFlowText(R.string.ai_flow_name), name, style, onValueChange = { name = it })
+                LabeledField(aiFlowText(R.string.ai_flow_description), description, style, minLines = 3, onValueChange = { description = it })
                 LabeledField(
-                    label = "每本世界书最大命中条数",
+                    label = aiFlowText(R.string.ai_flow_world_limit),
                     value = maxEntries,
                     style = style,
                     keyboardType = KeyboardType.Number,
@@ -796,33 +797,33 @@ private fun WorldBookEditor(
     }
 }
 
-private val worldBookPositionOptions = listOf(
+private val worldBookPositionOptions get() = listOf(
     WorldBookSelectOption(
         AiWorldBookEntry.POSITION_AFTER_SYSTEM_PROMPT,
-        "系统提示词之后",
-        "适合长期设定和角色资料"
+        aiFlowText(R.string.ai_flow_after_system),
+        aiFlowText(R.string.ai_flow_long_term)
     ),
     WorldBookSelectOption(
         AiWorldBookEntry.POSITION_BEFORE_PROMPT,
-        "对话正文之前",
-        "适合本轮前置补充信息"
+        aiFlowText(R.string.ai_flow_before_chat),
+        aiFlowText(R.string.ai_flow_current_context)
     ),
     WorldBookSelectOption(
         AiWorldBookEntry.POSITION_BEFORE_LAST_USER,
-        "最后一条用户消息之前",
-        "适合贴近当前问题的补充"
+        aiFlowText(R.string.ai_flow_before_user),
+        aiFlowText(R.string.ai_flow_near_question)
     ),
     WorldBookSelectOption(
         AiWorldBookEntry.POSITION_INJECT_DEPTH,
-        "按深度插入",
-        "按下方插入深度放入历史消息附近"
+        aiFlowText(R.string.ai_flow_insert_depth),
+        aiFlowText(R.string.ai_flow_depth_help)
     )
 )
 
-private val worldBookRoleOptions = listOf(
-    WorldBookSelectOption(AiWorldBookEntry.ROLE_SYSTEM, "系统消息", "最高优先级设定"),
-    WorldBookSelectOption(AiWorldBookEntry.ROLE_USER, "用户消息", "模拟用户侧补充"),
-    WorldBookSelectOption(AiWorldBookEntry.ROLE_ASSISTANT, "助手消息", "模拟助手侧记忆")
+private val worldBookRoleOptions get() = listOf(
+    WorldBookSelectOption(AiWorldBookEntry.ROLE_SYSTEM, aiFlowText(R.string.ai_flow_system_message), aiFlowText(R.string.ai_flow_highest_priority)),
+    WorldBookSelectOption(AiWorldBookEntry.ROLE_USER, aiFlowText(R.string.ai_flow_user_message), aiFlowText(R.string.ai_flow_user_context)),
+    WorldBookSelectOption(AiWorldBookEntry.ROLE_ASSISTANT, aiFlowText(R.string.ai_flow_assistant_message), aiFlowText(R.string.ai_flow_assistant_memory))
 )
 
 @Composable
@@ -860,25 +861,25 @@ private fun WorldBookEntryEditor(
             .padding(horizontal = 14.dp)
     ) {
         WorldBookTopBar(
-            title = fixedUiText(if (state.id == null) "新增条目" else "编辑条目"),
-            subtitle = "关键词命中后注入内容",
+            title = fixedUiText(if (state.id == null) aiFlowText(R.string.ai_flow_new_entry) else aiFlowText(R.string.ai_flow_edit_entry)),
+            subtitle = aiFlowText(R.string.ai_flow_inject_help),
             style = style,
             onBack = onBack
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             item {
-                LabeledSwitch("启用条目", enabled, style) { enabled = it }
-                LabeledSwitch("常驻注入", constant, style) { constant = it }
-                LabeledSwitch("关键词按正则匹配", regexEnabled, style) { regexEnabled = it }
-                LabeledSwitch("区分大小写", caseSensitive, style) { caseSensitive = it }
-                LabeledField("条目名称", title, style, onValueChange = { title = it })
-                LabeledField("内容", content, style, minLines = 6, onValueChange = { content = it })
-                LabeledField("关键词，逗号或换行分隔", keys, style, minLines = 2, onValueChange = { keys = it })
-                LabeledField("二级关键词", secondaryKeys, style, minLines = 2, onValueChange = { secondaryKeys = it })
-                LabeledField("排除关键词", excludeKeys, style, minLines = 2, onValueChange = { excludeKeys = it })
+                LabeledSwitch(aiFlowText(R.string.ai_flow_entry_enabled), enabled, style) { enabled = it }
+                LabeledSwitch(aiFlowText(R.string.ai_flow_always_inject), constant, style) { constant = it }
+                LabeledSwitch(aiFlowText(R.string.ai_flow_keyword_regex), regexEnabled, style) { regexEnabled = it }
+                LabeledSwitch(aiFlowText(R.string.ai_flow_case_sensitive), caseSensitive, style) { caseSensitive = it }
+                LabeledField(aiFlowText(R.string.ai_flow_entry_name), title, style, onValueChange = { title = it })
+                LabeledField(aiFlowText(R.string.ai_flow_content), content, style, minLines = 6, onValueChange = { content = it })
+                LabeledField(aiFlowText(R.string.ai_flow_keywords), keys, style, minLines = 2, onValueChange = { keys = it })
+                LabeledField(aiFlowText(R.string.ai_flow_secondary_keywords), secondaryKeys, style, minLines = 2, onValueChange = { secondaryKeys = it })
+                LabeledField(aiFlowText(R.string.ai_flow_excluded_keywords), excludeKeys, style, minLines = 2, onValueChange = { excludeKeys = it })
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     LabeledSelect(
-                        label = "插入位置",
+                        label = aiFlowText(R.string.ai_flow_insert_position),
                         value = position,
                         options = worldBookPositionOptions,
                         style = style,
@@ -886,7 +887,7 @@ private fun WorldBookEntryEditor(
                         onValueChange = { position = it }
                     )
                     LabeledSelect(
-                        label = "消息角色",
+                        label = aiFlowText(R.string.ai_flow_message_role),
                         value = role,
                         options = worldBookRoleOptions,
                         style = style,
@@ -896,7 +897,7 @@ private fun WorldBookEntryEditor(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     LabeledField(
-                        label = "优先级",
+                        label = aiFlowText(R.string.ai_flow_priority),
                         value = priority,
                         style = style,
                         modifier = Modifier.weight(1f),
@@ -905,7 +906,7 @@ private fun WorldBookEntryEditor(
                     )
                     if (position == AiWorldBookEntry.POSITION_INJECT_DEPTH) {
                         LabeledField(
-                            label = "插入深度",
+                            label = aiFlowText(R.string.ai_flow_insertion_depth),
                             value = injectDepth,
                             style = style,
                             modifier = Modifier.weight(1f),
@@ -918,7 +919,7 @@ private fun WorldBookEntryEditor(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     LabeledField(
-                        label = "扫描深度",
+                        label = aiFlowText(R.string.ai_flow_scan_depth),
                         value = scanDepth,
                         style = style,
                         modifier = Modifier.weight(1f),
@@ -926,7 +927,7 @@ private fun WorldBookEntryEditor(
                         onValueChange = { scanDepth = it.filter(Char::isDigit).take(2) }
                     )
                     LabeledField(
-                        label = "最大命中数",
+                        label = aiFlowText(R.string.ai_flow_max_matches),
                         value = maxMatches,
                         style = style,
                         modifier = Modifier.weight(1f),
@@ -935,7 +936,7 @@ private fun WorldBookEntryEditor(
                     )
                 }
                 if (!regexOk) {
-                    Text(fixedUiText("正则表达式有错误，不能保存。"), color = style.colors.danger, fontSize = 13.sp)
+                    Text(fixedUiText(aiFlowText(R.string.ai_flow_invalid_regex)), color = style.colors.danger, fontSize = 13.sp)
                 }
                 SaveBar(
                     enabled = title.trim().isNotBlank() && content.trim().isNotBlank() && regexOk,
@@ -1045,7 +1046,7 @@ private fun SaveBar(
         horizontalArrangement = Arrangement.End
     ) {
         TextButton(onClick = onCancel) {
-            Text(fixedUiText("取消"), color = style.colors.secondaryText)
+            Text(fixedUiText(aiFlowText(R.string.ai_flow_cancel)), color = style.colors.secondaryText)
         }
         Spacer(modifier = Modifier.width(8.dp))
         Button(
@@ -1053,7 +1054,7 @@ private fun SaveBar(
             onClick = onSave,
             colors = ButtonDefaults.buttonColors(containerColor = style.colors.accent)
         ) {
-            Text(fixedUiText("保存"))
+            Text(fixedUiText(aiFlowText(R.string.ai_flow_save)))
         }
     }
 }

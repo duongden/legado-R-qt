@@ -1,5 +1,8 @@
 package io.legado.app.help.ai
 
+import androidx.core.os.ConfigurationCompat
+import io.legado.app.base.AppContextWrapper
+import io.legado.app.constant.PreferKey
 import io.legado.app.data.entities.AiAgentTrace
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.BookCharacter
@@ -23,7 +26,10 @@ import io.legado.app.ui.main.ai.AiSkillConfig
 import io.legado.app.ui.main.ai.AiWorldBookEntry
 import org.json.JSONArray
 import org.json.JSONObject
+import splitties.init.appCtx
+import io.legado.app.utils.getPrefString
 import java.io.InterruptedIOException
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 data class AiUsageStats(
@@ -60,8 +66,10 @@ object AiChatService {
     private const val TOOL_ONLY_SYSTEM_PROMPT =
         "You are a deterministic extraction worker. Read the user payload and call the provided tool with complete, valid JSON. Do not answer with prose unless the tool is impossible."
     private const val AI_WORKSPACE_POLICY_PROMPT =
-        "Agent file workflow is mandatory for source, rule, log, JSON, HTML, and project-style edits. " +
-                "If the user provides long data, source text, logs, JSON, HTML, or project snippets, first save it with workspace_save_input_file. " +
+        "Use tools only when the user explicitly requests an app action or the answer requires local or external data unavailable in the conversation. For direct text tasks such as translation, proofreading, rewriting, explanation, or summarization, work from the supplied text and answer directly without calling tools. " +
+                "Apply the workspace file workflow only when the user explicitly asks to inspect, create, edit, debug, or apply a project artifact such as source code, rules, logs, JSON, HTML, or a book source. " +
+                "Do not apply it to ordinary chat or translation. Do not save a passage just because it is long or is source text. " +
+                "When a project-artifact task includes long input data, source code, logs, JSON, HTML, or project snippets, first save that task input with workspace_save_input_file. " +
                 "Before editing, inspect files with workspace_list_files, workspace_search_files, workspace_read_file, workspace_read_lines, or workspace_read_matches. " +
                 "Before modifying any existing file, proactively call workspace_create_backup, especially before regex replacements, bulk edits, deletes, overwrites, or applying a book source. " +
                 "Make focused changes with the most specific edit tool: workspace_replace_text for plain exact snippets, workspace_replace_regex for rule-like text, escaped quotes, capture groups, or regex patterns, workspace_edit_lines only after workspace_read_lines or workspace_read_matches gives stable line numbers and include expectedText when possible, and workspace_insert_text for additive edits. Use workspace_edit_file only for small batches of already verified replacements. " +
@@ -1292,7 +1300,35 @@ object AiChatService {
         }
         insertWorldBookBeforeLastUser(conversation, worldBookContext)
         insertWorldBookByDepth(conversation, worldBookContext)
+        val languageInstruction = JSONObject().apply {
+            put("role", "system")
+            put("content", responseLanguageInstruction())
+        }
+        conversation.add(0, languageInstruction)
         return conversation
+    }
+
+    fun responseLanguageInstruction(): String {
+        val selectedLanguage = appCtx.getPrefString(PreferKey.language)
+        val locale = ConfigurationCompat.getLocales(
+            AppContextWrapper.wrap(appCtx).resources.configuration
+        )[0] ?: Locale.getDefault()
+        val language = when (selectedLanguage) {
+            "vi" -> "Vietnamese"
+            "en" -> "English"
+            "zh" -> "Simplified Chinese"
+            "tw" -> "Traditional Chinese"
+            else -> when (locale.language) {
+                "vi" -> "Vietnamese"
+                "en" -> "English"
+                "zh" -> if (locale.script == "Hant" || locale.country in setOf("TW", "HK", "MO")) {
+                    "Traditional Chinese"
+                } else "Simplified Chinese"
+                else -> locale.getDisplayLanguage(locale).ifBlank { "the user's language" }
+            }
+        }
+        return "MANDATORY RESPONSE LANGUAGE: $language. Write every natural-language answer, explanation, tool summary, and follow-up entirely in $language. Do not answer in English unless English is the selected language. " +
+                "Keep quoted source text in its original language. If the user explicitly asks for a translation into another target language, use that requested target language for the translated text."
     }
 
     private fun buildToolOnlyConversation(

@@ -35,6 +35,12 @@ import java.io.File
 
 class AiConfigFragment : ComposeSettingFragment() {
 
+    private data class BundledSkillVariant(
+        val assetPath: String,
+        val sourceUrl: String,
+        val languageLabelRes: Int
+    )
+
     private val defaultSkillUrls = listOf(
         "https://raw.githubusercontent.com/DandanLLab/legadoSkill/main/.trae/skills/legado-book-source-tamer/SKILL.md",
         "https://raw.githubusercontent.com/DandanLLab/legadoSkill/main/skills/SKILLV0.7.md",
@@ -42,6 +48,8 @@ class AiConfigFragment : ComposeSettingFragment() {
     )
 
     private companion object {
+        const val DEFAULT_SKILL_NAME = "legado-book-source-tamer"
+        const val DEFAULT_SKILL_CHINESE_URL = "https://raw.githubusercontent.com/DandanLLab/legadoSkill/main/.trae/skills/legado-book-source-tamer/SKILL.md"
         const val KEY_IMPORT_DEFAULT_SKILL = "aiImportDefaultSkill"
         const val KEY_MANAGE_NATIVE_TOOLS = "aiManageNativeTools"
         const val KEY_AI_WORKSPACE = "aiWorkspace"
@@ -54,6 +62,24 @@ class AiConfigFragment : ComposeSettingFragment() {
         const val KEY_ADD_MCP_SERVER = "aiAddMcpServer"
         const val KEY_MANAGE_MCP_SERVERS = "aiManageMcpServers"
     }
+
+    private val bundledSkillVariants = listOf(
+        BundledSkillVariant(
+            "ai-skills/legado-book-source-tamer.zh-CN.md",
+            DEFAULT_SKILL_CHINESE_URL,
+            R.string.ai_skill_language_chinese
+        ),
+        BundledSkillVariant(
+            "ai-skills/legado-book-source-tamer.en.md",
+            "bundle://legado-book-source-tamer/en",
+            R.string.ai_skill_language_english
+        ),
+        BundledSkillVariant(
+            "ai-skills/legado-book-source-tamer.vi.md",
+            "bundle://legado-book-source-tamer/vi",
+            R.string.ai_skill_language_vietnamese
+        )
+    )
 
     override val titleRes: Int = R.string.ai_setting
 
@@ -815,9 +841,18 @@ class AiConfigFragment : ComposeSettingFragment() {
                     return@onSuccess
                 }
                 val skillConfig = parseSkillConfig(skill, skillUrl)
-                AppConfig.aiSkillList = AppConfig.aiSkillList
-                    .filterNot { it.sourceUrl == skillConfig.sourceUrl || it.name == skillConfig.name }
-                    .plus(skillConfig)
+                val currentSkills = AppConfig.aiSkillList
+                val existingChinese = currentSkills.firstOrNull {
+                    it.sourceUrl == DEFAULT_SKILL_CHINESE_URL ||
+                        (it.name == DEFAULT_SKILL_NAME && it.sourceUrl.isBlank())
+                }
+                val importedChinese = skillConfig.copy(
+                    id = existingChinese?.id ?: skillConfig.id,
+                    enabled = existingChinese?.enabled ?: true
+                )
+                AppConfig.aiSkillList = ensureBundledSkillVariants(
+                    currentSkills.filterNot { it.id == existingChinese?.id || it.sourceUrl == skillUrl } + importedChinese
+                )
                 refreshUi()
                 toastOnUi(R.string.ai_skill_imported)
             }.onFailure {
@@ -827,11 +862,18 @@ class AiConfigFragment : ComposeSettingFragment() {
     }
 
     private fun showManageSkillsDialog() {
-        val skills = AppConfig.aiSkillList
+        val skills = ensureBundledSkillVariants(AppConfig.aiSkillList)
+        if (skills != AppConfig.aiSkillList) {
+            AppConfig.aiSkillList = skills
+        }
         val actions = mutableListOf(uiString(R.string.ai_add_skill_manual))
         actions += skills.map { skill ->
             buildString {
                 append(skill.name)
+                skillVariantLanguage(skill)?.let { languageRes ->
+                    append(" · ")
+                    append(uiString(languageRes))
+                }
                 append(" · ")
                 append(
                     uiString(
@@ -853,33 +895,51 @@ class AiConfigFragment : ComposeSettingFragment() {
     }
 
     private fun showSkillActionDialog(skill: AiSkillConfig) {
-        showComposeActionListDialog(
-            title = skill.name,
-            labels = listOf(
+        val isVariant = skillVariantLanguage(skill) != null
+        val actions = if (isVariant) {
+            listOf(
+                uiString(if (skill.enabled) R.string.ai_skill_version_selected else R.string.ai_skill_use_version),
+                uiString(R.string.edit)
+            )
+        } else {
+            listOf(
                 uiString(if (skill.enabled) R.string.disable else R.string.enable),
                 uiString(R.string.edit),
                 uiString(R.string.delete)
             )
+        }
+        showComposeActionListDialog(
+            title = skill.name,
+            labels = actions
         ) { action ->
             when (action) {
                 0 -> {
-                    AppConfig.aiSkillList = AppConfig.aiSkillList.map {
-                        if (it.id == skill.id) it.copy(enabled = !it.enabled) else it
+                    AppConfig.aiSkillList = AppConfig.aiSkillList.map { item ->
+                        if (isVariant && skillVariantLanguage(item) != null) {
+                            item.copy(enabled = item.id == skill.id)
+                        } else if (item.id == skill.id) {
+                            item.copy(enabled = !item.enabled)
+                        } else {
+                            item
+                        }
                     }
                     refreshUi()
                 }
 
                 1 -> showSkillEditDialog(skill)
-                2 -> confirmRemoveSkill(skill)
+                2 -> if (!isVariant) confirmRemoveSkill(skill)
             }
         }
     }
 
-    private fun showSkillEditDialog(skill: AiSkillConfig? = null) {
+    private fun showSkillEditDialog(
+        skill: AiSkillConfig? = null,
+        initialContent: String = skill?.content.orEmpty()
+    ) {
         showComposeTextInputDialog(
             title = uiString(R.string.ai_skill_prompt),
             hint = uiString(R.string.ai_skill_prompt_hint),
-            initialValue = skill?.content.orEmpty(),
+            initialValue = initialContent,
             minLines = 8,
             maxLines = 16,
             validateInput = { text ->
@@ -903,6 +963,45 @@ class AiConfigFragment : ComposeSettingFragment() {
                 refreshUi()
             }
         )
+    }
+
+    private fun ensureBundledSkillVariants(skills: List<AiSkillConfig>): List<AiSkillConfig> {
+        val result = skills.toMutableList()
+        val hasEnabledVariant = result.any { skillVariantLanguage(it) != null && it.enabled }
+        bundledSkillVariants.forEach { variant ->
+            val existingIndex = result.indexOfFirst { skill ->
+                skill.sourceUrl == variant.sourceUrl ||
+                    (variant.sourceUrl == DEFAULT_SKILL_CHINESE_URL &&
+                        skill.name == DEFAULT_SKILL_NAME &&
+                        !skill.sourceUrl.startsWith("bundle://"))
+            }
+            if (existingIndex >= 0) {
+                val existing = result[existingIndex]
+                if (variant.sourceUrl == DEFAULT_SKILL_CHINESE_URL && existing.sourceUrl.isBlank()) {
+                    result[existingIndex] = existing.copy(sourceUrl = variant.sourceUrl)
+                }
+                return@forEach
+            }
+            val content = requireContext().assets.open(variant.assetPath)
+                .bufferedReader(Charsets.UTF_8)
+                .use { it.readText() }
+            val imported = parseSkillConfig(content, variant.sourceUrl).copy(
+                enabled = variant.sourceUrl == DEFAULT_SKILL_CHINESE_URL && !hasEnabledVariant
+            )
+            result += imported
+        }
+        return result
+    }
+
+    private fun skillVariantLanguage(skill: AiSkillConfig): Int? = when {
+        skill.sourceUrl == DEFAULT_SKILL_CHINESE_URL ||
+            (skill.name == DEFAULT_SKILL_NAME && !skill.sourceUrl.startsWith("bundle://")) ->
+            R.string.ai_skill_language_chinese
+        skill.sourceUrl == "bundle://legado-book-source-tamer/en" ->
+            R.string.ai_skill_language_english
+        skill.sourceUrl == "bundle://legado-book-source-tamer/vi" ->
+            R.string.ai_skill_language_vietnamese
+        else -> null
     }
 
     private fun confirmRemoveSkill(skill: AiSkillConfig) {

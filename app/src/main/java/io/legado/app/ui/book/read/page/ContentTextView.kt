@@ -1061,6 +1061,53 @@ class ContentTextView(context: Context, attrs: AttributeSet?) : View(context, at
         return builder.toString()
     }
 
+    data class SelectedSourceRange(
+        val sourceIndex: Int,
+        val paragraphNumber: Int,
+        val start: Int,
+        val endExclusive: Int
+    )
+
+    fun getSelectedSourceRanges(): List<SelectedSourceRange> {
+        if (!nativeSelectedText.isNullOrBlank() || !selectStart.isSelected() || !selectEnd.isSelected()) {
+            return emptyList()
+        }
+        val ranges = linkedMapOf<Pair<Int, Int>, IntRange>()
+        val textPos = TextPos(0, 0, 0)
+        for (relativePos in selectStart.relativePagePos..selectEnd.relativePagePos) {
+            val textPage = selectionPage(relativePos) ?: break
+            textPos.relativePagePos = relativePos
+            textPage.lines.forEachIndexed { lineIndex, textLine ->
+                textPos.lineIndex = lineIndex
+                val paragraph = textPage.textChapter.paragraphs.firstOrNull {
+                    it.realNum == textLine.paragraphNum && it.sourceIndex == textLine.sourceIndex
+                }
+                val lineStart = (textLine.chapterPosition - (paragraph?.chapterPosition ?: textLine.chapterPosition))
+                    .coerceAtLeast(0)
+                var columnOffset = 0
+                textLine.columns.forEachIndexed { charIndex, column ->
+                    if (column is TextBaseColumn) {
+                        textPos.columnIndex = charIndex
+                        if (textPos.compare(selectStart) >= 0 && textPos.compare(selectEnd) <= 0) {
+                            val key = textLine.sourceIndex to textLine.paragraphNum
+                            val start = lineStart + columnOffset
+                            val end = start + column.charData.length
+                            val previous = ranges[key]
+                            ranges[key] = if (previous == null) start..(end - 1) else
+                                minOf(previous.first, start)..maxOf(previous.last, end - 1)
+                        }
+                        columnOffset += column.charData.length
+                    }
+                }
+            }
+        }
+        return ranges.map { (key, range) ->
+            SelectedSourceRange(key.first, key.second, range.first, range.last + 1)
+        }
+    }
+
+    fun getSelectedSourceIndexes(): List<Int> = getSelectedSourceRanges().map { it.sourceIndex }.distinct()
+
     fun hasSelection(): Boolean {
         return !nativeSelectedText.isNullOrBlank() || (selectStart.isSelected() && selectEnd.isSelected())
     }

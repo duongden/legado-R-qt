@@ -2726,6 +2726,12 @@ class PageView(context: Context) : FrameLayout(context) {
 
     val selectedText: String get() = binding.contentTextView.getSelectedText()
 
+    fun getSelectedSourceIndexes(): List<Int> =
+        binding.contentTextView.getSelectedSourceIndexes()
+
+    fun getSelectedSourceRanges(): List<ContentTextView.SelectedSourceRange> =
+        binding.contentTextView.getSelectedSourceRanges()
+
     fun hasSelection(): Boolean = binding.contentTextView.hasSelection()
 
     fun hasNativeSelection(): Boolean = binding.contentTextView.hasNativeSelection()

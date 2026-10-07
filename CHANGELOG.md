@@ -1,5 +1,23 @@
 # Lịch sử thay đổi R-qt
 
+## 3.26.1007.1 — 07/10/2026 · Build 12028
+
+### Ask AI và trợ lý AI
+
+- Cải thiện lấy nguyên văn của đoạn được chọn khi hỏi AI trong truyện đã bật dịch.
+- Bổ sung chỉ dẫn ngôn ngữ trả lời theo ngôn ngữ giao diện Việt, Trung hoặc Anh.
+- Điều chỉnh vị trí và thao tác kéo cửa sổ Ask AI sau khi phóng to, thu nhỏ.
+- Cho phép hiển thị tên truyện đã dịch ở phụ đề Ask AI khi bật dịch truyện.
+- Bổ sung nhãn tiếng Việt trong cài đặt, menu, công cụ và các màn hình con của trợ lý AI.
+- Thêm ba phiên bản kỹ năng tích hợp: tiếng Trung, tiếng Việt và tiếng Anh để người dùng lựa chọn.
+
+### Giao diện đọc sách
+
+- Thêm bóng chữ trên thông tin chi tiết sách để tăng độ dễ đọc.
+- Các ô thao tác tự chia đều chiều rộng, tối đa ba ô mỗi hàng; ô tiếp theo xuống hàng mới.
+- Sửa nhãn Sáng/Tối tương ứng với biểu tượng chuyển chế độ.
+- Việt hóa tên các nguồn tra cứu trong hộp thoại Từ điển.
+
 ## 3.26.1005.1 — 05/10/2026
 
 Bản cập nhật tập trung vào giao diện tiếng Việt, Web Service LAN và kênh cập nhật riêng của R-qt.

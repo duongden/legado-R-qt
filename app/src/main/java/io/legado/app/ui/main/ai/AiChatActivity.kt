@@ -187,19 +187,19 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
             AiAgentMode.PLAN
         )
         val labels = listOf(
-            "普通模式：正常对话和工具调用",
-            "Goal 模式：持续执行直到目标达成",
-            "Plan 模式：只读分析，只写计划不执行"
+            aiFlowText(R.string.ai_flow_normal_mode),
+            aiFlowText(R.string.ai_flow_goal_mode),
+            aiFlowText(R.string.ai_flow_plan_mode)
         )
-        selector("Agent 模式", labels) { _, _, index ->
+        selector(aiFlowText(R.string.ai_flow_agent_mode), labels) { _, _, index ->
             val mode = modes.getOrNull(index) ?: return@selector
             viewModel.setAgentMode(mode)
             refreshToken.intValue += 1
             toastOnUi(
                 when (mode) {
-                    AiAgentMode.NORMAL -> "已切换普通模式"
-                    AiAgentMode.GOAL -> "已切换 Goal 模式"
-                    AiAgentMode.PLAN -> "已切换 Plan 模式"
+                    AiAgentMode.NORMAL -> aiFlowText(R.string.ai_flow_normal_selected)
+                    AiAgentMode.GOAL -> aiFlowText(R.string.ai_flow_goal_selected)
+                    AiAgentMode.PLAN -> aiFlowText(R.string.ai_flow_plan_selected)
                 }
             )
         }
@@ -222,7 +222,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
             failureMessage = { getString(R.string.ai_request_failed, it) }
         )
         if (!started) {
-            toastOnUi("无法重试此条消息")
+            toastOnUi(aiFlowText(R.string.ai_flow_cannot_retry))
         }
         refreshToken.intValue += 1
     }
@@ -240,7 +240,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
         }
         alert(
             title = getString(R.string.delete),
-            message = "删除此条及其之后的所有内容？"
+            message = aiFlowText(R.string.ai_flow_delete_following)
         ) {
             okButton {
                 if (viewModel.deleteFromMessage(messageId)) {
@@ -368,7 +368,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                             bookName = book.name,
                             author = book.author,
                             coverUrl = book.getDisplayCover().orEmpty(),
-                            label = "${book.name} · ${book.author.ifBlank { "未知作者" }}",
+                            label = "${book.name} · ${book.author.ifBlank { aiFlowText(R.string.ai_flow_unknown_author) }}",
                             characters = characters.sortedWith(
                                 compareByDescending<BookCharacter> { it.roleLevel }
                                     .thenBy { it.sortOrder }
@@ -380,7 +380,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     .sortedBy { it.label }
             }
             if (groups.isEmpty()) {
-                toastOnUi("没有可添加的角色卡")
+                toastOnUi(aiFlowText(R.string.ai_flow_no_characters))
                 return@launch
             }
             characterPickerGroups = groups
@@ -419,11 +419,11 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
         }
         val isDefault = companion.id == AiChatCompanionConfig.DEFAULT_COMPANION_ID
         val items = if (isDefault) {
-            listOf("新建对话", "编辑默认助手人格", "世界书")
+            listOf(aiFlowText(R.string.ai_flow_new_chat), aiFlowText(R.string.ai_flow_edit_default), aiFlowText(R.string.ai_flow_world_books))
         } else {
-            listOf("编辑角色卡", "新建对话", "世界书", "移除角色助手")
+            listOf(aiFlowText(R.string.ai_flow_edit_character), aiFlowText(R.string.ai_flow_new_chat), aiFlowText(R.string.ai_flow_world_books), aiFlowText(R.string.ai_flow_remove_companion))
         }
-        selector(companion.name.ifBlank { "助手" }, items) { _, _, index ->
+        selector(companion.displayName().ifBlank { aiFlowText(R.string.ai_flow_assistants) }, items) { _, _, index ->
             if (isDefault) {
                 when (index) {
                     0 -> startNewChatForCompanion(companion.id)
@@ -453,7 +453,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
     private fun openCharacterEditor(companion: AiChatCompanionConfig) {
         val characterId = companion.characterId.toLongOrNull()
         if (characterId == null || characterId <= 0L) {
-            toastOnUi("角色卡不存在")
+            toastOnUi(aiFlowText(R.string.ai_flow_missing_character))
             return
         }
         lifecycleScope.launch {
@@ -481,12 +481,12 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
             editView.setText(companion.prompt)
         }
-        alert(title = "${companion.name} · 人格") {
+        alert(title = aiFlowText(R.string.ai_flow_persona_title, companion.displayName())) {
             customView { binding.root }
             okButton {
                 val prompt = binding.editView.text?.toString().orEmpty().trim()
                 if (prompt.isBlank()) {
-                    toastOnUi("提示词不能为空")
+                    toastOnUi(aiFlowText(R.string.ai_flow_prompt_required))
                 } else {
                     AppConfig.upsertAiChatCompanion(companion.copy(prompt = prompt))
                     refreshToken.intValue += 1
@@ -498,12 +498,12 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
 
     private fun confirmDeleteCompanion(companion: AiChatCompanionConfig) {
         if (companion.id == AiChatCompanionConfig.DEFAULT_COMPANION_ID) {
-            toastOnUi("默认助手不能删除")
+            toastOnUi(aiFlowText(R.string.ai_flow_default_no_delete))
             return
         }
         alert(
-            title = "删除角色助手",
-            message = "确定删除「${companion.name}」？它的聊天历史也会删除。"
+            title = aiFlowText(R.string.ai_flow_delete_companion),
+            message = aiFlowText(R.string.ai_flow_delete_confirm, companion.displayName())
         ) {
             okButton {
                 AppConfig.removeAiChatCompanion(companion.id)
@@ -517,30 +517,30 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
     private fun showCompanionWorldBookDialog(companion: AiChatCompanionConfig = viewModel.currentCompanion()) {
         val worldBooks = AppConfig.aiWorldBookList
         if (worldBooks.isEmpty()) {
-            selector("世界书", listOf("打开世界书管理")) { _, _, _ ->
+            selector(aiFlowText(R.string.ai_flow_world_books), listOf(aiFlowText(R.string.ai_flow_manage_world))) { _, _, _ ->
                 openWorldBookManage()
             }
             return
         }
         val visibleWorldBooks = worldBooks.filter { it.enabled && !it.isGlobalWorldBookEnabled() }
         if (visibleWorldBooks.isEmpty()) {
-            selector("世界书", listOf("没有可单独绑定到角色的世界书", "打开世界书管理")) { _, _, which ->
+            selector(aiFlowText(R.string.ai_flow_world_books), listOf(aiFlowText(R.string.ai_flow_no_bindable_world), aiFlowText(R.string.ai_flow_manage_world))) { _, _, which ->
                 if (which == 1) openWorldBookManage()
             }
             return
         }
         val visibleIds = visibleWorldBooks.map { it.id }.toSet()
         val selected = companion.worldBookIds.filterTo(mutableSetOf()) { it in visibleIds }
-        alert(title = "${companion.name} · 世界书") {
+        alert(title = aiFlowText(R.string.ai_flow_world_title, companion.displayName())) {
             multiChoiceItems(
                 items = visibleWorldBooks.map { book ->
                     buildString {
                         append(book.name)
                         if (book.bindings.any { it.enabled && it.targetType == AiWorldBookBinding.TARGET_GLOBAL }) {
-                            append("（全局）")
+                            append(aiFlowText(R.string.ai_flow_global_marker))
                         }
                         if (!book.enabled) {
-                            append("（资料库停用）")
+                            append(aiFlowText(R.string.ai_flow_disabled_marker))
                         }
                     }
                 }.toTypedArray(),
@@ -556,7 +556,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                 )
                 refreshToken.intValue += 1
             }
-            neutralButton("管理") { openWorldBookManage() }
+            neutralButton(aiFlowText(R.string.ai_flow_manage)) { openWorldBookManage() }
             cancelButton()
         }
     }
@@ -567,12 +567,12 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
             return
         }
         selector(
-            "当前窗口能力",
+            aiFlowText(R.string.ai_flow_current_abilities),
             listOf(
-                "Skill：${viewModel.activeWindowSkillIds().size} 个",
-                "MCP：${viewModel.activeWindowMcpServerIds().size} 个",
-                "世界书：${activeCompanionWorldBookCount()} 个",
-                "清空 Skill/MCP"
+                aiFlowText(R.string.ai_flow_skill_count, viewModel.activeWindowSkillIds().size),
+                aiFlowText(R.string.ai_flow_mcp_count, viewModel.activeWindowMcpServerIds().size),
+                aiFlowText(R.string.ai_flow_world_count, activeCompanionWorldBookCount()),
+                aiFlowText(R.string.ai_flow_clear_tools)
             )
         ) { _, _, index ->
             when (index) {
@@ -604,11 +604,11 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
     private fun showWindowSkillDialog() {
         val skills = AppConfig.aiSkillList.filter { it.enabled }
         if (skills.isEmpty()) {
-            toastOnUi("没有可用 Skill")
+            toastOnUi(aiFlowText(R.string.ai_flow_no_skills))
             return
         }
         val selected = viewModel.activeWindowSkillIds().toMutableSet()
-        alert(title = "当前窗口 Skill") {
+        alert(title = aiFlowText(R.string.ai_flow_current_skills)) {
             multiChoiceItems(
                 items = skills.map { skill -> skill.name.ifBlank { "Skill" } }.toTypedArray(),
                 checkedItems = BooleanArray(skills.size) { index -> skills[index].id in selected }
@@ -619,7 +619,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                 viewModel.setActiveWindowSkillIds(selected)
                 refreshToken.intValue += 1
             }
-            neutralButton("清空") {
+            neutralButton(aiFlowText(R.string.ai_flow_clear)) {
                 viewModel.setActiveWindowSkillIds(emptySet())
                 refreshToken.intValue += 1
             }
@@ -630,11 +630,11 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
     private fun showWindowMcpDialog() {
         val servers = AppConfig.aiMcpServerList.filter { it.enabled }
         if (servers.isEmpty()) {
-            toastOnUi("没有已启用 MCP")
+            toastOnUi(aiFlowText(R.string.ai_flow_no_mcp))
             return
         }
         val selected = viewModel.activeWindowMcpServerIds().toMutableSet()
-        alert(title = "当前窗口 MCP") {
+        alert(title = aiFlowText(R.string.ai_flow_current_mcp)) {
             multiChoiceItems(
                 items = servers.map { server -> server.name.ifBlank { "MCP" } }.toTypedArray(),
                 checkedItems = BooleanArray(servers.size) { index -> servers[index].id in selected }
@@ -645,7 +645,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                 viewModel.setActiveWindowMcpServerIds(selected)
                 refreshToken.intValue += 1
             }
-            neutralButton("清空") {
+            neutralButton(aiFlowText(R.string.ai_flow_clear)) {
                 viewModel.setActiveWindowMcpServerIds(emptySet())
                 refreshToken.intValue += 1
             }
@@ -784,7 +784,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "添加角色助手",
+                                text = aiFlowText(R.string.ai_flow_add_companion),
                                 color = style.colors.primaryText,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
@@ -792,8 +792,8 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = selectedGroup?.let { "从《${it.bookName.ifBlank { it.label }}》选择角色" }
-                                    ?: "先选择书籍，再选择要添加到侧边栏的角色",
+                                text = selectedGroup?.let { aiFlowText(R.string.ai_flow_choose_from, it.bookName.ifBlank { it.label }) }
+                                    ?: aiFlowText(R.string.ai_flow_choose_book_first),
                                 color = style.colors.secondaryText,
                                 fontSize = 12.sp,
                                 maxLines = 1,
@@ -802,7 +802,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                             )
                         }
                         Text(
-                            text = "关闭",
+                            text = aiFlowText(R.string.ai_flow_close),
                             color = style.colors.accent,
                             fontSize = 14.sp,
                             modifier = Modifier
@@ -823,14 +823,14 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     val current = selectedGroup
                     if (current == null) {
                         Text(
-                            text = "选择书籍",
+                            text = aiFlowText(R.string.ai_flow_choose_book),
                             color = style.colors.secondaryText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                         if (filteredGroups.isEmpty()) {
-                            CharacterPickerEmptyV2("没有匹配的角色书籍")
+                            CharacterPickerEmptyV2(aiFlowText(R.string.ai_flow_no_matching_books))
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(3),
@@ -879,7 +879,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                             characterMatchesRole(character, selectedRole)
                         }
                         Text(
-                            text = "选择角色",
+                            text = aiFlowText(R.string.ai_flow_choose_character),
                             color = style.colors.secondaryText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -903,7 +903,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                             }
                             if (filteredCharacters.isEmpty()) {
                                 item {
-                                    CharacterPickerEmptyV2("这一组还没有角色")
+                                    CharacterPickerEmptyV2(aiFlowText(R.string.ai_flow_empty_characters))
                                 }
                             }
                         }
@@ -934,7 +934,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
             ) {
                 if (value.isBlank()) {
                     Text(
-                        text = "搜索书名、作者或角色",
+                        text = aiFlowText(R.string.ai_flow_search_characters),
                         color = style.colors.secondaryText.copy(alpha = 0.72f),
                         fontSize = 14.sp
                     )
@@ -1006,7 +1006,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     modifier = Modifier.padding(top = 7.dp)
                 )
                 Text(
-                    text = "${group.characters.size} 个角色",
+                    text = aiFlowText(R.string.ai_flow_character_count, group.characters.size),
                     color = style.colors.secondaryText,
                     fontSize = 11.sp,
                     maxLines = 1,
@@ -1060,7 +1060,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "${group.author.ifBlank { "未知作者" }} · ${group.characters.size} 个角色",
+                        text = aiFlowText(R.string.ai_flow_author_characters, group.author.ifBlank { aiFlowText(R.string.ai_flow_unknown_author) }, group.characters.size),
                         color = style.colors.secondaryText,
                         fontSize = 12.sp,
                         maxLines = 1,
@@ -1069,7 +1069,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     )
                 }
                 Text(
-                    text = "换书",
+                    text = aiFlowText(R.string.ai_flow_change_book),
                     color = style.colors.accent,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1149,7 +1149,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                         text = listOf(character.roleLabel(), character.genderLabel(), BookCharacterProfileMeta.ageOf(character))
                             .filter { it.isNotBlank() && it != "未知" }
                             .joinToString(" · ")
-                            .ifBlank { "角色卡" },
+                            .ifBlank { aiFlowText(R.string.ai_flow_character_card) },
                         color = style.colors.secondaryText,
                         fontSize = 12.sp,
                         maxLines = 1,
@@ -1169,7 +1169,7 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
                     }
                 }
                 Text(
-                    text = if (added) "打开" else "添加",
+                    text = if (added) aiFlowText(R.string.ai_flow_open) else aiFlowText(R.string.ai_flow_add),
                     color = if (added) style.colors.secondaryText else style.colors.accent,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1192,17 +1192,17 @@ class AiChatActivity : BaseActivity<ActivityAiChatBinding>(
         return listOf(
             CharacterRoleFilter(
                 roleLevel = BookCharacter.ROLE_MAIN,
-                label = "主角",
+                label = aiFlowText(R.string.ai_flow_main_character),
                 count = group.characters.count { it.roleLevel == BookCharacter.ROLE_MAIN }
             ),
             CharacterRoleFilter(
                 roleLevel = BookCharacter.ROLE_IMPORTANT,
-                label = "重要",
+                label = aiFlowText(R.string.ai_flow_important),
                 count = group.characters.count { it.roleLevel == BookCharacter.ROLE_IMPORTANT }
             ),
             CharacterRoleFilter(
                 roleLevel = BookCharacter.ROLE_NORMAL,
-                label = "普通",
+                label = aiFlowText(R.string.ai_flow_normal),
                 count = group.characters.count { characterMatchesRole(it, BookCharacter.ROLE_NORMAL) }
             )
         )

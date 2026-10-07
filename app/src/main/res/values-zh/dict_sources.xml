@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dict_source_baidu">百度汉语</string>
+    <string name="dict_source_haici_chinese">海词中文</string>
+    <string name="dict_source_haici_english">海词英文</string>
+    <string name="dict_source_youdao">有道</string>
+    <string name="dict_source_bilibili">哔哩</string>
+</resources>

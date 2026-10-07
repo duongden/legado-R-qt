@@ -5,6 +5,14 @@ import java.text.Normalizer
 
 /** VietPhrase algorithm ported from legado-qt; performs no I/O or preference access. */
 object TranslationEngine {
+    data class SourceSpan(val start: Int, val endExclusive: Int)
+
+    private data class MappedText(val text: String, val sourceOffsets: IntArray)
+    private data class TranslationSpan(
+        val output: String,
+        val sourceStart: Int,
+        val sourceEnd: Int
+    )
     // Regex patterns for processText
     private val trimSpacesBefore = Pattern.compile(" +([,.?!\\]>”’):】])")
     private val trimSpacesAfter = Pattern.compile("([<\\[“‘(【]) +")
@@ -265,6 +273,92 @@ object TranslationEngine {
         }
         if (plainStart < text.length) words.addAll(translateWords(text.substring(plainStart), data, checkActive))
         return processText(words.joinToString(" "))
+    }
+
+    /** Maps a selected rendered translation back to the source dictionary token(s). */
+    fun sourceSpansForSelection(
+        displayText: String,
+        sourceText: String,
+        selectionStart: Int,
+        selectionEndExclusive: Int,
+        data: TranslationData,
+        checkActive: () -> Unit = {}
+    ): List<SourceSpan> {
+        if (sourceText.isBlank() || displayText.isBlank()) return emptyList()
+        val start = selectionStart.coerceIn(0, displayText.length)
+        val end = selectionEndExclusive.coerceIn(start, displayText.length)
+        if (start == end) return emptyList()
+
+        val spans = ArrayList<TranslationSpan>()
+        var cursor = 0
+        while (cursor < sourceText.length) {
+            checkActive()
+            val ruleHit = data.rules.matchAt(sourceText, cursor, data.vietPhrase, checkActive)
+            if (ruleHit != null) {
+                spans += TranslationSpan(convertPunctuation(ruleHit.translation), cursor, ruleHit.end)
+                cursor = ruleHit.end
+                continue
+            }
+            var nextRule = cursor + 1
+            while (nextRule < sourceText.length &&
+                data.rules.matchAt(sourceText, nextRule, data.vietPhrase, checkActive) == null
+            ) nextRule++
+            val chunkEnd = if (nextRule < sourceText.length) nextRule else sourceText.length
+            val mapped = convertPunctuationMapped(sourceText.substring(cursor, chunkEnd), cursor)
+            val tokens = tokenize(mapped.text, data, checkActive)
+            var tokenCursor = 0
+            for (token in tokens) {
+                checkActive()
+                val tokenStart = mapped.sourceOffsets.getOrNull(tokenCursor) ?: cursor
+                val tokenLast = (tokenCursor + token.length - 1).coerceAtMost(mapped.sourceOffsets.lastIndex)
+                val tokenEnd = (mapped.sourceOffsets.getOrNull(tokenLast)?.plus(1) ?: chunkEnd)
+                    .coerceIn(tokenStart, chunkEnd)
+                tokenCursor += token.length
+                if (token == "的" || token == "了" || token == "著") continue
+                var translated = searchInDictionaries(token, data)
+                    ?.substringBefore('/')?.substringBefore('¦')
+                if (translated == null || translated == token) {
+                    translated = data.chinesePhienAm[token] ?: " $token "
+                }
+                spans += TranslationSpan(translated, tokenStart, tokenEnd)
+            }
+            cursor = chunkEnd
+        }
+
+        var searchFrom = 0
+        val selected = ArrayList<SourceSpan>()
+        for (span in spans) {
+            checkActive()
+            val needle = span.output.trim()
+            if (needle.isEmpty()) continue
+            val found = displayText.indexOf(needle, searchFrom, ignoreCase = true)
+                .takeIf { it >= 0 }
+                ?: displayText.indexOf(needle, ignoreCase = true)
+            if (found < 0) continue
+            val foundEnd = found + needle.length
+            searchFrom = foundEnd
+            if (found < end && foundEnd > start) {
+                selected += SourceSpan(span.sourceStart, span.sourceEnd)
+            }
+        }
+        return selected.sortedBy { it.start }.fold(mutableListOf()) { result, span ->
+            val previous = result.lastOrNull()
+            if (previous != null && span.start <= previous.endExclusive) {
+                result[result.lastIndex] = previous.copy(endExclusive = maxOf(previous.endExclusive, span.endExclusive))
+            } else result += span
+            result
+        }
+    }
+
+    private fun convertPunctuationMapped(text: String, sourceOffset: Int): MappedText {
+        val output = StringBuilder()
+        val offsets = ArrayList<Int>()
+        text.forEachIndexed { index, char ->
+            val converted = punctuationMapping[char] ?: char.toString()
+            output.append(converted)
+            repeat(converted.length) { offsets += sourceOffset + index }
+        }
+        return MappedText(output.toString(), offsets.toIntArray())
     }
 
     private fun translateWords(text: String, data: TranslationData, checkActive: () -> Unit): List<String> {

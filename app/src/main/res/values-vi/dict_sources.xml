@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dict_source_baidu">Baidu Hán ngữ</string>
+    <string name="dict_source_haici_chinese">Hải Từ Trung</string>
+    <string name="dict_source_haici_english">Hải Từ Anh</string>
+    <string name="dict_source_youdao">Youdao</string>
+    <string name="dict_source_bilibili">Bilibili</string>
+</resources>
