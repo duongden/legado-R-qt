@@ -7,7 +7,16 @@ import org.junit.Test
 import java.io.File
 
 class EpubSnapshotPersistencePolicyTest {
-    private fun theme(id: String) = EpubReaderTemplate.fromJson(File("src/main/assets/epub/templates/$id.json").readText())
+    private fun theme(id: String): EpubReaderTemplate {
+        // Retired themes can still be imported, but their artwork is not distributed.
+        // Exercise their policy IDs with deterministic, synthetic rendering source.
+        if (id in setOf("builtin.asuka_sync", "builtin.minecraft_live")) {
+            return EpubReaderTemplate(id = id, name = "Policy fixture",
+                firstPageHtml = "<p>First page</p>", otherPageHtml = "<p>Next page</p>",
+                javascript = "void 0;")
+        }
+        return EpubReaderTemplate.fromJson(File("src/main/assets/epub/templates/$id.json").readText())
+    }
     private val asuka = theme("builtin.asuka_sync")
     private val fields = EpubReaderChromeData(bookName = "book", timeLabel = "12:30", batteryLabel = "80%")
     private val png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jVZkAAAAASUVORK5CYII="

@@ -173,6 +173,7 @@ android {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
     testOptions {
+        unitTests.includeAndroidResources = true
         unitTests.all {
             maxHeapSize = '1536m'
             systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'

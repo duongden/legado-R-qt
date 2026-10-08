@@ -11,6 +11,7 @@ import io.legado.app.R
 import io.legado.app.help.config.EpubLoadingTemplate
 import io.legado.app.model.localBook.epubcore.layout.EpubReaderChromeData
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -18,10 +19,15 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import java.io.File
+import splitties.init.injectAsAppCtx
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = Application::class, manifest = Config.NONE)
 class EpubLoadingOverlayTest {
+    @Before fun initializeAppContext() {
+        RuntimeEnvironment.getApplication().injectAsAppCtx()
+    }
+
     @Test
     @GraphicsMode(GraphicsMode.Mode.NATIVE)
     fun `built in artwork renders across system bar areas in both appearances`() {
