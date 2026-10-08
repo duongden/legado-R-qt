@@ -1,6 +1,6 @@
 # Lịch sử thay đổi R-qt
 
-## 08/10/2026 — Sửa lỗi và cải thiện video
+## 3.26.1008.1 — 08/10/2026 · Build 12029
 
 ### Video và dịch giao diện
 
