@@ -14,6 +14,14 @@ plugins {
 }
 apply from: 'download.gradle'
 
+// The published RTMP AAR contains 4 KB native binaries. Build the same JNI API
+// locally with 16 KB LOAD/RELRO alignment, including transitive Media3 users.
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        substitute module('io.antmedia:rtmp-client') using project(':modules:rtmp')
+    }
+}
+
 static def releaseTime() {
     return new Date().format("yy.MMddHH", TimeZone.getTimeZone("GMT+8"))
 }
@@ -102,9 +110,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'cronet-proguard-rules.pro'
         }
         debug {
-            if (project.hasProperty("RELEASE_STORE_FILE")) {
-                signingConfig signingConfigs.myConfig
-            }
+            // Local debug builds must not depend on release signing credentials.
+            signingConfig signingConfigs.debug
             manifestPlaceholders.put("app_name", "@string/app_name_r_qt")
 
             applicationIdSuffix '.debug'
@@ -350,4 +357,3 @@ dependencies {
     implementation(libs.soraEditor.core)
     implementation(libs.soraEditor.language.textmate)
 }
-

@@ -96,6 +96,11 @@ import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.image.glide.GlideImagesPlugin
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import io.legado.app.utils.TranslateUtils
+import io.legado.app.utils.setTranslatedBookText
+import io.legado.app.utils.MarkdownUiTranslation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -202,7 +207,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
                 VideoPlay.singleUrl = true
             }
             intent.getStringExtra("videoTitle")?.let {
-                binding.titleBar.title = it
+                showTranslatedTitle(it)
                 VideoPlay.videoTitle = it
             }
             val sourceKey = intent.getStringExtra("sourceKey")
@@ -227,7 +232,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
             VideoPlay.clonePlayState(playerView)
             playerView.setSurfaceToPlay()
             playerView.startAfterPrepared()
-            binding.titleBar.title = VideoPlay.videoTitle
+            showTranslatedTitle(VideoPlay.videoTitle)
             initView()
         }
         upView()
@@ -249,10 +254,10 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
         if (!VideoPlay.initSource(sourceKey, sourceType, bookUrl, null)) return false
         if (VideoPlay.book == null || VideoPlay.toc.isNullOrEmpty()) return false
         intent.getStringExtra("videoTitle")?.takeIf { it.isNotBlank() }?.let {
-            binding.titleBar.title = it
+            showTranslatedTitle(it)
             VideoPlay.videoTitle = it
         } ?: run {
-            binding.titleBar.title = VideoPlay.book?.name
+            showTranslatedTitle(VideoPlay.book?.name)
         }
         VideoPlay.startPlay(playerView)
         VideoPlay.saveRead()
@@ -310,7 +315,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
             if (preparedVideoStarted) {
                 return@observe
             }
-            binding.titleBar.title = book.name
+            showTranslatedTitle(book.name)
             VideoPlay.book = book
             VideoPlay.source = bookInfoViewModel.bookSource
             VideoPlay.inBookshelf = bookInfoViewModel.inBookshelf
@@ -360,9 +365,10 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
 
     private fun showBook(book: Book) {
         binding.run {
-            tvName.text = book.name
+            tvName.setTranslatedBookText(book.name, owner = this@VideoPlayerActivity)
             book.getRealAuthor().takeIf { it.isNotEmpty() }?.let {
-                tvAuthor.text = it
+                tvAuthor.visible()
+                tvAuthor.setTranslatedBookText(it, owner = this@VideoPlayerActivity)
             } ?: tvAuthor.gone()
             showBookIntro(book)
             showSourceInfo(book)
@@ -376,8 +382,8 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
             is RssSource -> source.sourceName.ifBlank { source.sourceUrl }
             else -> book.origin
         }.ifBlank { getString(R.string.error_no_source) }
-        binding.tvVideoSource.text = getString(R.string.origin_format, sourceName)
-        binding.tvVideoOrigin.text = book.originName.ifBlank { book.origin }
+        binding.tvVideoSource.setTranslatedBookText(getString(R.string.origin_format, sourceName), owner = this)
+        binding.tvVideoOrigin.setTranslatedBookText(book.originName.ifBlank { book.origin }, owner = this)
     }
 
     private fun setupSourceActions(book: Book) {
@@ -453,8 +459,35 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
         }
     }
 
+    private var introTranslationJob: Job? = null
+    private var titleTranslationJob: Job? = null
+
+    private fun showTranslatedTitle(raw: String?) {
+        titleTranslationJob?.cancel()
+        binding.titleBar.title = raw
+        titleTranslationJob = lifecycleScope.launch {
+            TranslateUtils.updates.collectLatest {
+                binding.titleBar.title = if (TranslateUtils.isTranslateEnabled()) {
+                    TranslateUtils.translate(raw.orEmpty(), TranslateUtils.Kind.TITLE)
+                } else raw
+            }
+        }
+    }
+
     private fun showBookIntro(book: Book) {
-        val intro = book.getDisplayIntro()
+        introTranslationJob?.cancel()
+        val raw = book.getDisplayIntro()
+        introTranslationJob = lifecycleScope.launch {
+            TranslateUtils.updates.collectLatest {
+                val display = if (TranslateUtils.isTranslateEnabled() && raw != null && !raw.startsWith("<md>")) {
+                    TranslateUtils.translate(raw, TranslateUtils.Kind.META)
+                } else raw
+                renderBookIntro(display)
+            }
+        }
+    }
+
+    private suspend fun renderBookIntro(intro: String?) {
         if (intro?.startsWith("<useweb>") == true) {
             val lastIndex = intro.lastIndexOf("<")
             if (lastIndex < 8) {
@@ -494,6 +527,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
             binding.tvIntroContainer.addView(introTextView)
         }
         if (intro.isNullOrBlank()) {
+            introTextView.text = ""
             return
         }
         val tvIntro = introTextView
@@ -522,7 +556,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
                 return
             }
             val mark = intro.substring(4, lastIndex)
-            lifecycleScope.launch {
+            kotlinx.coroutines.coroutineScope {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     tvIntro.setTextClassifier(TextClassifier.NO_OP)
                 }
@@ -543,7 +577,11 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
                         .usePlugin(HtmlPlugin.create())
                         .usePlugin(TablePlugin.create(context))
                         .build()
-                    markwon.toMarkdown(mark)
+                    val node = markwon.parse(mark)
+                    if (TranslateUtils.isTranslateEnabled()) {
+                        MarkdownUiTranslation.translate(node) { TranslateUtils.translate(it) }
+                    }
+                    markwon.render(node)
                 }
                 tvIntro.setMarkdown(
                     markwon,
@@ -891,7 +929,7 @@ class VideoPlayerActivity : VMBaseActivity<ActivityVideoPlayerBinding, VideoPlay
     override fun observeLiveBus() {
 
         observeEventSticky<String>(EventBus.VIDEO_SUB_TITLE) {
-            binding.titleBar.title = it
+            showTranslatedTitle(it)
         }
 
         observeEvent<ArrayList<Int>>(EventBus.UP_VIDEO_INFO) {

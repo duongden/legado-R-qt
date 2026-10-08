@@ -49,7 +49,7 @@ class ChoiceEpisodeDialog(private val mContext: Context) : Dialog(
         this.data = data
         val inflater = LayoutInflater.from(mContext)
         val view: View = inflater.inflate(R.layout.switch_episode_video_dialog, null)
-        view.findViewById<TextView>(R.id.listCount).text = "选集（${data.size}）"
+        view.findViewById<TextView>(R.id.listCount).text = mContext.getString(R.string.video_episode_count, data.size)
         listView = view.findViewById(R.id.switch_dialog_list)
         setContentView(view)
         adapter = SwitchVideoAdapter(mContext, data) { item -> item.title }

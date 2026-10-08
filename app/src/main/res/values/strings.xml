@@ -2586,4 +2586,5 @@ Selected text or question:
     <string name="bubble_force_software_summary">Recognize paragraph comment image links and render them with the current bubble style</string>
     <string name="book_info_toc_label">Chapters</string>
     <string name="book_info_gallery_label">Gallery</string>
+    <string name="bookshelf_import_result">Imported: %1$d; failed: %2$d; skipped: %3$d</string>
 </resources>

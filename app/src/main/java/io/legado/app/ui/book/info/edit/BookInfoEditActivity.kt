@@ -19,7 +19,6 @@ import io.legado.app.constant.BookType
 import io.legado.app.data.entities.Book
 import io.legado.app.databinding.ActivityBookInfoEditBinding
 import io.legado.app.help.book.BookTagHelper
-import io.legado.app.help.book.BookHelp
 import io.legado.app.help.book.addType
 import io.legado.app.help.book.isAudio
 import io.legado.app.help.book.isImage
@@ -210,8 +209,7 @@ class BookInfoEditActivity :
     }
 
     private fun saveData() = binding.run {
-        val book = viewModel.book ?: return@run
-        val oldBook = book.copy()
+        val book = viewModel.book?.copy() ?: return@run
         book.name = tieBookName.text?.toString() ?: ""
         book.author = tieBookAuthor.text?.toString() ?: ""
         val local = if (book.isLocal) BookType.local else 0
@@ -227,7 +225,6 @@ class BookInfoEditActivity :
         book.customCoverUrl = if (customCoverUrl == book.coverUrl) null else customCoverUrl
         val customIntro = tieBookIntro.text?.toString()
         book.customIntro = if (customIntro == book.intro) null else customIntro
-        BookHelp.updateCacheFolder(oldBook, book)
         viewModel.saveBook(book) {
             setResult(RESULT_OK)
             finish()

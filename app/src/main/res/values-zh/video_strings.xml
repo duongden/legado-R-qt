@@ -1,0 +1,8 @@
+<resources>
+    <string name="video_hide_danmaku">关弹幕</string>
+    <string name="video_show_danmaku">开弹幕</string>
+    <string name="video_speed">倍速</string>
+    <string name="video_episodes">选集</string>
+    <string name="video_episode_count">选集（%1$d）</string>
+    <string name="video_playing_speed">%1$s倍播放中</string>
+</resources>

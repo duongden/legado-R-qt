@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import io.legado.app.R
 import io.legado.app.constant.EventBus
 import io.legado.app.data.appDb
@@ -69,6 +70,25 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
     private var topOverlaySpace = 0
     private var topOverlayEnabled = false
     private var structureVersion = 0
+
+    // A Fragment can remain added after its view is destroyed or replaced.
+    private fun postToCurrentView(target: View, action: () -> Unit) {
+        val currentView = view ?: return
+        val owner = viewLifecycleOwnerLiveData.value ?: return
+        target.post {
+            if (view === currentView && owner.lifecycle.currentState != Lifecycle.State.DESTROYED) {
+                action()
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        groupLabelJob?.cancel()
+        tagLabelJob?.cancel()
+        groupMenuPopup?.dismiss()
+        groupMenuPopup = null
+        super.onDestroyView()
+    }
     override val groupId: Long get() = selectedGroup?.groupId ?: 0
 
     override val books: List<Book>
@@ -157,7 +177,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
         binding.topBar.doOnLayout {
             updateTopBarOverlay()
         }
-        binding.root.post {
+        postToCurrentView(binding.root) {
             updateTopBarOverlay()
         }
         updateHeaderTitle()
@@ -166,13 +186,13 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
     override fun onResume() {
         super.onResume()
         binding.viewPagerBookshelf.swipeEnabled = AppConfig.bottomBarLayoutMode != "sidebar"
-        binding.root.post {
+        postToCurrentView(binding.root) {
             updateTopBarOverlay()
         }
     }
 
     private fun updateTopBarOverlay() {
-        if (!isAdded) return
+        if (!isAdded || view == null) return
         // 仅 API>=33 走覆盖式(顶栏背景毛玻璃);低版本降级为非覆盖布局,避免透明顶栏透出滚动列表。
         val overlay = binding.topBar.isOverlayMode() && binding.topBar.supportsBackdropBlur()
         val contentMargin = resources.getDimensionPixelSize(R.dimen.bookshelf_content_margin_top)
@@ -211,8 +231,8 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
     }
 
     private fun scheduleTopBarOverlayUpdate() {
-        if (!isAdded) return
-        binding.topBar.post {
+        if (!isAdded || view == null) return
+        postToCurrentView(binding.topBar) {
             updateTopBarOverlay()
         }
     }
@@ -239,12 +259,12 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
     }
 
     private fun selectSavedGroup() {
-        binding.viewPagerBookshelf.post {
+        postToCurrentView(binding.viewPagerBookshelf) {
             if (bookGroups.isEmpty()) {
                 binding.topBar.setPrimaryItems(emptyList(), -1)
                 binding.topBar.tagsBar.submitItems(emptyList(), -1)
                 updateHeaderTitle()
-                return@post
+                return@postToCurrentView
             }
             val target = AppConfig.saveTabPosition.coerceIn(0, bookGroups.lastIndex)
             switchToGroup(target)
@@ -265,6 +285,8 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
     }
 
     private fun renderGroupSelector() {
+        val owner = viewLifecycleOwnerLiveData.value ?: return
+        if (owner.lifecycle.currentState == Lifecycle.State.DESTROYED) return
         binding.topBar.setPrimaryItems(
             bookGroups.map { RoundedTagBarView.Item(it.groupName) },
             currentGroupIndex.coerceIn(-1, bookGroups.lastIndex)
@@ -274,7 +296,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
         if (!TranslateUtils.isTranslateEnabled()) return
         val groups = bookGroups.map { it.groupId to it.groupName }
         val selectedId = selectedGroup?.groupId
-        groupLabelJob = viewLifecycleOwner.lifecycleScope.launch {
+        groupLabelJob = owner.lifecycleScope.launch {
             val labels = groups.map { UiTranslation.translate(it.second) }
             if (groups != bookGroups.map { it.groupId to it.groupName } ||
                 selectedId != selectedGroup?.groupId || !TranslateUtils.isTranslateEnabled()) return@launch
@@ -303,7 +325,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
         UiTranslation.vietnameseString(R.string.bookshelf_tag_all) else getString(R.string.bookshelf_tag_all)
 
     private fun renderBookTags(books: List<BookShelfDisplay>) {
-        if (!isAdded) return
+        if (!isAdded || view == null) return
         val allText = allTagsTitle()
         val storedTags = AppConfig.bookshelfGroupTags[groupId].orEmpty()
         val tags = storedTags.ifEmpty {
@@ -439,8 +461,7 @@ class BookshelfFragment1() : BaseBookshelfFragment(R.layout.fragment_bookshelf1)
         structureVersion++
         fragmentMap.clear()
         selectedBookTag = ""
-        binding.viewPagerBookshelf.post {
-            if (!isAdded) return@post
+        postToCurrentView(binding.viewPagerBookshelf) {
             adapter.notifyDataSetChanged()
             if (bookGroups.any { it.groupId == targetGroupId }) {
                 switchToGroupId(targetGroupId)

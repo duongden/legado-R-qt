@@ -1696,4 +1696,5 @@
     <string name="bookshelf_tag_save">Lưu</string>
     <string name="menu_page">Trang %d</string>
     <string name="change_page">Chọn trang</string>
+    <string name="bookshelf_import_result">Đã nhập: %1$d; thất bại: %2$d; bỏ qua: %3$d</string>
 </resources>

@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import io.legado.app.utils.setTranslatedBookText
+import io.legado.app.utils.TranslateUtils
 import io.legado.app.R
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.lib.theme.ThemeStore.Companion.accentColor
@@ -62,7 +64,7 @@ class ChapterAdapter(
         private val tvChapterName: TextView = itemView.findViewById(R.id.tvChapterName)
 
         fun bind(chapter: BookChapter, isSelected: Boolean) {
-            tvChapterName.text = chapter.title
+            tvChapterName.setTranslatedBookText(chapter.title, TranslateUtils.Kind.TITLE)
             tvChapterName.textSize = if (isVolume) 12f else if (isSelected) 14.5f else 13.5f
             if (isSelected) {
                 tvChapterName.setTextColor(accentColor)

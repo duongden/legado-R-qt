@@ -272,7 +272,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -1696,16 +1695,25 @@ class ReadBookActivity : BaseReadBookActivity(),
         )
     }
 
+    private var askAiSelectionJob: Job? = null
+
     private fun askAiBySelection() {
-        val prompt = selectedTextForAskAi()
-        if (prompt.isBlank()) {
-            toastOnUi(R.string.ai_image_no_selection)
-            return
+        askAiSelectionJob?.cancel()
+        val bookUrl = ReadBook.book?.bookUrl
+        val chapter = ReadBook.curTextChapter
+        askAiSelectionJob = lifecycleScope.launch {
+            val prompt = selectedTextForAskAi()
+            ensureActive()
+            if (ReadBook.book?.bookUrl != bookUrl || ReadBook.curTextChapter !== chapter) return@launch
+            if (prompt.isBlank()) {
+                toastOnUi(R.string.ai_image_no_selection)
+                return@launch
+            }
+            openReadAiPanel(prompt)
         }
-        openReadAiPanel(prompt)
     }
 
-    private fun selectedTextForAskAi(): String {
+    private suspend fun selectedTextForAskAi(): String {
         val selected = selectedText.trim()
         if (selected.isBlank() || epubCoreActive) return selected
         val book = ReadBook.book ?: return selected
@@ -1714,46 +1722,51 @@ class ReadBookActivity : BaseReadBookActivity(),
             ?: return selected
         val selectedRanges = binding.readView.getSelectedSourceRanges()
         if (selectedRanges.isEmpty()) return ""
-        val rawContent = runCatching { BookHelp.getContent(book, textChapter.chapter).orEmpty() }
-            .onFailure { AppLog.put("Ask AI could not load original chapter content", it) }
-            .getOrNull()
-            .orEmpty()
-        if (rawContent.isBlank()) return ""
-        val sourceParagraphs = runCatching {
-            ContentProcessor.get(book.name, book.origin).getContent(
-                book = book,
-                chapter = textChapter.chapter,
-                content = rawContent,
-                includeTitle = false,
-                chineseConvert = false,
-                translate = false
-            ).textList
-        }.onFailure {
-            AppLog.put("Ask AI source-text recovery failed", it)
-        }.getOrNull() ?: return ""
-        return runCatching {
-            val translationData = runBlocking { TranslationLoader.load().data }
-            selectedRanges.mapNotNull { range ->
-                val source = if (range.sourceIndex < 0) textChapter.chapter.title
-                    else sourceParagraphs.getOrNull(range.sourceIndex)
-                val display = if (range.sourceIndex < 0) textChapter.title
-                    else textChapter.paragraphs.firstOrNull {
-                        it.realNum == range.paragraphNumber && it.sourceIndex == range.sourceIndex
-                    }?.text
-                if (source.isNullOrBlank() || display.isNullOrBlank()) return@mapNotNull null
-                TranslationEngine.sourceSpansForSelection(
-                    displayText = display,
-                    sourceText = source,
-                    selectionStart = range.start,
-                    selectionEndExclusive = range.endExclusive,
-                    data = translationData
-                ).mapNotNull { span ->
-                    source.substring(span.start.coerceIn(0, source.length), span.endExclusive.coerceIn(0, source.length))
-                        .takeIf { it.isNotBlank() }
-                }.joinToString("")
-            }.filter { it.isNotBlank() }.distinct().joinToString(" ").trim()
-        }.onFailure { AppLog.put("Ask AI selected-text source mapping failed", it) }
-            .getOrNull().orEmpty()
+        return withContext(IO) {
+            val rawContent = runCatching { BookHelp.getContent(book, textChapter.chapter).orEmpty() }
+                .onFailure { AppLog.put("Ask AI could not load original chapter content", it) }
+                .getOrNull()
+                .orEmpty()
+            if (rawContent.isBlank()) return@withContext ""
+            val sourceParagraphs = runCatching {
+                ContentProcessor.get(book.name, book.origin).getContent(
+                    book = book,
+                    chapter = textChapter.chapter,
+                    content = rawContent,
+                    includeTitle = false,
+                    chineseConvert = false,
+                    translate = false
+                ).textList
+            }.onFailure {
+                AppLog.put("Ask AI source-text recovery failed", it)
+            }.getOrNull() ?: return@withContext ""
+            runCatching {
+                val translationData = TranslationLoader.load().data
+                selectedRanges.mapNotNull { range ->
+                    val source = if (range.sourceIndex < 0) textChapter.chapter.title
+                        else sourceParagraphs.getOrNull(range.sourceIndex)
+                    val display = if (range.sourceIndex < 0) textChapter.title
+                        else textChapter.paragraphs.firstOrNull {
+                            it.realNum == range.paragraphNumber && it.sourceIndex == range.sourceIndex
+                        }?.text
+                    if (source.isNullOrBlank() || display.isNullOrBlank()) return@mapNotNull null
+                    TranslationEngine.sourceSpansForSelection(
+                        displayText = display,
+                        sourceText = source,
+                        selectionStart = range.start,
+                        selectionEndExclusive = range.endExclusive,
+                        data = translationData
+                    ).mapNotNull { span ->
+                        source.substring(span.start.coerceIn(0, source.length), span.endExclusive.coerceIn(0, source.length))
+                            .takeIf { it.isNotBlank() }
+                    }.joinToString("")
+                }.filter { it.isNotBlank() }.distinct().joinToString(" ").trim()
+            }.onFailure {
+                if (it is CancellationException) throw it
+                AppLog.put("Ask AI selected-text source mapping failed", it)
+            }
+                .getOrNull().orEmpty()
+        }
     }
 
     private fun generateImageBySelection() {

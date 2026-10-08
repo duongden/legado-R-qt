@@ -98,8 +98,17 @@ class CrashLogsDialog : ComposeDialogFragment() {
         fun initData() {
             viewModelScope.launch {
                 try {
-                    val list = withContext(Dispatchers.IO) {
+                    val local = withContext(Dispatchers.IO) {
                         val result = arrayListOf<FileDoc>()
+                        appCtx.filesDir.getFile("crash")
+                            .listFiles(FileFilter { it.isFile })
+                            ?.forEach { result.add(FileDoc.fromFile(it)) }
+                        result.sortedByDescending { it.name }
+                    }
+                    // Show durable logs before accessing removable storage or a document provider.
+                    _logFlow.value = local
+                    val list = withContext(Dispatchers.IO) {
+                        val result = ArrayList(local)
                         appCtx.externalCacheDir
                             ?.getFile("crash")
                             ?.listFiles(FileFilter { it.isFile })
@@ -109,18 +118,21 @@ class CrashLogsDialog : ComposeDialogFragment() {
                         val backupPath = AppConfig.backupPath
                         if (!backupPath.isNullOrEmpty()) {
                             val uri = Uri.parse(backupPath)
-                            FileDoc.fromUri(uri, true)
-                                .find("crash")
-                                ?.list {
-                                    !it.isDir
-                                }?.let {
-                                    result.addAll(it)
+                            runCatching {
+                                FileDoc.fromUri(uri, true)
+                                    .find("crash")
+                                    ?.list { !it.isDir }
+                                    ?.let { result.addAll(it) }
+                            }.onFailure {
+                                if (it is kotlinx.coroutines.CancellationException) throw it
+                                android.util.Log.w("CrashLogsDialog", "Backup crash logs unavailable", it)
                                 }
                         }
                         result.sortedByDescending { it.name }.distinctBy { it.name }
                     }
                     _logFlow.value = list
                 } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
                     appCtx.toastOnUi(e.localizedMessage)
                 }
             }
@@ -143,6 +155,7 @@ class CrashLogsDialog : ComposeDialogFragment() {
             viewModelScope.launch {
                 try {
                     withContext(Dispatchers.IO) {
+                        FileUtils.delete(appCtx.filesDir.getFile("crash"), false)
                         appCtx.externalCacheDir
                             ?.getFile("crash")
                             ?.let {

@@ -1,0 +1,8 @@
+<resources>
+    <string name="video_hide_danmaku">Ẩn bình luận</string>
+    <string name="video_show_danmaku">Hiện bình luận</string>
+    <string name="video_speed">Tốc độ</string>
+    <string name="video_episodes">Chọn tập</string>
+    <string name="video_episode_count">Chọn tập (%1$d)</string>
+    <string name="video_playing_speed">Đang phát ở tốc độ %1$s×</string>
+</resources>

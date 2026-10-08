@@ -1,0 +1,8 @@
+<resources>
+    <string name="video_hide_danmaku">Hide comments</string>
+    <string name="video_show_danmaku">Show comments</string>
+    <string name="video_speed">Speed</string>
+    <string name="video_episodes">Episodes</string>
+    <string name="video_episode_count">Episodes (%1$d)</string>
+    <string name="video_playing_speed">Playing at %1$s×</string>
+</resources>

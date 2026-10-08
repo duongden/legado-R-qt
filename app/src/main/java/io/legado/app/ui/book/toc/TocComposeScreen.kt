@@ -854,7 +854,7 @@ private fun TocChapterRow(
             ).joinToString("  ")
             if (meta.isNotBlank()) {
                 Text(
-                    text = meta,
+                    text = translatedText(meta, io.legado.app.utils.TranslateUtils.Kind.META),
                     color = palette.settings.secondaryText,
                     fontSize = 12.sp,
                     fontFamily = palette.settings.bodyFontFamily,

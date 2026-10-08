@@ -1,5 +1,26 @@
 # Lịch sử thay đổi R-qt
 
+## 08/10/2026 — Sửa lỗi và cải thiện video
+
+### Video và dịch giao diện
+
+- Giữ loại video/âm thanh/truyện tranh do script hoặc người dùng xác định khi tải danh sách tập, tránh mở video bằng màn hình đọc chữ.
+- Đưa tên phim, tên tập, thông tin nguồn và giới thiệu HTML/Markdown qua luồng dịch Trung–Việt; giữ nguyên dữ liệu nguồn và URL phát.
+- Dịch metadata thời lượng trong mục lục và Việt hóa nhãn điều khiển, hộp chọn tập của trình phát.
+
+### Độ ổn định và dữ liệu
+
+- Chặn callback tủ sách truy cập view đã bị hủy; đưa xử lý đoạn chọn Ask AI ra luồng nền và giữ trạng thái yêu cầu AI nhất quán khi hủy.
+- Lưu crash log vào bộ nhớ nội bộ trước, hiển thị trong màn hình nhật ký và giới hạn số báo cáo được giữ lại.
+- Đổi tên sách/tác giả cập nhật dấu trang trong cùng giao dịch; tìm dấu trang không lẫn kết quả của sách khác.
+- Kiểm tra nguồn HTTPS dùng cổng 443; bỏ qua kiểm tra host cho định danh không phải HTTP(S) và tiếp tục kiểm tra quy tắc nguồn.
+- Nhập danh sách sách báo riêng số thành công, thất bại và bỏ qua; tìm kiếm và lưu sách chạy ở luồng nền.
+
+### Build
+
+- Bản debug dùng khóa debug Android, không phụ thuộc mật khẩu ký release.
+- Build RTMP JNI từ mã nguồn với căn chỉnh 16 KB; bổ sung công cụ kiểm tra ELF/RELRO và căn chỉnh ZIP trong APK.
+
 ## 3.26.1007.1 — 07/10/2026 · Build 12028
 
 ### Ask AI và trợ lý AI

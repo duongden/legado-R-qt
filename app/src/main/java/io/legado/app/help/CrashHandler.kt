@@ -1,26 +1,23 @@
 package io.legado.app.help
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.Debug
 import android.os.Looper
-import android.webkit.WebSettings
+import android.util.Log
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.LocalConfig
 import io.legado.app.help.storage.RestoreJournal
-import io.legado.app.model.ReadAloud
 import io.legado.app.utils.FileDoc
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.createFileIfNotExist
 import io.legado.app.utils.createFolderReplace
 import io.legado.app.utils.externalCache
 import io.legado.app.utils.getFile
-import io.legado.app.utils.longToastOnUiLegacy
 import io.legado.app.utils.stackTraceStr
 import io.legado.app.utils.writeText
 import splitties.init.appCtx
@@ -53,9 +50,15 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
             AppLog.put("发生未捕获的异常\n${ex.localizedMessage}", ex)
             Looper.loop()
         } else {
-            runCatching { ReadAloud.stop(context) }
-            handleException(ex)
-            mDefaultHandler?.uncaughtException(thread, ex)
+            // Record the original failure before cleanup can throw or initialize services.
+            Log.e("CrashHandler", "Uncaught exception on ${thread.name}", ex)
+            try {
+                handleException(ex)
+            } catch (loggingFailure: Throwable) {
+                Log.e("CrashHandler", "Could not finish saving crash report", loggingFailure)
+            } finally {
+                mDefaultHandler?.uncaughtException(thread, ex)
+            }
         }
     }
 
@@ -76,15 +79,13 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
      */
     private fun handleException(ex: Throwable?) {
         if (ex == null) return
-        LocalConfig.appCrash = true
-        RestoreJournal.markCrash()
         //保存日志文件
         saveCrashInfo2File(ex)
+        runCatching { LocalConfig.appCrash = true }
+        runCatching { RestoreJournal.markCrash() }
         if ((ex is OutOfMemoryError || ex.cause is OutOfMemoryError) && AppConfig.recordHeapDump) {
             doHeapDump()
         }
-        context.longToastOnUiLegacy(ex.stackTraceStr)
-        Thread.sleep(3000)
     }
 
     companion object {
@@ -100,11 +101,7 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
                 map["MODEL"] = Build.MODEL
                 map["SDK_INT"] = Build.VERSION.SDK_INT.toString()
                 map["RELEASE"] = Build.VERSION.RELEASE
-                map["WebViewUserAgent"] = try {
-                    WebSettings.getDefaultUserAgent(appCtx)
-                } catch (e: Throwable) {
-                    e.toString()
-                }
+                // Do not initialize WebView from a crashing (possibly background) thread.
                 map["packageName"] = appCtx.packageName
                 map["heapSize"] = Runtime.getRuntime().maxMemory().toString()
                 //获取app版本信息
@@ -115,12 +112,6 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
             }
             map
         }
-
-        /**
-         * 格式化时间
-         */
-        @SuppressLint("SimpleDateFormat")
-        private val format = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss")
 
         /**
          * 保存错误信息到文件中
@@ -134,18 +125,18 @@ class CrashHandler(val context: Context) : Thread.UncaughtExceptionHandler {
             val writer = StringWriter()
             val printWriter = PrintWriter(writer)
             ex.printStackTrace(printWriter)
-            var cause: Throwable? = ex.cause
-            while (cause != null) {
-                cause.printStackTrace(printWriter)
-                cause = cause.cause
-            }
+            // printStackTrace already includes causes and suppressed exceptions.
             printWriter.close()
             val result = writer.toString()
             sb.append(result)
             val crashLog = sb.toString()
             val timestamp = System.currentTimeMillis()
-            val time = format.format(Date())
+            val time = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", java.util.Locale.ROOT).format(Date())
             val fileName = "crash-$time-$timestamp.log"
+            // Private storage remains available when external cache/backup storage is absent.
+            runCatching {
+                CrashLogStore.write(java.io.File(appCtx.filesDir, "crash"), fileName, crashLog)
+            }.onFailure { Log.e("CrashHandler", "Could not save private crash report", it) }
             try {
                 val backupPath = AppConfig.backupPath
                     ?: throw NoStackTraceException("备份路径未配置")

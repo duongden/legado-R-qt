@@ -2395,4 +2395,5 @@ bookUrl：%7$s
     <string name="auto_task_debug_missing">未找到任务</string>
     <string name="auto_task_debug_duration">耗时：%1$d 毫秒</string>
     <string name="auto_task_debug_result">结果：%1$s</string>
+    <string name="bookshelf_import_result">导入：%1$d；失败：%2$d；跳过：%3$d</string>
 </resources>

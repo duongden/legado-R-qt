@@ -162,7 +162,8 @@ class CheckSourceService : BaseService() {
         return kotlin.runCatching {
             withTimeout(2000) {
                 val url = URI(domain.substringBefore("#"))
-                val port = url.port.takeIf { it > 0 } ?: 80
+                val port = url.port.takeIf { it > 0 }
+                    ?: if (url.scheme.equals("https", ignoreCase = true)) 443 else 80
                 Socket().use { socket ->
                     socket.connect(InetSocketAddress(url.host, port), 1600)
                     true
@@ -182,12 +183,12 @@ class CheckSourceService : BaseService() {
             }
         }
         //检测源地址可访问性
-        if (CheckSource.checkDomain) {
-            val domain = source.bookSourceUrl
-            if (!domain.startsWith("http", ignoreCase = true)) {
-                throw NoStackTraceException("源地址不是http链接")
-            }
-            else if (isDomainReachable(domain)) {
+        val domain = source.bookSourceUrl
+        // A source URL may be an identifier; only HTTP(S) addresses have a host to probe.
+        if (CheckSource.checkDomain &&
+            (domain.startsWith("http://", true) || domain.startsWith("https://", true))
+        ) {
+            if (isDomainReachable(domain)) {
                 source.removeGroupSafe("域名失效")
             } else {
                 source.addGroupSafe("域名失效")

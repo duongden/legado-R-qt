@@ -1,0 +1,19 @@
+LibRtmp Client for Android
+Source: https://github.com/ant-media/LibRtmp-Client-for-Android
+Commit: 3af67842f517f9c6bbd22b961878624d0c44b713
+
+This source replaces the prebuilt io.antmedia:rtmp-client:3.2.0 AAR.
+Java package names and native library name are retained for Media3 compatibility.
+Build: Android NDK r28c (28.2.13676358), API 21, all four existing ABIs.
+Local integration: Gradle library module, ndk-build Android.mk, JNI keep rules.
+Source fix: include string.h in flvmuxer/xiecc_rtmp.c to declare memcpy for Clang.
+Both max-page-size and common-page-size are set to 16384 so LOAD and RELRO
+regions align correctly. The NO_CRYPTO setting matches the upstream build.
+
+Licenses: LICENSE (Apache 2.0); src/main/cpp/librtmp/COPYING (LGPL 2.1).
+Original source headers and notices are preserved.
+
+Validation after assembling an APK:
+  python3 tools/check_apk_16kb.py path/to/app.apk
+  <Android SDK>/build-tools/36.0.0/zipalign -c -P 16 4 path/to/app.apk
+A successful alignment check does not replace testing playback on a 16 KB device.

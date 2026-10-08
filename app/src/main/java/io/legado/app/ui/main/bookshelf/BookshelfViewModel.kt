@@ -28,6 +28,11 @@ import io.legado.app.utils.isAbsUrl
 import io.legado.app.utils.isJsonArray
 import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.toastOnUi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
@@ -178,32 +183,44 @@ class BookshelfViewModel(application: Application) : BaseViewModel(application) 
     private fun importBookshelfByJson(json: String, groupId: Long) {
         execute {
             val bookSourceParts = appDb.bookSourceDao.allEnabledPart
-            val semaphore = Semaphore(AppConfig.threadCount)
-            GSON.fromJsonArray<Map<String, String?>>(json).getOrThrow().forEach { bookInfo ->
-                val name = bookInfo["name"] ?: ""
-                val author = bookInfo["author"] ?: ""
-                if (name.isEmpty() || appDb.bookDao.has(name, author)) {
-                    return@forEach
-                }
-                semaphore.withPermit {
-                    WebBook.preciseSearch(
-                        this, bookSourceParts, name, author,
-                        semaphore = semaphore
-                    ).onSuccess {
-                        val book = it.first
-                        if (groupId > 0) {
-                            book.group = groupId
+            val semaphore = Semaphore(AppConfig.threadCount.coerceAtLeast(1))
+            val entries = GSON.fromJsonArray<Map<String, String?>>(json).getOrThrow()
+                .distinctBy { (it["name"] ?: "") to (it["author"] ?: "") }
+            val results = coroutineScope {
+                entries.map { bookInfo ->
+                    async {
+                        semaphore.withPermit {
+                            val name = bookInfo["name"].orEmpty()
+                            val author = bookInfo["author"].orEmpty()
+                            if (name.isBlank() || appDb.bookDao.has(name, author)) {
+                                return@withPermit 0
+                            }
+                            try {
+                                var found: Book? = null
+                                for (part in bookSourceParts) {
+                                    currentCoroutineContext().ensureActive()
+                                    val source = part.getBookSource() ?: continue
+                                    found = WebBook.preciseSearchAwait(source, name, author).getOrNull()
+                                    if (found != null) break
+                                }
+                                val book = found ?: throw NoStackTraceException("没有搜索到<$name>$author")
+                                if (groupId > 0) book.group = groupId
+                                book.save()
+                                1
+                            } catch (e: Exception) {
+                                currentCoroutineContext().ensureActive()
+                                AppLog.put("Import book failed: $name ($author)", e)
+                                -1
+                            }
                         }
-                        book.save()
-                    }.onError { e ->
-                        context.toastOnUi(e.localizedMessage)
                     }
-                }
+                }.awaitAll()
             }
+            Triple(results.count { it == 1 }, results.count { it == -1 }, results.count { it == 0 })
+        }.onSuccess { (imported, failed, skipped) ->
+            context.toastOnUi(context.getString(R.string.bookshelf_import_result, imported, failed, skipped))
         }.onError {
-            it.printOnDebug()
-        }.onFinally {
-            context.toastOnUi(R.string.success)
+            context.toastOnUi(it.localizedMessage ?: "ERROR")
         }
     }
 

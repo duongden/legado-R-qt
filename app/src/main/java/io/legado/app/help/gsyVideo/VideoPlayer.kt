@@ -16,6 +16,8 @@ import com.shuyu.gsyvideoplayer.listener.LockClickListener
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer
+import io.legado.app.utils.setTranslatedBookText
+import io.legado.app.utils.TranslateUtils
 import io.legado.app.R
 import io.legado.app.lib.theme.applyThemedFilletControlBackground
 import io.legado.app.model.VideoPlay
@@ -262,7 +264,9 @@ class VideoPlayer: StandardGSYVideoPlayer {
 
     override fun setUp(url: String?, cacheWithPlay: Boolean, cachePath: File?, title: String?): Boolean {
         initDanmaku()
-        return super.setUp(url, cacheWithPlay, cachePath, title)
+        return super.setUp(url, cacheWithPlay, cachePath, title).also {
+            mTitleTextView?.setTranslatedBookText(title.orEmpty(), TranslateUtils.Kind.TITLE)
+        }
     }
 
     private fun initDanmaku() {
@@ -340,10 +344,10 @@ class VideoPlayer: StandardGSYVideoPlayer {
         post {
             if (VideoPlay.danmakuShow) {
                 if (!mDanmakuView!!.isShown) mDanmakuView!!.show()
-                mToggleDanmaku?.text = "关弹幕"
+                mToggleDanmaku?.text = context.getString(R.string.video_hide_danmaku)
             } else {
                 if (mDanmakuView!!.isShown) mDanmakuView!!.hide()
-                mToggleDanmaku?.text = "开弹幕"
+                mToggleDanmaku?.text = context.getString(R.string.video_show_danmaku)
             }
         }
     }
@@ -410,9 +414,9 @@ class VideoPlayer: StandardGSYVideoPlayer {
                 setSpeed(playSpeed, true)
                 if (playSpeed != 1.0f) {
                     playbackSpeed?.text = "${playSpeed}X"
-                    showOverlayTip("${playSpeed}倍播放中", 2000)
+                    showOverlayTip(context.getString(R.string.video_playing_speed, playSpeed.toString()), 2000)
                 } else {
-                    playbackSpeed?.text = "倍速"
+                    playbackSpeed?.text = context.getString(R.string.video_speed)
                 }
             }
 

@@ -294,8 +294,8 @@ object WebBook {
         runPerJs: Boolean = false,
         isFromBookInfo : Boolean = false
     ): Result<List<BookChapter>> {
-        book.removeAllBookType()
-        book.addType(bookSource.getBookType())
+        // Book info scripts may resolve a more specific media type than the source default.
+        // Loading a TOC must preserve that type (and the user's manual type override).
         return kotlin.runCatching {
             if (runPerJs) {
                 runPreUpdateJs(bookSource, book, isFromBookInfo).getOrThrow()

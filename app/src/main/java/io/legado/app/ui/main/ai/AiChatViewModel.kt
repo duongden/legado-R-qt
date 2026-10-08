@@ -15,6 +15,9 @@ import io.legado.app.help.ai.AiTaskKeepAlive
 import io.legado.app.help.ai.AiToolRegistry
 import io.legado.app.help.config.AppConfig
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
@@ -102,7 +105,7 @@ class AiChatViewModel : ViewModel() {
         cancelledText: String,
         failureMessage: (String) -> String
     ): Boolean {
-        if (isRequesting || activeJob?.isActive == true) return false
+        if (isRequesting || activeJob?.isCompleted == false) return false
         val retryTarget = prepareRetryTarget(messageId) ?: return false
         startRequestInternal(
             userContent = retryTarget.userMessage.content,
@@ -114,6 +117,7 @@ class AiChatViewModel : ViewModel() {
         return true
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun startRequestInternal(
         userContent: String,
         thinkingText: String,
@@ -121,7 +125,7 @@ class AiChatViewModel : ViewModel() {
         failureMessage: (String) -> String,
         retryTarget: RetryTarget?
     ) {
-        if (isRequesting || activeJob?.isActive == true) return
+        if (isRequesting || activeJob?.isCompleted == false) return
         setRequesting(true)
         activeCompanionId = currentCompanionId
         activeSessionId = currentSessionId
@@ -157,28 +161,30 @@ class AiChatViewModel : ViewModel() {
         } else {
             emptyList()
         }
-        val agentRun = AiAgentStateStore.startRun(
-            sessionId = requestSessionId,
-            scope = AiAgentSession.SCOPE_CHAT,
-            type = AiAgentJob.TYPE_CHAT,
-            currentGoal = userContent,
-            currentTask = aiFlowText(R.string.ai_flow_generating),
-            inputJson = JSONObject()
-                .put("messageCount", requestMessages.size)
-                .put("userContent", userContent.take(2_000))
-                .put("companionId", requestCompanionId)
-                .toString()
-        )
-        activeAgentRun = agentRun
         var updatedContextSummary = currentSessionSummary()
         val keepAliveId = AiTaskKeepAlive.retain(
             title = aiFlowText(R.string.ai_flow_generating_title),
             content = userContent,
             kind = AiTaskKeepAlive.KIND_CHAT
         )
-        activeJob = requestScope.launch {
+        activeJob = requestScope.launch(start = CoroutineStart.ATOMIC) {
             try {
+                val agentRun = AiAgentStateStore.startRun(
+                    sessionId = requestSessionId,
+                    scope = AiAgentSession.SCOPE_CHAT,
+                    type = AiAgentJob.TYPE_CHAT,
+                    currentGoal = userContent,
+                    currentTask = aiFlowText(R.string.ai_flow_generating),
+                    inputJson = JSONObject()
+                        .put("messageCount", requestMessages.size)
+                        .put("userContent", userContent.take(2_000))
+                        .put("companionId", requestCompanionId)
+                        .toString()
+                )
+                activeAgentRun = agentRun
+
                 val result = runCatching {
+                    ensureActive()
                     AiChatService.chatStream(
                         messages = requestMessages,
                         onPartial = { partial ->
@@ -214,10 +220,6 @@ class AiChatViewModel : ViewModel() {
                         agentMode = requestAgentMode
                     )
                 }
-                targetFor(requestSessionId, requestCompanionId).setRequesting(false)
-                activeJob = null
-                activeCompanionId = null
-                activeSessionId = null
                 result.onSuccess { content ->
                     targetFor(requestSessionId, requestCompanionId).finishActiveThinking(removeIfBlank = true)
                     activePendingContent = ""
@@ -265,7 +267,23 @@ class AiChatViewModel : ViewModel() {
                     activeVariantGroupId = null
                     activeVariantIndex = 0
                 }
+            } catch (throwable: Throwable) {
+                // Setup/persistence failures must also unlock the send button.
+                AppLog.put("AI request cleanup or initialization failed", throwable)
+                if (throwable !is CancellationException) {
+                    targetFor(requestSessionId, requestCompanionId).failPendingAssistant(
+                        failureMessage(throwable.localizedMessage ?: throwable.javaClass.simpleName)
+                    )
+                }
             } finally {
+                activePendingContent = ""
+                activeToolMessageIds.clear()
+                activeVariantGroupId = null
+                activeVariantIndex = 0
+                activeCompanionId = null
+                activeSessionId = null
+                activeAgentRun = null
+                targetFor(requestSessionId, requestCompanionId).setRequesting(false)
                 AiTaskKeepAlive.release(keepAliveId)
             }
         }
@@ -274,22 +292,8 @@ class AiChatViewModel : ViewModel() {
     fun stopRequest(cancelledText: String) {
         val job = activeJob ?: return
         job.cancel(CancellationException(AiAgentInterruption.USER_STOPPED_GENERATION))
-        activeJob = null
-        activeCompanionId = null
-        activeSessionId = null
-        activePendingContent = ""
-        AiAgentStateStore.cancel(activeAgentRun, AiAgentInterruption.USER_STOPPED_GENERATION)
-        activeAgentRun = null
-        finishActiveThinking(fallback = cancelledText)
-        finishActiveTools(false, cancelledText)
-        activeToolMessageIds.clear()
-        setRequesting(false)
-        if (cancelledText.isNotBlank()) {
-            replacePendingAssistant(cancelledText)
-        }
-        activePendingAssistantMessageId = null
-        activeVariantGroupId = null
-        activeVariantIndex = 0
+        // The coroutine owns finalization. Keep it registered until completion so
+        // its callbacks cannot overwrite the state of a subsequent request.
     }
 
     fun replacePendingAssistant(content: String) {
@@ -568,7 +572,7 @@ class AiChatViewModel : ViewModel() {
         AppConfig.aiCurrentChatSessionId = session.id
         messages.clear()
         messages.addAll(session.messages.map { it.copy(pending = false) })
-        setRequesting(activeJob?.isActive == true &&
+        setRequesting(activeJob?.isCompleted == false &&
                 activeSessionId == currentSessionId &&
                 activeCompanionId == currentCompanionId)
         publish(saveHistory = false)
@@ -599,7 +603,7 @@ class AiChatViewModel : ViewModel() {
     }
 
     fun deleteFromMessage(messageId: String): Boolean {
-        if (isRequesting || activeJob?.isActive == true) return false
+        if (isRequesting || activeJob?.isCompleted == false) return false
         val index = messages.indexOfFirst { it.id == messageId }
         if (index < 0) return false
         messages.subList(index, messages.size).clear()
@@ -609,7 +613,7 @@ class AiChatViewModel : ViewModel() {
     }
 
     fun selectAssistantVariant(variantGroupId: String, variantIndex: Int): Boolean {
-        if (variantGroupId.isBlank() || isRequesting || activeJob?.isActive == true) return false
+        if (variantGroupId.isBlank() || isRequesting || activeJob?.isCompleted == false) return false
         if (messages.none { it.variantGroupId == variantGroupId && it.variantIndex == variantIndex }) {
             return false
         }
@@ -758,7 +762,7 @@ class AiChatViewModel : ViewModel() {
     }
 
     fun switchCompanion(companionId: String): Boolean {
-        if (isRequesting || activeJob?.isActive == true) return false
+        if (isRequesting || activeJob?.isCompleted == false) return false
         if (!selectCompanionForSession(companionId)) return false
         currentSessionId = AppConfig.aiCurrentChatSessionId ?: UUID.randomUUID().toString()
         restoreCurrentSession()
@@ -783,7 +787,7 @@ class AiChatViewModel : ViewModel() {
             currentSessionId = UUID.randomUUID().toString()
             AppConfig.aiCurrentChatSessionId = currentSessionId
         }
-        val requesting = activeJob?.isActive == true &&
+        val requesting = activeJob?.isCompleted == false &&
                 activeSessionId == currentSessionId &&
                 activeCompanionId == currentCompanionId
         if (requesting && messages.none { it.role == AiChatMessage.Role.ASSISTANT && it.pending }) {

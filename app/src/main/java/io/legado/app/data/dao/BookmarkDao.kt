@@ -28,7 +28,7 @@ interface BookmarkDao {
     @Query(
         """SELECT * FROM bookmarks 
         where bookName = :bookName and bookAuthor = :bookAuthor 
-        and chapterName like '%'||:key||'%' or content like '%'||:key||'%'
+        and (chapterName like '%'||:key||'%' or content like '%'||:key||'%')
         order by chapterIndex"""
     )
     fun flowSearch(bookName: String, bookAuthor: String, key: String): Flow<List<Bookmark>>
@@ -43,10 +43,14 @@ interface BookmarkDao {
     @Query(
         """SELECT * FROM bookmarks 
         where bookName = :bookName and bookAuthor = :bookAuthor 
-        and chapterName like '%'||:key||'%' or content like '%'||:key||'%'
+        and (chapterName like '%'||:key||'%' or content like '%'||:key||'%')
         order by chapterIndex"""
     )
     fun search(bookName: String, bookAuthor: String, key: String): List<Bookmark>
+
+    @Query("""update bookmarks set bookName = :newName, bookAuthor = :newAuthor
+        where bookName = :oldName and bookAuthor = :oldAuthor""")
+    fun renameBook(oldName: String, oldAuthor: String, newName: String, newAuthor: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg bookmark: Bookmark)
