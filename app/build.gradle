@@ -22,26 +22,15 @@ configurations.configureEach {
     }
 }
 
-static def releaseTime() {
-    return new Date().format("yy.MMddHH", TimeZone.getTimeZone("GMT+8"))
-}
-
+// Keep IDE and command-line builds on the same published version.
+// Bump both defaults for each release; never derive update codes from Git history.
 def name = "legado-R-qt"
 def version = project.hasProperty("VERSION_NAME")
         ? project.property("VERSION_NAME").toString()
-        : "3." + releaseTime()
-def gitCommitsText = ""
-try {
-    def gitRevList = ['git', 'rev-list', 'HEAD', '--count'].execute(null, rootDir)
-    gitRevList.waitFor()
-    gitCommitsText = gitRevList.in.text.trim()
-} catch (Throwable ignored) {
-    gitCommitsText = ""
-}
-def gitCommits = gitCommitsText?.isInteger() ? Integer.parseInt(gitCommitsText) : 0
+        : "3.26.1008.1"
 def buildVersionCode = project.hasProperty("VERSION_CODE")
         ? project.property("VERSION_CODE").toString().toInteger()
-        : 10000 + gitCommits
+        : 12029
 
 android {
     compileSdk = compile_sdk_version
