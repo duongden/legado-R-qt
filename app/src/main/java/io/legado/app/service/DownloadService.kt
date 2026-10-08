@@ -17,6 +17,16 @@ import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.IntentAction
 import io.legado.app.constant.NotificationId
+import io.legado.app.help.http.newCallResponse
+import io.legado.app.help.http.okHttpClient
+import io.legado.app.help.update.RqtReleasePolicy
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 import io.legado.app.utils.IntentType
 import io.legado.app.utils.openFileUri
 import io.legado.app.utils.servicePendingIntent
@@ -36,7 +46,11 @@ class DownloadService : BaseService() {
     private val groupKey = "${appCtx.packageName}.download"
     private val downloads = hashMapOf<Long, DownloadInfo>()
     private val completeDownloads = hashSetOf<Long>()
+    private val failedDownloads = hashSetOf<Long>()
     private var upStateJob: Job? = null
+    private var appUpdateJob: Job? = null
+    private var appUpdateFile: File? = null
+    private val appUpdateId = -1L
     private val downloadReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             queryState()
@@ -108,6 +122,13 @@ class DownloadService : BaseService() {
             }
             return
         }
+        // Allow an explicit retry after DownloadManager reports a terminal failure.
+        downloads.filter { (id, info) -> info.url == url && id in failedDownloads }
+            .keys.toList().forEach { removeDownload(it) }
+        if (RqtReleasePolicy.isReleaseApk(fileName)) {
+            startAppUpdateDownload(url, fileName, headers)
+            return
+        }
         if (downloads.values.any { it.url == url }) {
             toastOnUi("已在下载列表")
             return
@@ -143,17 +164,110 @@ class DownloadService : BaseService() {
         }
     }
 
+    /** Use the app HTTP stack for updates: some devices fail system downloads with reason 1000. */
+    private fun startAppUpdateDownload(url: String, fileName: String, headers: Map<String, String>) {
+        if (appUpdateJob?.isActive == true) {
+            toastOnUi(R.string.downloading)
+            return
+        }
+        completeDownloads.remove(appUpdateId)
+        failedDownloads.remove(appUpdateId)
+        val info = DownloadInfo(url, fileName, appUpdateId.toInt())
+        downloads[appUpdateId] = info
+        upDownloadNotification(appUpdateId, info.notificationId,
+            "$fileName ${getString(R.string.downloading)}", 100, 0, info.startTime)
+        appUpdateJob = lifecycleScope.launch {
+            var partialFile: File? = null
+            try {
+                val file = withContext(Dispatchers.IO) {
+                    val directory = File(cacheDir, "app-updates").apply { mkdirs() }
+                    val target = File.createTempFile("update-", ".apk", directory)
+                    partialFile = target
+                    val client = okHttpClient.newBuilder()
+                        .connectTimeout(15, TimeUnit.SECONDS)
+                        .readTimeout(30, TimeUnit.SECONDS)
+                        .callTimeout(0, TimeUnit.SECONDS)
+                        .build()
+                    client.newCallResponse {
+                        url(url)
+                        headers.forEach { (name, value) -> header(name, value) }
+                    }.use { response ->
+                        if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
+                        val body = response.body
+                        val length = body.contentLength()
+                        var received = 0L
+                        var lastProgress = 0L
+                        body.byteStream().use { input ->
+                            target.outputStream().use { output ->
+                                val buffer = ByteArray(64 * 1024)
+                                while (true) {
+                                    coroutineContext.ensureActive()
+                                    val count = input.read(buffer)
+                                    if (count < 0) break
+                                    output.write(buffer, 0, count)
+                                    received += count
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastProgress >= 500) {
+                                        lastProgress = now
+                                        val percent = if (length > 0) ((received * 100) / length).toInt().coerceIn(0, 99) else 0
+                                        withContext(Dispatchers.Main) {
+                                            upDownloadNotification(appUpdateId, info.notificationId,
+                                                "$fileName ${getString(R.string.downloading)}", 100, percent, info.startTime)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (received == 0L || (length >= 0 && received != length)) {
+                            throw IOException("Incomplete APK")
+                        }
+                    }
+                    val archive = packageManager.getPackageArchiveInfo(target.path, 0)
+                    if (archive?.packageName != "io.legado.app.rqt.Archive") {
+                        throw IOException("Invalid APK")
+                    }
+                    target
+                }
+                appUpdateFile?.takeIf { it != file }?.delete()
+                appUpdateFile = file
+                partialFile = null
+                completeDownloads.add(appUpdateId)
+                upDownloadNotification(appUpdateId, info.notificationId,
+                    "$fileName ${getString(R.string.download_success)}", 100, 100, info.startTime)
+                openDownload(appUpdateId, fileName)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                failedDownloads.add(appUpdateId)
+                // Do not expose request URLs, headers or arbitrary exception messages.
+                val reason = error.message?.takeIf { it.matches(Regex("HTTP \\d{3}|Incomplete APK|Invalid APK")) }
+                    ?: error.javaClass.simpleName
+                val message = getString(R.string.download_error) + " ($reason)"
+                AppLog.put("App update download failed: $reason")
+                toastOnUi(message)
+                upDownloadNotification(appUpdateId, info.notificationId,
+                    "$fileName $message", 0, 0, info.startTime)
+            } finally {
+                partialFile?.delete()
+            }
+        }
+    }
+
     /**
      * 取消下载
      */
     @Synchronized
     private fun removeDownload(downloadId: Long) {
-        if (!completeDownloads.contains(downloadId)) {
+        if (downloadId == appUpdateId) {
+            appUpdateJob?.cancel()
+            appUpdateJob = null
+        } else if (!completeDownloads.contains(downloadId)) {
             downloadManager.remove(downloadId)
         }
-        downloads.remove(downloadId)
+        val info = downloads.remove(downloadId)
         completeDownloads.remove(downloadId)
-        notificationManager.cancel(downloadId.toInt())
+        failedDownloads.remove(downloadId)
+        info?.let { notificationManager.cancel(it.notificationId) }
     }
 
     /**
@@ -187,7 +301,8 @@ class DownloadService : BaseService() {
             stopSelf()
             return
         }
-        val ids = downloads.keys
+        val ids = downloads.keys.filter { it != appUpdateId }
+        if (ids.isEmpty()) return
         val query = DownloadManager.Query()
         query.setFilterById(*ids.toLongArray())
         downloadManager.query(query).use { cursor ->
@@ -197,6 +312,7 @@ class DownloadService : BaseService() {
                     cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
                 val fileSizeIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
                 val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                val reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON)
                 do {
                     val id = cursor.getLong(idIndex)
                     val progress = cursor.getInt(progressIndex)
@@ -210,7 +326,15 @@ class DownloadService : BaseService() {
                             getString(R.string.download_success)
                         }
 
-                        DownloadManager.STATUS_FAILED -> getString(R.string.download_error)
+                        DownloadManager.STATUS_FAILED -> {
+                            val reason = cursor.getInt(reasonIndex)
+                            if (failedDownloads.add(id)) {
+                                // Never log download URLs or request headers: they may contain secrets.
+                                AppLog.put("DownloadManager failed (reason=$reason)")
+                                toastOnUi(getString(R.string.download_error) + " ($reason)")
+                            }
+                            getString(R.string.download_error) + " ($reason)"
+                        }
                         else -> getString(R.string.unknown_state)
                     }
                     downloads[id]?.let { downloadInfo ->
@@ -233,7 +357,10 @@ class DownloadService : BaseService() {
      */
     private fun openDownload(downloadId: Long, fileName: String?) {
         kotlin.runCatching {
-            downloadManager.getUriForDownloadedFile(downloadId)?.let { uri ->
+            val downloadedUri = if (downloadId == appUpdateId) {
+                appUpdateFile?.let { Uri.fromFile(it) }
+            } else downloadManager.getUriForDownloadedFile(downloadId)
+            downloadedUri?.let { uri ->
                 val type = IntentType.from(fileName)
                 openFileUri(uri, type)
             }
