@@ -4,7 +4,7 @@
 
 <p align="center"><img width="125" height="125" src="docs/archive_icon.svg" alt="Reading Archive"></p>
 
-Legado-R-qt kế thừa [Legado-R / Reading Archive](https://github.com/duongden/legado-R), được phát triển từ nhánh Legado do Lyc duy trì trên nền tảng [Legado](https://github.com/gedoor/legado). Ứng dụng hỗ trợ đọc truyện chữ và EPUB, tùy chỉnh giao diện, nghe sách, AI và tác vụ định kỳ.
+Legado-R-qt kế thừa và được phát triển từ nhánh Legado do Lyc duy trì trên nền tảng [Legado](https://github.com/gedoor/legado). Ứng dụng hỗ trợ đọc truyện chữ và EPUB, tùy chỉnh giao diện, nghe sách, AI và tác vụ định kỳ.
 
 Nhánh qt bổ sung giao diện tiếng Việt và dịch Trung → Việt ngoại tuyến bằng từ điển cho truyện chữ. Bản dịch được xử lý khi hiển thị, giữ nguyên dữ liệu sách gốc. Chất lượng dịch phụ thuộc từ điển được nhập; việc hoàn thiện Việt hóa giao diện vẫn đang tiếp tục.
 
