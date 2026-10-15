@@ -2,6 +2,7 @@
 
 package io.legado.app.ui.main
 
+import io.legado.app.utils.readLocalizedMarkdown
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
@@ -2139,7 +2140,7 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
             block.resume(true)
             return@sc
         }
-        val privacyPolicy = String(assets.open("privacyPolicy.md").readBytes())
+        val privacyPolicy = readLocalizedMarkdown("privacyPolicy.md")
         alert(getString(R.string.privacy_policy), privacyPolicy) {
             positiveButton(R.string.agree) {
                 LocalConfig.privacyPolicyOk = true
@@ -2162,14 +2163,14 @@ class MainActivity : VMBaseActivity<ActivityMainBinding, MainViewModel>(),
         }
         LocalConfig.versionCode = appInfo.versionCode
         if (LocalConfig.isFirstOpenApp) {
-            val help = String(assets.open("web/help/md/appHelp.md").readBytes())
+            val help = readLocalizedMarkdown("web/help/md/appHelp.md")
             val dialog = TextDialog(getString(R.string.help), help, TextDialog.Mode.MD)
             dialog.setOnDismissListener {
                 block.resume(null)
             }
             showDialogFragment(dialog)
         } else if (!BuildConfig.DEBUG) {
-            val log = String(assets.open("updateLog.md").readBytes())
+            val log = readLocalizedMarkdown("updateLog.md")
             val dialog = TextDialog(getString(R.string.update_log), log, TextDialog.Mode.MD)
             dialog.setOnDismissListener {
                 block.resume(null)

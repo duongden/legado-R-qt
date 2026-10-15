@@ -1,23 +1,24 @@
 <template>
-  <section class="settings-wrapper" aria-label="Cài đặt đọc">
-    <header class="panel-heading"><div><span class="eyebrow">CÁ NHÂN HÓA</span><h2>Cài đặt</h2></div><button type="button" class="close-panel" aria-label="Đóng cài đặt" @click="store.setReadSettingsVisible(false)">×</button></header>
+  <section class="settings-wrapper" :aria-label="t('Cài đặt đọc')">
+    <header class="panel-heading"><div><span class="eyebrow">{{ t("CÁ NHÂN HÓA") }}</span><h2>{{ t("Cài đặt") }}</h2></div><button type="button" class="close-panel" :aria-label="t('Đóng cài đặt')" @click="store.setReadSettingsVisible(false)">×</button></header>
     <div class="setting-list">
-      <section class="settings-section"><h3>Giao diện</h3><ThemePicker /></section>
-      <section class="settings-section"><h3>Nội dung</h3><TranslationToggle /></section>
-      <section class="settings-section"><h3>Phông chữ</h3>
+      <section class="settings-section"><h3>{{ t("Giao diện") }}</h3><ThemePicker /></section>
+      <section class="settings-section"><h3>{{ t("Nội dung") }}</h3><TranslationToggle /></section>
+      <section class="settings-section"><h3>{{ t("Phông chữ") }}</h3>
         <div class="font-options"><button v-for="(font,index) in fonts" :key="font" type="button" :aria-pressed="selectedFont === index" :class="{ selected:selectedFont === index }" @click="setFont(index)">{{ font }}</button></div>
-        <label class="custom-font-label" for="reader-custom-font">Phông tùy chỉnh</label>
-        <div class="custom-font-row"><input id="reader-custom-font" class="font-item-input" v-model="customFontName" placeholder="Tên phông trên thiết bị" /><button type="button" @click="setCustomFont">Lưu</button></div>
-        <button type="button" class="text-action" @click="loadFontFromURL">Tải phông từ liên kết</button>
+        <label class="custom-font-label" for="reader-custom-font">{{ t("Phông tùy chỉnh") }}</label>
+        <div class="custom-font-row"><input id="reader-custom-font" class="font-item-input" v-model="customFontName" :placeholder="t('Tên phông trên thiết bị')" /><button type="button" @click="setCustomFont">{{ t("Lưu") }}</button></div>
+        <button type="button" class="text-action" @click="loadFontFromURL">{{ t("Tải phông từ liên kết") }}</button>
       </section>
-      <section class="settings-section"><h3>Trình bày trang</h3>
-        <div v-for="control in controls" :key="control.label" class="setting-row"><span>{{ control.label }}</span><div class="stepper"><button type="button" :aria-label="`Giảm ${control.label.toLowerCase()}`" @click="control.less">−</button><output>{{ control.value }}</output><button type="button" :aria-label="`Tăng ${control.label.toLowerCase()}`" @click="control.more">+</button></div></div>
-        <label class="setting-row"><span>Tải chương liên tục</span><input type="checkbox" :checked="infiniteLoading" @change="setInfiniteLoading(!infiniteLoading)" /></label>
+      <section class="settings-section"><h3>{{ t("Trình bày trang") }}</h3>
+        <div v-for="control in controls" :key="control.label" class="setting-row"><span>{{ control.label }}</span><div class="stepper"><button type="button" :aria-label="`${t('Giảm')} ${control.label.toLowerCase()}`" @click="control.less">−</button><output>{{ control.value }}</output><button type="button" :aria-label="`${t('Tăng')} ${control.label.toLowerCase()}`" @click="control.more">+</button></div></div>
+        <label class="setting-row"><span>{{ t("Tải chương liên tục") }}</span><input type="checkbox" :checked="infiniteLoading" @change="setInfiniteLoading(!infiniteLoading)" /></label>
       </section>
     </div>
   </section>
 </template>
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import TranslationToggle from '@/components/TranslationToggle.vue'
 import ThemePicker from '@/components/ThemePicker.vue'
 import '../assets/fonts/iconfont.css'
@@ -56,18 +57,18 @@ const setCustomFont = () => {
 }
 // 加载网络字体
 const loadFontFromURL = () => {
-  ElMessageBox.prompt('Nhập liên kết tải phông chữ', 'Thông báo', {
-    confirmButtonText: 'Xác nhận',
-    cancelButtonText: 'Hủy',
+  ElMessageBox.prompt(t('Nhập liên kết tải phông chữ'), t('Thông báo'), {
+    confirmButtonText: t('Xác nhận'),
+    cancelButtonText: t('Hủy'),
     inputPattern: /^https?:.+$/,
-    inputErrorMessage: 'Định dạng URL không hợp lệ',
+    inputErrorMessage: t('Định dạng URL không hợp lệ'),
     beforeClose: (action, instance, done) => {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true
-        instance.confirmButtonText = 'Đang tải…'
+        instance.confirmButtonText = t('Đang tải…')
         const url = instance.inputValue
         if (typeof FontFace !== 'function') {
-          ElMessage.error('Trình duyệt không hỗ trợ FontFace')
+          ElMessage.error(t('Trình duyệt không hỗ trợ FontFace'))
           return done()
         }
         const fontface = new FontFace(customFontName.value, `url("${url}")`)
@@ -76,14 +77,14 @@ const loadFontFromURL = () => {
           .load()
           .then(function () {
             instance.confirmButtonLoading = false
-            ElMessage.info('Đã tải phông chữ!')
+            ElMessage.info(t('Đã tải phông chữ!'))
             setCustomFont()
             done()
           })
           .catch(function (error) {
             instance.confirmButtonLoading = false
-            instance.confirmButtonText = 'Xác nhận'
-            ElMessage.error('Tải thất bại, hãy kiểm tra URL')
+            instance.confirmButtonText = t('Xác nhận')
+            ElMessage.error(t('Tải thất bại, hãy kiểm tra URL'))
             throw error
           })
       } else {
@@ -160,12 +161,12 @@ const setInfiniteLoading = (loading: boolean) => {
   store.config.infiniteLoading = loading
 }
 const controls = computed(() => [
-  { label: 'Cỡ chữ', value: `${fontSize.value} px`, less: lessFontSize, more: moreFontSize },
-  { label: 'Giãn dòng', value: spacing.value.line.toFixed(1), less: lessLineSpacing, more: moreLineSpacing },
-  { label: 'Giãn đoạn', value: spacing.value.paragraph.toFixed(1), less: lessParagraphSpacing, more: moreParagraphSpacing },
-  { label: 'Giãn chữ', value: spacing.value.letter.toFixed(2), less: lessLetterSpacing, more: moreLetterSpacing },
-  ...(!store.miniInterface ? [{ label: 'Chiều rộng trang', value: `${readWidth.value} px`, less: lessReadWidth, more: moreReadWidth }] : []),
-  { label: 'Tốc độ lật trang', value: `${jumpDuration.value} ms`, less: lessJumpDuration, more: moreJumpDuration },
+  { label: t('Cỡ chữ'), value: `${fontSize.value} px`, less: lessFontSize, more: moreFontSize },
+  { label: t('Giãn dòng'), value: spacing.value.line.toFixed(1), less: lessLineSpacing, more: moreLineSpacing },
+  { label: t('Giãn đoạn'), value: spacing.value.paragraph.toFixed(1), less: lessParagraphSpacing, more: moreParagraphSpacing },
+  { label: t('Giãn chữ'), value: spacing.value.letter.toFixed(2), less: lessLetterSpacing, more: moreLetterSpacing },
+  ...(!store.miniInterface ? [{ label: t('Chiều rộng trang'), value: `${readWidth.value} px`, less: lessReadWidth, more: moreReadWidth }] : []),
+  { label: t('Tốc độ lật trang'), value: `${jumpDuration.value} ms`, less: lessJumpDuration, more: moreJumpDuration },
 ])
 </script>
 <style scoped>

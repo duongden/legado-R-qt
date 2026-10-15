@@ -294,6 +294,6 @@ val Activity.navigationBarGravity: Int
  * 显示目录help下的帮助文档
  */
 fun AppCompatActivity.showHelp(fileName: String) {
-    val mdText = String(assets.open("web/help/md/${fileName}.md").readBytes())
+    val mdText = readLocalizedMarkdown("web/help/md/${fileName}.md")
     showDialogFragment(TextDialog(getString(R.string.help), mdText, TextDialog.Mode.MD))
 }

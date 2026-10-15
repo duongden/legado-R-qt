@@ -10,11 +10,13 @@
       :class="{ selected: isSelected(cata.index) }"
       @click="gotoChapter(cata)"
     >
-      {{ cata.title }}
+      <span class="chapter-title">{{ cata.title }}</span>
+      <span v-if="cata.isVip || cata.isPay" class="chapter-access">{{ cata.isPay ? t('Đã mua') : 'VIP' }}</span>
     </button>
   </div>
 </template>
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import type { BookChapter } from '@/book'
 
 const props = defineProps<{
@@ -41,4 +43,7 @@ const catas = computed(() => {
 .cata-text { width:100%; height:48px; border:0; border-bottom:1px solid var(--line); padding:0 12px; text-align:left; background:transparent; color:var(--ink); font:inherit; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; }
 .cata-text:hover { background:var(--hover); }
 .selected { color:var(--accent); background:var(--accent-soft); font-weight:700; }
+.cata-text { display:flex; align-items:center; gap:8px; }
+.chapter-title { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.chapter-access { flex-shrink:0; font-size:10px; color:var(--accent); background:var(--accent-soft); padding:2px 5px; border-radius:4px; }
 </style>

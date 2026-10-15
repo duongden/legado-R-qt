@@ -411,7 +411,7 @@ interface BookDao {
      * whatever `type` the in-memory copy holds, which can undo a concurrent shelf-state
      * change made through another screen.
      */
-    @Query("update books set durChapterTime = :time where bookUrl = :bookUrl")
+    @Query("update books set durChapterTime = :time where bookUrl = :bookUrl and durChapterTime < :time")
     fun updateReadTime(bookUrl: String, time: Long)
 
     @Query(
@@ -433,6 +433,9 @@ interface BookDao {
         durChapterPos: Int,
         durChapterTime: Long
     )
+
+    @Query("update books set durVolumeIndex = :volumeIndex, chapterInVolumeIndex = :episodeIndex where bookUrl = :bookUrl")
+    fun updateVideoEpisodePosition(bookUrl: String, volumeIndex: Int, episodeIndex: Int)
 
     @Query("update books set customTag = :customTag where bookUrl = :bookUrl")
     fun updateCustomTag(bookUrl: String, customTag: String?)

@@ -12,6 +12,7 @@ import type {
 } from '@/book'
 import type { Source } from '@/source'
 import { getRelayAuthorization, getRelayBootstrap } from './relay'
+import type { ProgressSnapshot, ProgressResult } from '@/store/readProgressSync'
 
 export type LeagdoApiResponse<T> = {
   isSuccess: boolean
@@ -78,6 +79,34 @@ const saveBookProgressWithBeacon = (bookProgress: BookProgress) => {
 }
 
 const getBookShelf = () => ajax.get<LeagdoApiResponse<Book[]>>('getBookshelf?translate=' + translationQuery())
+
+const getReadProgress = async (bookUrl: string): Promise<ProgressSnapshot> => {
+  const url = new URL('getReadProgress', legado_http_entry_point)
+  url.searchParams.set('url', bookUrl)
+  url.searchParams.set('translate', translationQuery())
+  const response = await fetch(url, {
+    cache: 'no-store', signal: AbortSignal.timeout(10000),
+  })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  const data = await response.json() as LeagdoApiResponse<ProgressSnapshot>
+  if (!data.isSuccess) throw new Error(data.errorMsg)
+  return data.data
+}
+
+const saveReadProgress = async (
+  bookUrl: string,
+  position: { baseRevision: number; durChapterIndex: number; durChapterPos: number },
+): Promise<ProgressResult> => {
+  const response = await fetch(new URL('saveReadProgress', legado_http_entry_point), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookUrl, ...position }), keepalive: true,
+    signal: AbortSignal.timeout(10000), cache: 'no-store',
+  })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  const result = await response.json() as LeagdoApiResponse<ProgressResult>
+  if (!result.isSuccess) throw new Error(result.errorMsg)
+  return result.data
+}
 
 const getChapterList = (/** @type {string} */ bookUrl: string) =>
   ajax.get<LeagdoApiResponse<BookChapter[]>>(
@@ -190,6 +219,8 @@ const getProxyImageUrl = (
 }
 
 export default {
+  getReadProgress,
+  saveReadProgress,
   getReadConfig,
   saveReadConfig,
   saveBookProgress,

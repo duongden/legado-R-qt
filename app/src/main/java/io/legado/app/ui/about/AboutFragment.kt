@@ -1,5 +1,6 @@
 package io.legado.app.ui.about
 
+import io.legado.app.utils.readLocalizedMarkdown
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.StringRes
@@ -209,7 +210,7 @@ class AboutFragment : ComposeSettingFragment() {
      * 显示md文件
      */
     private fun showMdFile(title: String, fileName: String) {
-        val mdText = String(requireContext().assets.open(fileName).readBytes())
+        val mdText = requireContext().readLocalizedMarkdown(fileName)
         showDialogFragment(TextDialog(title, mdText, TextDialog.Mode.MD))
     }
 

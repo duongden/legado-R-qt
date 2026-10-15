@@ -130,7 +130,26 @@ object ReadBook : CoroutineScope by MainScope() {
     var lastBookProgress: BookProgress? = null
 
     /* web端阅读进度记录 */
+    @Volatile
     var webBookProgress: BookProgress? = null
+    @Volatile
+    var webBookProgressBookUrl: String? = null
+
+    private fun hasPendingWebProgress(target: Book): Boolean = webBookProgress?.let {
+        webBookProgressBookUrl?.let { url -> url == target.bookUrl }
+            ?: (it.name == target.name && it.author == target.author)
+    } == true
+
+    fun applyWebBookProgress() = synchronized(ReadProgressSync.lock) {
+        val target = book ?: return@synchronized
+        if (!hasPendingWebProgress(target)) return@synchronized
+        val progress = webBookProgress ?: return@synchronized
+        webBookProgress = null
+        webBookProgressBookUrl = null
+        target.durChapterTime = progress.durChapterTime
+        target.durChapterTitle = progress.durChapterTitle
+        setProgress(progress)
+    }
 
     var preDownloadTask: Job? = null
     val downloadedChapters = hashSetOf<Int>()
@@ -164,9 +183,11 @@ object ReadBook : CoroutineScope by MainScope() {
     }
 
     fun markRecentRead(book: Book, readTime: Long = System.currentTimeMillis()) {
+        synchronized(ReadProgressSync.lock) {
+            book.durChapterTime = maxOf(book.durChapterTime, readTime)
+        }
         executor.execute {
             kotlin.runCatching {
-                book.durChapterTime = readTime
                 // Only the timestamp belongs here. A whole-row write would also carry this
                 // instance's `type`, which the init path is concurrently rewriting, and
                 // could drop the notShelf flag that marks a book as merely being sampled.
@@ -207,6 +228,7 @@ object ReadBook : CoroutineScope by MainScope() {
         upWebBook(book)
         lastBookProgress = null
         webBookProgress = null
+        webBookProgressBookUrl = null
         TextFile.clear()
         synchronized(this) {
             loadingChapters.clear()
@@ -1855,8 +1877,13 @@ object ReadBook : CoroutineScope by MainScope() {
         saveRead(fullUpdate = true)
     }
 
-    fun saveRead(pageChanged: Boolean = false, fullUpdate: Boolean = false) {
+    fun saveRead(pageChanged: Boolean = false, fullUpdate: Boolean = false) =
+        synchronized(ReadProgressSync.lock) { saveReadSnapshot(pageChanged, fullUpdate) }
+
+    private fun saveReadSnapshot(pageChanged: Boolean, fullUpdate: Boolean) {
         val targetBook = book ?: return
+        // A background reader must not overwrite progress received from the browser.
+        if (hasPendingWebProgress(targetBook)) return
         val targetChapterIndex = durChapterIndex
         val targetChapterPos = durChapterPos
         if (!targetBook.isEpub && !ReadBookConfig.usingEpubLayout) {
@@ -1870,7 +1897,7 @@ object ReadBook : CoroutineScope by MainScope() {
             }
         }
         val targetBookSource = bookSource
-        val durTime = System.currentTimeMillis()
+        val durTime = maxOf(System.currentTimeMillis(), targetBook.durChapterTime + 1)
         val chapterChanged = targetBook.durChapterIndex != targetChapterIndex
         targetBook.lastCheckCount = 0
         targetBook.durChapterIndex = targetChapterIndex
@@ -1891,41 +1918,22 @@ object ReadBook : CoroutineScope by MainScope() {
         }
         executor.execute {
             kotlin.runCatching {
-                if (!pageChanged || chapterChanged) {
-                    appDb.bookChapterDao.getChapter(
-                        bookSnapshot.bookUrl,
-                        targetChapterIndex
-                    )?.let {
-                        bookSnapshot.durChapterTitle = it.getDisplayTitle(
-                            ContentProcessor.get(
-                                bookSnapshot.name,
-                                bookSnapshot.origin
-                            ).getTitleReplaceRules(),
-                            bookSnapshot.getUseReplaceRule(),
-                            replaceBook = bookSnapshot.toReplaceBook()
-                        )
-                        SourceCallBack.callBackBook(
-                            SourceCallBack.SAVE_READ,
-                            targetBookSource,
-                            bookSnapshot,
-                            it,
-                            durTime.toString()
-                        )
-                    }
-                }
-                if (fullUpdate) {
-                    bookSnapshot.update()
-                } else {
-                    appDb.bookDao.updateReadProgress(
-                        bookUrl = bookSnapshot.bookUrl,
-                        lastCheckCount = bookSnapshot.lastCheckCount,
-                        durChapterTitle = bookSnapshot.durChapterTitle,
-                        durChapterIndex = bookSnapshot.durChapterIndex,
-                        durChapterPos = bookSnapshot.durChapterPos,
-                        durChapterTime = bookSnapshot.durChapterTime
+                val savedChapter = if (!pageChanged || chapterChanged) {
+                    appDb.bookChapterDao.getChapter(bookSnapshot.bookUrl, targetChapterIndex)
+                } else null
+                savedChapter?.let {
+                    bookSnapshot.durChapterTitle = it.getDisplayTitle(
+                        ContentProcessor.get(bookSnapshot.name, bookSnapshot.origin).getTitleReplaceRules(),
+                        bookSnapshot.getUseReplaceRule(),
+                        replaceBook = bookSnapshot.toReplaceBook()
                     )
                 }
+                if (!ReadProgressSync.saveNative(appDb, bookSnapshot, fullUpdate)) return@runCatching
                 appDb.readRecentBookDao.insert(ReadRecentBook(bookSnapshot.bookUrl, durTime))
+                savedChapter?.let {
+                    SourceCallBack.callBackBook(SourceCallBack.SAVE_READ, targetBookSource,
+                        bookSnapshot, it, durTime.toString())
+                }
                 ReadRecordWidgetStore.updateRecentSnapshot(bookSnapshot, durTime)
             }.onFailure {
                 AppLog.put("保存书籍阅读进度信息出错\n$it", it)

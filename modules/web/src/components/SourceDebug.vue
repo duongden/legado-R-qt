@@ -3,7 +3,7 @@
     v-if="isBookSource"
     id="debug-key"
     v-model="searchKey"
-    placeholder="Tìm tên sách, tác giả"
+    :placeholder="t('Tìm tên sách, tác giả')"
     :prefix-icon="Search"
     style="padding-bottom: 4px"
     @keydown.enter="startDebug"
@@ -14,11 +14,12 @@
     type="textarea"
     readonly
     :rows="29"
-    placeholder="Kết quả gỡ lỗi hiển thị tại đây"
+    :placeholder="t('Kết quả gỡ lỗi hiển thị tại đây')"
   />
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import API from '@api'
 import { Search } from '@element-plus/icons-vue'
 
@@ -62,6 +63,6 @@ const isBookSource = computed(() => {
 
 <style lang="scss" scoped>
 :deep(#debug-text) {
-  height: calc(100vh - 45px - 36px - 5px);
+  height: calc(100dvh - 230px);
 }
 </style>

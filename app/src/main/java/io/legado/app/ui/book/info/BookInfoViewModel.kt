@@ -34,6 +34,7 @@ import io.legado.app.lib.webdav.ObjectNotFoundException
 import io.legado.app.model.AudioPlay
 import io.legado.app.model.AutoTask
 import io.legado.app.model.BookCover
+import io.legado.app.model.BookshelfAdder
 import io.legado.app.model.ReadBook
 import io.legado.app.model.ReadManga
 import io.legado.app.model.VideoPlay
@@ -636,36 +637,8 @@ class BookInfoViewModel(application: Application) : BaseViewModel(application) {
     fun addToBookshelf(success: (() -> Unit)?) { //点击书架按钮或在加分组时触发
         execute {
             bookData.value?.let { book ->
-                book.removeType(BookType.notShelf)
-                if (book.order == 0) {
-                    book.order = appDb.bookDao.minOrder - 1
-                }
-                appDb.bookDao.getBook(book.name, book.author)?.let {
-                    book.durChapterIndex = it.durChapterIndex
-                    book.durChapterPos = it.durChapterPos
-                    book.durChapterTitle = it.durChapterTitle
-                }
-                book.save()
-                if (ReadBook.book?.isSameNameAuthor(book) == true) {
-                    ReadBook.book = book
-                    ReadBook.inBookshelf = true
-                }
-                if (ReadManga.book?.isSameNameAuthor(book) == true) {
-                    ReadManga.book = book
-                    ReadManga.inBookshelf = true
-                }
-                if (AudioPlay.book?.isSameNameAuthor(book) == true) {
-                    AudioPlay.book = book
-                    AudioPlay.inBookshelf = true
-                }
-                if (VideoPlay.book?.isSameNameAuthor(book) == true) {
-                    VideoPlay.book = book
-                    VideoPlay.inBookshelf = true
-                }
-                SourceCallBack.callBackBook(SourceCallBack.ADD_BOOK_SHELF, bookSource, book)
-            }
-            chapterListData.value?.let {
-                appDb.bookChapterDao.insert(*it.toTypedArray())
+                val result = BookshelfAdder.add(book, chapterListData.value, bookSource)
+                bookData.postValue(result.book)
             }
             inBookshelf = true
         }.onSuccess {

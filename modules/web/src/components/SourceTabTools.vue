@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import { useSourceStore } from '@/store'
 
 const store = useSourceStore()
@@ -24,11 +25,11 @@ const current_tab = computed({
   set: val => (store.currentTab = val),
 })
 
-const tabData = ref([
-  ['editTab', 'Sửa nguồn'],
-  ['editDebug', 'Gỡ lỗi nguồn'],
-  ['editList', 'Danh sách nguồn'],
-  ['editHelp', 'Trợ giúp'],
+const tabData = computed(() => [
+  ['editTab', t('Sửa nguồn')],
+  ['editDebug', t('Gỡ lỗi nguồn')],
+  ['editList', t('Danh sách nguồn')],
+  ['editHelp', t('Trợ giúp')],
 ])
 </script>
 

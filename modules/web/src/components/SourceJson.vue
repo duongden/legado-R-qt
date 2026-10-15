@@ -3,13 +3,14 @@
     id="source-json"
     v-model="sourceString"
     type="textarea"
-    placeholder="Dữ liệu JSON của nguồn; có thể nhập trực tiếp vào ứng dụng Legado"
+    :placeholder="t('Dữ liệu JSON của nguồn; có thể nhập trực tiếp vào ứng dụng Legado')"
     :rows="30"
     @change="update"
     style="margin-bottom: 4px"
   ></el-input>
 </template>
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import { useSourceStore } from '@/store'
 
 const store = useSourceStore()
@@ -19,7 +20,7 @@ const update = async (string: string) => {
     store.changeEditTabSource(JSON.parse(string))
   } catch {
     ElMessage({
-      message: 'Nguồn đã dán không đúng định dạng',
+      message: t('Nguồn đã dán không đúng định dạng'),
       type: 'error',
     })
   }
@@ -39,6 +40,6 @@ watchEffect(async () => {
   width: 100%;
 }
 :deep(#source-json) {
-  height: calc(100vh - 120px);
+  height: calc(100dvh - 190px);
 }
 </style>

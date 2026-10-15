@@ -1,5 +1,6 @@
 package io.legado.app.ui.association
 
+import io.legado.app.utils.readLocalizedMarkdown
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -49,7 +50,7 @@ class FileAssociationActivity :
                 AppConfig.defaultBookTreeUri = treeUri.toString()
                 importBook(treeUri, uri)
             } ?: let {
-                val storageHelp = String(assets.open("storageHelp.md").readBytes())
+                val storageHelp = readLocalizedMarkdown("storageHelp.md")
                 toastOnUi(storageHelp)
                 importBook(null, uri)
             }

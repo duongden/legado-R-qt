@@ -945,10 +945,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             justInitData = true
         } else {
             //web端阅读时，app处于阅读界面，本地记录会覆盖web保存的进度，在此处恢复
-            ReadBook.webBookProgress?.let {
-                ReadBook.setProgress(it)
-                ReadBook.webBookProgress = null
-            }
+            ReadBook.applyWebBookProgress()
         }
         upSystemUiVisibility()
         registerReceiver(timeBatteryReceiver, timeBatteryReceiver.filter)

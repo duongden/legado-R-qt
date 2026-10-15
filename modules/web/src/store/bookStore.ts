@@ -10,6 +10,8 @@ import type {
 } from '@/book'
 import type { webReadConfig } from '@/web'
 import { ElMessage } from 'element-plus/es'
+import { getRelayBootstrap } from '@/api/relay'
+import { ReadProgressSync, type SyncStatus } from './readProgressSync'
 
 const default_config: webReadConfig = {
   theme: 0,
@@ -26,11 +28,14 @@ const default_config: webReadConfig = {
   },
 }
 let webReadConfigLoadedDate: Date | undefined
+let progressSync: ReadProgressSync | undefined
 
 export const useBookStore = defineStore('book', {
   state: () => {
     return {
       shelf: [] as Book[],
+      progressSyncStatus: 'loading' as SyncStatus,
+      remoteProgressEpoch: 0,
       catalog: [] as BookChapter[],
       readingBook: { chapterPos: 0, chapterIndex: 0 } as BaseBook & {
         chapterPos: number
@@ -98,14 +103,7 @@ export const useBookStore = defineStore('book', {
         return this.shelf
       })
 
-      if (this.shelf.length > 0) {
-        // bookshelf data fetched before:do not await
-        console.log('返回缓存书架数据')
-        return this.shelf
-      } else {
-        console.log('从阅读后端获取书架数据...')
-        return await fetchBookshellf_promise
-      }
+      return await fetchBookshellf_promise
     },
     /** 从后端加载书籍目录，优先返回内存缓存 */
     async loadWebCatalog(
@@ -182,8 +180,42 @@ export const useBookStore = defineStore('book', {
     setMiniInterface(mini: boolean) {
       this.miniInterface = mini
     },
-    /** 1.保存进度到app 2.修改内存中的数据*/
-    async saveBookProgress() {
+    async startProgressSync() {
+      progressSync?.stop()
+      progressSync = undefined
+      if (getRelayBootstrap()) return
+      const bookUrl = this.readingBook.bookUrl
+      this.progressSyncStatus = 'loading'
+      progressSync = new ReadProgressSync({
+        read: () => API.getReadProgress(bookUrl),
+        write: position => API.saveReadProgress(bookUrl, position),
+      }, (snapshot, conflict) => {
+        if (this.readingBook.bookUrl !== bookUrl) return
+        this.readingBook.chapterIndex = snapshot.progress.durChapterIndex
+        this.readingBook.chapterPos = snapshot.progress.durChapterPos
+        this.remoteProgressEpoch++
+        if (conflict) ElMessage.info('Đã nhận tiến trình mới hơn từ điện thoại hoặc tab khác')
+      }, status => { this.progressSyncStatus = status })
+      await progressSync.refresh()
+    },
+    async refreshReadProgress() {
+      await progressSync?.refresh()
+    },
+    markReadProgress() {
+      progressSync?.update({
+        durChapterIndex: this.readingBook.chapterIndex,
+        durChapterPos: this.readingBook.chapterPos,
+      })
+    },
+    stopProgressSync() {
+      progressSync?.stop()
+      progressSync = undefined
+    },
+    hasPendingReadProgress() { return progressSync?.hasPending === true },
+    /** LAN saves are acknowledged and serialized; keepalive is for page dismissal. */
+    async saveBookProgress(keepalive = false) {
+      if (progressSync) return progressSync.flush(keepalive)
+      if (!getRelayBootstrap()) return
       if (!this.bookProgress) return Promise.resolve()
       const { bookUrl } = this.readingBook
       const shelfRaw = toRaw(this.shelf)

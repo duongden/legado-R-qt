@@ -1,0 +1,29 @@
+.web-home { margin:0; min-height:100vh; font:14px/1.5 var(--font-ui); }
+.web-home * { box-sizing:border-box; }
+.web-home a { text-decoration:none; }
+.home-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; padding:20px max(24px,calc((100% - 1120px)/2)); border-bottom:1px solid var(--line); background:var(--surface); }
+.brand { display:flex; align-items:center; gap:12px; font-size:22px; font-weight:700; color:var(--ink); }
+.brand b { font-weight:400; color:var(--muted); }
+.brand-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:var(--radius-control); color:var(--surface); background:var(--accent); font:bold 28px Georgia,serif; }
+.web-home .web-appearance { padding:0; flex-wrap:wrap; justify-content:flex-start; z-index:auto; gap:16px; }
+.web-home .web-appearance label { display:flex; align-items:center; gap:8px; }
+.web-home .web-appearance select { font:inherit; border:var(--border-ui); border-radius:var(--radius-control); padding:8px; }
+.web-home .web-appearance a { text-decoration:underline; text-underline-offset:4px; }
+.home-main { max-width:1120px; margin:auto; padding:48px 24px 24px; }
+.home-intro { max-width:740px; margin-bottom:32px; }
+.home-intro .eyebrow { font-size:12px; font-weight:700; letter-spacing:.12em; color:var(--accent); }
+.home-intro h1 { font-size:clamp(28px,4vw,38px); line-height:1.2; letter-spacing:-.03em; margin:12px 0 16px; }
+.home-intro p,.home-card p,.home-note { color:var(--muted); }
+.home-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.home-card { display:flex; flex-direction:column; align-items:flex-start; padding:24px; border:var(--border-ui); border-radius:var(--radius-card); background:var(--surface); color:var(--ink); }
+.home-card:hover { border-color:var(--accent); background:var(--hover); }
+.card-number { color:var(--muted); font-size:12px; }
+.home-card h2 { font-size:22px; margin:8px 0; }
+.home-card p { margin:0 0 20px; }
+.card-action { display:flex; width:100%; justify-content:space-between; gap:12px; margin-top:auto; color:var(--accent); font-weight:600; font-size:14px; }
+.card-action span { font-size:20px; line-height:1; }
+.home-note { margin:24px 0 0; font-size:13px; }
+.home-footer { display:flex; flex-wrap:wrap; gap:20px; max-width:1120px; margin:auto; padding:24px; color:var(--muted); font-size:13px; }
+.home-footer span { margin-right:auto; }
+.web-home a:focus-visible,.web-home select:focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+@media(max-width:600px) { .home-header { padding:18px 20px; } #web-appearance-slot { width:100%; } .home-main { padding:28px 20px 16px; } .home-grid { grid-template-columns:1fr; gap:14px; } .home-card { padding:20px; } }

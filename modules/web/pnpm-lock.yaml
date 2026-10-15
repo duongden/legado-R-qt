@@ -29,6 +29,9 @@ importers:
       element-plus:
         specifier: 2.8.5
         version: 2.8.5(vue@3.5.43(typescript@5.5.4))
+      hls.js:
+        specifier: ^1.7.3
+        version: 1.7.3
       hotkeys-js:
         specifier: ^3.13.7
         version: 3.13.15
@@ -1215,6 +1218,9 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  hls.js@1.7.3:
+    resolution: {integrity: sha512-MsPlx6yVW4Qv4C7mEVou4/gk/5cN2dVxOTnrNjPSmyH2f0Ln+/UkG10Ax1PE6OvrmTVPKgQYozTtBaPOuCzq7A==}
 
   hotkeys-js@3.13.15:
     resolution: {integrity: sha512-gHh8a/cPTCpanraePpjRxyIlxDFrIhYqjuh01UHWEwDpglJKCnvLW8kqSx5gQtOuSsJogNZXLhOdbSExpgUiqg==}
@@ -3008,6 +3014,8 @@ snapshots:
       function-bind: 1.1.2
 
   he@1.2.0: {}
+
+  hls.js@1.7.3: {}
 
   hotkeys-js@3.13.15: {}
 

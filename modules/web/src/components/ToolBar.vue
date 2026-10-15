@@ -6,10 +6,10 @@
       :key="button.name"
       @click="button.action"
     >
-      {{ button.name }}
+      {{ t(button.name) }}
     </el-button>
     <el-button size="large" @click="() => (hotkeysDialogVisible = true)"
-      >Phím tắt</el-button
+      >{{ t("Phím tắt") }}</el-button
     >
   </div>
   <el-dialog
@@ -20,16 +20,16 @@
     <template #header="{ titleClass, titleId }">
       <div class="hotkeys-header flex-space-between">
         <div :id="titleId" :class="titleClass">
-          Cài đặt phím tắt
+          {{ t("Cài đặt phím tắt") }}
           <span v-if="recordKeyDowning">
-            <el-text> / Đang ghi nhận </el-text>
+            <el-text> {{ t("/ Đang ghi nhận") }} </el-text>
           </span>
         </div>
         <el-button
           :disabled="recordKeyDowning"
           @click="saveHotKeys"
           :icon="CircleCheckFilled"
-          >Lưu</el-button
+          >{{ t("Lưu") }}</el-button
         >
       </div>
     </template>
@@ -41,7 +41,7 @@
         class="hotkeys-item flex-space-between"
       >
         <span class="title"
-          ><el-text>{{ button.name }}</el-text></span
+          ><el-text>{{ t(button.name) }}</el-text></span
         >
         <div class="hotkeys-item__content">
           <div v-for="(key, hotKeysIndex) in button.hotKeys" :key="key">
@@ -50,14 +50,14 @@
               <el-text>+</el-text>
             </span>
           </div>
-          <span v-if="button.hotKeys.length == 0">Chưa đặt</span>
+          <span v-if="button.hotKeys.length == 0">{{ t("Chưa đặt") }}</span>
         </div>
         <el-button
           :disabled="recordKeyDowning"
           text
           :icon="Edit"
           @click="recordKeyDown(buttonIndex)"
-          >Sửa</el-button
+          >{{ t("Sửa") }}</el-button
         >
       </div>
     </div>
@@ -65,6 +65,7 @@
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import API from '@api'
 import { CircleCheckFilled, Edit } from '@element-plus/icons-vue'
 import hotkeys from 'hotkeys-js'
@@ -73,7 +74,7 @@ import { getSourceName, isInvaildSource, normalizeSource } from '../utils/souce'
 const store = useSourceStore()
 const pull = () => {
   const loadingMsg = ElMessage({
-    message: 'Đang tải…',
+    message: t('Đang tải…'),
     showClose: true,
     duration: 0,
   })
@@ -83,12 +84,12 @@ const pull = () => {
         store.changeTabName('editList')
         store.saveSources(data.data)
         ElMessage({
-          message: `Đã nhận ${data.data.length} nguồn`,
+          message: t('Đã nhận {count} nguồn', { count: data.data.length }),
           type: 'success',
         })
       } else {
         ElMessage({
-          message: data.errorMsg ?? 'Lỗi máy chủ',
+          message: data.errorMsg ?? t('Lỗi máy chủ'),
           type: 'error',
         })
       }
@@ -101,12 +102,12 @@ const push = () => {
   store.changeTabName('editList')
   if (sources.length === 0) {
     return ElMessage({
-      message: 'Chưa có nguồn',
+      message: t('Chưa có nguồn'),
       type: 'info',
     })
   }
   ElMessage({
-    message: 'Đang gửi nguồn',
+    message: t('Đang gửi nguồn'),
     type: 'info',
   })
   API.saveSources(sources).then(({ data }) => {
@@ -115,21 +116,17 @@ const push = () => {
       if (Array.isArray(okData)) {
         let failMsg = ``
         if (sources.length > okData.length) {
-          failMsg = '\nNguồn gửi thất bại sẽ được đánh dấu màu đỏ!'
+          failMsg = ' ' + t('Nguồn gửi thất bại được đánh dấu màu đỏ.')
           store.setPushReturnSources(okData)
         }
         ElMessage({
-          message: `Gửi nhiều nguồn đến ứng dụng Legado\nTổng: ${
-            sources.length
-          } nguồn\nThành công: ${okData.length} nguồn\nThất bại: ${
-            sources.length - okData.length
-          } nguồn${failMsg}`,
+          message: t('Đã gửi: {ok}/{total} nguồn · Lỗi: {failed}', { ok: okData.length, total: sources.length, failed: sources.length - okData.length }) + failMsg,
           type: 'success',
         })
       }
     } else {
       ElMessage({
-        message: `Gửi các nguồn thất bại!\nErrorMsg: ${data.errorMsg}`,
+        message: t('Không gửi được nguồn') + ': ' + data.errorMsg,
         type: 'error',
       })
     }
@@ -151,7 +148,7 @@ const undo = () => {
 const clearEdit = () => {
   store.clearEdit()
   ElMessage({
-    message: 'Đã xóa',
+    message: t('Đã xóa'),
     type: 'success',
   })
 }
@@ -160,7 +157,7 @@ const redo = () => {
   store.clearEdit()
   store.clearAllHistory()
   ElMessage({
-    message: 'Đã xóa toàn bộ lịch sử',
+    message: t('Đã xóa toàn bộ lịch sử'),
     type: 'success',
   })
 }
@@ -173,21 +170,21 @@ const saveSource = () => {
       const sourceName = getSourceName(source)
       if (data.isSuccess) {
         ElMessage({
-          message: `Đã lưu nguồn “${sourceName}” vào ứng dụng Legado`,
+          message: t('Đã lưu nguồn “{name}”', { name: sourceName }),
           type: 'success',
         })
         //save to store
         store.saveCurrentSource()
       } else {
         ElMessage({
-          message: `Không lưu được nguồn “${sourceName}”!\nErrorMsg: ${data.errorMsg}`,
+          message: t('Không lưu được nguồn “{name}”', { name: sourceName }) + ': ' + data.errorMsg,
           type: 'error',
         })
       }
     })
   } else {
     ElMessage({
-      message: `Hãy điền đầy đủ các trường bắt buộc`,
+      message: t('Hãy điền đầy đủ các trường bắt buộc'),
       type: 'error',
     })
   }
@@ -199,18 +196,18 @@ const debug = () => {
 
 const buttons = ref<{ name: string; hotKeys: string[]; action: () => void }[]>(
   Array.of(
-    { name: '⇈Gửi nguồn', hotKeys: [], action: push },
-    { name: '⇊Nhận nguồn', hotKeys: [], action: pull },
-    { name: '⋙Tạo JSON', hotKeys: [], action: conver2Tab },
-    { name: '⋘Sửa nguồn', hotKeys: [], action: conver2Source },
-    { name: '✗Xóa biểu mẫu', hotKeys: [], action: clearEdit },
-    { name: '↶Hoàn tác', hotKeys: [], action: undo },
-    { name: '↷Làm lại', hotKeys: [], action: redo },
-    { name: '⇏Gỡ lỗi nguồn', hotKeys: [], action: debug },
-    { name: '✓Lưu nguồn', hotKeys: [], action: saveSource },
+    { name: 'Gửi nguồn', hotKeys: [], action: push },
+    { name: 'Nhận nguồn', hotKeys: [], action: pull },
+    { name: 'Tạo JSON', hotKeys: [], action: conver2Tab },
+    { name: 'Sửa nguồn', hotKeys: [], action: conver2Source },
+    { name: 'Xóa biểu mẫu', hotKeys: [], action: clearEdit },
+    { name: 'Hoàn tác', hotKeys: [], action: undo },
+    { name: 'Làm lại', hotKeys: [], action: redo },
+    { name: 'Gỡ lỗi nguồn', hotKeys: [], action: debug },
+    { name: 'Lưu nguồn', hotKeys: [], action: saveSource },
   ),
 )
-const hotkeysDialogVisible = ref(true)
+const hotkeysDialogVisible = ref(false)
 
 const recordKeyDowning = ref(false)
 
@@ -252,7 +249,7 @@ watch(
 const recordKeyDown = (index: number) => {
   recordKeyDowning.value = true
   ElMessage({
-    message: 'Nhấn Esc hoặc bấm vào vùng trống để kết thúc',
+    message: t('Nhấn Esc hoặc bấm vào vùng trống để kết thúc'),
     type: 'info',
   })
   buttons.value[index].hotKeys = []
@@ -296,7 +293,7 @@ function readHotkeysConfig() {
     buttons.value.forEach((button, index) => (button.hotKeys = config[index]))
     return true
   } catch {
-    ElMessage({ message: 'Cấu hình phím tắt không hợp lệ', type: 'error' })
+    ElMessage({ message: t('Cấu hình phím tắt không hợp lệ'), type: 'error' })
     localStorage.removeItem('legado_web_hotkeys')
   }
   return false
@@ -322,14 +319,8 @@ onMounted(() => {
   justify-content: center;
 }
 
-.menu > .el-button {
-  margin: 4px;
-  padding: 1em;
-  width: 10em;
-  white-space: normal;
-  height: auto;
-  min-height: 40px;
-}
+.menu { display:flex; flex-direction:row; justify-content:flex-start; flex-wrap:wrap; gap:6px; padding:12px 20px; border-bottom:var(--border-ui); background:var(--surface); }
+.menu > .el-button { margin:0; padding:8px 12px; width:auto; height:auto; min-height:34px; font-size:12px; white-space:normal; }
 
 .hotkeys-item {
   .title {
@@ -350,5 +341,5 @@ onMounted(() => {
     }
   }
 }
-@media(max-width:900px) { .menu { flex-direction:row; flex-wrap:wrap; } .menu > .el-button { flex:1 1 140px; } }
+@media(max-width:620px) { .menu { padding:12px 16px; } .menu > .el-button { flex:1 1 100px; } }
 </style>

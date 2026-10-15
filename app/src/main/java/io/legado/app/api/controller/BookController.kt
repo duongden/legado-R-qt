@@ -19,6 +19,7 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.help.glide.ImageLoader
 import io.legado.app.model.BookCover
 import io.legado.app.model.ImageProvider
+import io.legado.app.model.WebLibraryTransfer
 import io.legado.app.model.ReadBook
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.model.webBook.WebBook
@@ -93,7 +94,7 @@ object BookController {
         val returnData = ReturnData()
         val coverPath = parameters["path"]?.firstOrNull()
         val ftBitmap = ImageLoader.loadBitmap(appCtx, coverPath)
-            .override(84, 112)
+            .override(420, 630)
             .centerCrop()
             .submit()
         return try {
@@ -104,7 +105,7 @@ object BookController {
                     Glide.with(appCtx)
                         .asBitmap()
                         .load(BookCover.defaultDrawable.toBitmap())
-                        .override(84, 112)
+                        .override(420, 630)
                         .centerCrop()
                         .submit()
                         .get()
@@ -241,7 +242,7 @@ object BookController {
             ?: return returnData.setErrorMsg("未找到书源")
         try {
             content = runBlocking {
-                WebBook.getContentAwait(bookSource, book, chapter).let {
+                WebLibraryTransfer.fetchContent(book, chapter).let {
                     val contentProcessor = ContentProcessor.get(book.name, book.origin)
                     contentProcessor.getContent(book, chapter, it, includeTitle = false, translate = requestedTranslation(parameters))
                         .toString()

@@ -1,3 +1,4 @@
+import './sync-ui-assets.mjs';
 import { URL } from "node:url";
 import fs from "node:fs";
 import process from "node:process";

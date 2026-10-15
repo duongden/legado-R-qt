@@ -1,0 +1,202 @@
+[
+  {
+    "id": "appHelp",
+    "title": {
+      "vi": "Hướng dẫn Legado",
+      "en": "Legado guide",
+      "zh": "应用与网络服务"
+    }
+  },
+  {
+    "id": "SourceMBookHelp",
+    "title": {
+      "vi": "Quản lý nguồn sách",
+      "en": "Book source management",
+      "zh": "书源管理"
+    }
+  },
+  {
+    "id": "SourceMRssHelp",
+    "title": {
+      "vi": "Quản lý nguồn RSS",
+      "en": "RSS source management",
+      "zh": "订阅源管理"
+    }
+  },
+  {
+    "id": "ruleHelp",
+    "title": {
+      "vi": "Quy tắc nguồn sách",
+      "en": "Book source rules",
+      "zh": "书源规则"
+    }
+  },
+  {
+    "id": "rssRuleHelp",
+    "title": {
+      "vi": "Quy tắc RSS",
+      "en": "RSS rules",
+      "zh": "订阅源规则"
+    }
+  },
+  {
+    "id": "debugHelp",
+    "title": {
+      "vi": "Gỡ lỗi nguồn",
+      "en": "Source debugging",
+      "zh": "书源调试"
+    }
+  },
+  {
+    "id": "regexHelp",
+    "title": {
+      "vi": "Biểu thức chính quy",
+      "en": "Regular expressions",
+      "zh": "正则表达式"
+    }
+  },
+  {
+    "id": "xpathHelp",
+    "title": {
+      "vi": "XPath",
+      "en": "XPath",
+      "zh": "XPath 路径"
+    }
+  },
+  {
+    "id": "jsHelp",
+    "title": {
+      "vi": "JavaScript và API nguồn",
+      "en": "JavaScript and source APIs",
+      "zh": "JavaScript 与 API"
+    }
+  },
+  {
+    "id": "paragraphRuleHelp",
+    "title": {
+      "vi": "Quy tắc xử lý đoạn",
+      "en": "Paragraph processing",
+      "zh": "段落规则"
+    }
+  },
+  {
+    "id": "readMenuCustomButtonHelp",
+    "title": {
+      "vi": "Nút đọc tùy chỉnh",
+      "en": "Custom reading buttons",
+      "zh": "自定义阅读按钮"
+    }
+  },
+  {
+    "id": "readMenuHelp",
+    "title": {
+      "vi": "Menu và cài đặt đọc",
+      "en": "Reading menus and settings",
+      "zh": "阅读菜单"
+    }
+  },
+  {
+    "id": "fontHelp",
+    "title": {
+      "vi": "Chọn phông với @font:",
+      "en": "Fonts with @font:",
+      "zh": "@font: 字体"
+    }
+  },
+  {
+    "id": "autoTaskHelp",
+    "title": {
+      "vi": "Tác vụ tự động",
+      "en": "Scheduled tasks",
+      "zh": "定时任务"
+    }
+  },
+  {
+    "id": "httpTTSHelp",
+    "title": {
+      "vi": "Quy tắc đọc trực tuyến",
+      "en": "HTTP TTS rules",
+      "zh": "在线朗读"
+    }
+  },
+  {
+    "id": "dictRuleHelp",
+    "title": {
+      "vi": "Quy tắc từ điển",
+      "en": "Dictionary rules",
+      "zh": "字典规则"
+    }
+  },
+  {
+    "id": "replaceRuleHelp",
+    "title": {
+      "vi": "Quy tắc thay thế",
+      "en": "Replacement rules",
+      "zh": "替换净化"
+    }
+  },
+  {
+    "id": "txtTocRuleHelp",
+    "title": {
+      "vi": "Mục lục TXT",
+      "en": "TXT chapter detection",
+      "zh": "TXT 目录规则"
+    }
+  },
+  {
+    "id": "webDavHelp",
+    "title": {
+      "vi": "Sao lưu WebDAV",
+      "en": "WebDAV backup",
+      "zh": "WebDAV 备份"
+    }
+  },
+  {
+    "id": "webDavBookHelp",
+    "title": {
+      "vi": "Sách trên WebDAV",
+      "en": "WebDAV books",
+      "zh": "WebDAV 书籍"
+    }
+  },
+  {
+    "id": "ExtensionContentType",
+    "title": {
+      "vi": "Phần mở rộng và MIME",
+      "en": "Extensions and MIME types",
+      "zh": "扩展名与 MIME"
+    }
+  },
+  {
+    "id": "storageHelp",
+    "title": {
+      "vi": "Quyền truy cập tệp",
+      "en": "File access",
+      "zh": "文件访问"
+    }
+  },
+  {
+    "id": "privacyPolicy",
+    "title": {
+      "vi": "Chính sách riêng tư",
+      "en": "Privacy policy",
+      "zh": "隐私政策"
+    }
+  },
+  {
+    "id": "disclaimer",
+    "title": {
+      "vi": "Tuyên bố miễn trừ",
+      "en": "Disclaimer",
+      "zh": "免责声明"
+    }
+  },
+  {
+    "id": "updateLog",
+    "title": {
+      "vi": "Nhật ký cập nhật",
+      "en": "Changelog",
+      "zh": "更新日志"
+    }
+  }
+]

@@ -1,12 +1,13 @@
 <template>
-  <section class="cata-wrapper" aria-label="Mục lục">
-    <header><div><small>{{ catalog.length }} CHƯƠNG</small><h2>Mục lục</h2></div><button aria-label="Đóng mục lục" @click="store.setPopCataVisible(false)">×</button></header>
-    <input v-model="query" aria-label="Tìm chương" placeholder="Tìm tên chương…" />
-    <p v-if="!virtualListdata.length" class="empty">Không tìm thấy chương.</p>
+  <section class="cata-wrapper" :aria-label="t('Mục lục')">
+    <header><div><small>{{ catalog.length }} {{ t("CHƯƠNG") }}</small><h2>{{ t("Mục lục") }}</h2></div><button :aria-label="t('Đóng mục lục')" @click="store.setPopCataVisible(false)">×</button></header>
+    <input v-model="query" :aria-label="t('Tìm chương')" :placeholder="t('Tìm tên chương…')" />
+    <p v-if="!virtualListdata.length" class="empty">{{ t("Không tìm thấy chương.") }}</p>
     <virtual-list v-else class="chapter-list" ref="virtualListRef" data-key="index" :data-sources="virtualListdata" :data-component="CatalogItem" :estimate-size="48" :extra-props="{ gotoChapter, currentChapterIndex }" />
   </section>
 </template>
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import VirtualList from 'vue3-virtual-scroll-list'
 import CatalogItem from './CatalogItem.vue'
 import type { BookChapter } from '@/book'

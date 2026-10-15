@@ -1,70 +1,20 @@
 <script setup lang="ts">
-import { Link } from '@element-plus/icons-vue'
-const isBookSource = inject<Ref<boolean>>('isBookSource', ref(true))
-const sourceTitle = computed(() => {
-  return isBookSource.value ? 'Nguồn sách' : 'Nguồn RSS'
-})
-const sourcePath = computed(() => {
-  return isBookSource.value ? 'ruleHelp' : 'rssRuleHelp'
-})
+import { t } from '@/config/uiLanguage'
+const topics = [
+  ['appHelp', t('Tài liệu ứng dụng')], ['ruleHelp', t('Nguồn sách')], ['rssRuleHelp', t('Nguồn RSS')],
+  ['jsHelp', t('Biến và hàm JavaScript')], ['xpathHelp', t('Hướng dẫn cú pháp XPath')],
+  ['regexHelp', t('Hướng dẫn biểu thức chính quy')], ['txtTocRuleHelp', t('Biểu thức mục lục TXT')],
+  ['debugHelp', t('Hướng dẫn gỡ lỗi nguồn sách')], ['httpTTSHelp', t('Quy tắc đọc trực tuyến')],
+  ['webDavBookHelp', t('Hướng dẫn đọc sách WebDAV')], ['webDavHelp', t('Hướng dẫn sao lưu WebDAV')],
+]
 </script>
 <template>
-  <el-link :icon="Link" href="/help/#appHelp" target="_blank"
-    >Tài liệu ứng dụng</el-link
-  ><br />
-  <el-link :icon="Link" :href="`/help/#${sourcePath}`" target="_blank"
-    >{{ sourceTitle }}: hướng dẫn tạo</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#jsHelp" target="_blank"
-    >Biến và hàm JavaScript</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#xpathHelp" target="_blank"
-    >Hướng dẫn cú pháp XPath</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#regexHelp" target="_blank"
-    >Hướng dẫn biểu thức chính quy</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#txtTocRuleHelp" target="_blank"
-    >Biểu thức mục lục TXT</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#debugHelp" target="_blank"
-    >Hướng dẫn gỡ lỗi nguồn sách</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#httpTTSHelp" target="_blank"
-    >Quy tắc đọc trực tuyến</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#webDavBookHelp" target="_blank">
-    Hướng dẫn đọc sách WebDAV</el-link
-  ><br />
-  <el-link :icon="Link" href="/help/#webDavHelp" target="_blank">
-    Hướng dẫn sao lưu WebDAV</el-link
-  ><br />
-  <el-link :icon="Link" href="https://regexr-cn.com/" target="_blank"
-    >Công cụ kiểm tra biểu thức chính quy</el-link
-  ><br />
-  <div style="margin-top: 20px">
-    <span
-      ><el-text
-        ><code>^$()[]{}.?+*|</code> Đây là các ký tự đặc biệt trong regex Java, cần escape để khớp ký tự gốc</el-text
-      ></span
-    ><br />
-    <span
-      ><el-text><code>(?s)</code> cho phép khớp xuyên dòng</el-text></span
-    ><br />
-    <span
-      ><el-text><code>(?m)</code> cho phép khớp theo từng dòng</el-text></span
-    ><br />
-    <span
-      ><el-text><code>(?i)</code> bỏ qua phân biệt chữ hoa và chữ thường</el-text></span
-    ><br />
-  </div>
+  <nav class="source-help" :aria-label="t('Trợ giúp')">
+    <a v-for="[id, title] in topics" :key="id" :href="`../help/index.html#${id}`" target="_blank" rel="noopener">{{ t(title) }} <span aria-hidden="true">↗</span></a>
+  </nav>
 </template>
-
-<style lang="scss" scoped>
-.el-link {
-  padding: 4px;
-}
-.el-text {
-  padding-top: 20px;
-}
+<style scoped>
+.source-help { display:grid; gap:8px; padding:16px 0; }
+a { display:flex; justify-content:space-between; gap:12px; padding:12px; border:var(--border-ui); border-radius:8px; text-decoration:none; overflow-wrap:anywhere; }
+a:hover { background:var(--hover); }
 </style>

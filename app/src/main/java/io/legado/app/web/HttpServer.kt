@@ -3,7 +3,11 @@ package io.legado.app.web
 import android.graphics.Bitmap
 import fi.iki.elonen.NanoHTTPD
 import io.legado.app.api.ReturnData
+import io.legado.app.api.controller.WebMediaController
+import io.legado.app.api.controller.WebLibraryController
 import io.legado.app.api.controller.BookController
+import io.legado.app.api.controller.ExploreController
+import io.legado.app.api.controller.ReadProgressController
 import io.legado.app.api.controller.BookSourceController
 import io.legado.app.api.controller.BookSourceWebController
 import io.legado.app.api.controller.ReplaceRuleController
@@ -40,7 +44,7 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                 Method.OPTIONS -> {
                     val response = newFixedLengthResponse("")
                     response.addHeader("Access-Control-Allow-Methods", "POST")
-                    response.addHeader("Access-Control-Allow-Headers", "content-type")
+                    response.addHeader("Access-Control-Allow-Headers", "content-type, range")
                     response.addHeader("Access-Control-Allow-Origin", session.headers["origin"])
                     //response.addHeader("Access-Control-Max-Age", "3600");
                     return response
@@ -63,7 +67,13 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                             "/saveBook" -> BookController.saveBook(postData)
                             "/deleteBook" -> BookController.deleteBook(postData)
                             "/saveBookProgress" -> BookController.saveBookProgress(postData)
+                            "/saveReadProgress" -> ReadProgressController.save(postData)
+                            "/addExploreBook" -> ExploreController.add(postData)
                             "/addLocalBook" -> BookController.addLocalBook(session.parameters, files)
+                            "/saveWebDownloadSettings" -> WebLibraryController.saveSettings(postData)
+                            "/startWebBookTransfer" -> WebLibraryController.start(postData)
+                            "/preloadWebChapters" -> WebLibraryController.preload(postData)
+                            "/cancelWebBookTransfer" -> WebLibraryController.cancel(postData)
                             "/saveReadConfig" -> BookController.saveWebReadConfig(postData)
                             "/saveRssSource" -> RssSourceController.saveSource(postData)
                             "/saveRssSources" -> RssSourceController.saveSources(postData)
@@ -79,7 +89,20 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                 Method.GET -> {
                     val parameters = session.parameters
 
+                    if (uri == "/webMediaResource") return WebMediaController.stream(parameters, session.headers)
+                    if (uri == "/downloadWebBookFile") return WebLibraryController.download(parameters)
                     returnData = when (uri) {
+                        "/getWebMediaChapter" -> WebMediaController.chapter(parameters)
+                        "/webMediaImage" -> WebMediaController.image(parameters)
+                        "/getWebBookCache" -> WebLibraryController.summary(parameters)
+                        "/getWebDownloadSettings" -> WebLibraryController.settings()
+                        "/getWebBookTransfer" -> WebLibraryController.status(parameters)
+                        "/getWebBookTransfers" -> WebLibraryController.list(parameters)
+                        "/getExploreSources" -> runBlocking { ExploreController.sources(parameters) }
+                        "/getExploreCategories" -> runBlocking { ExploreController.categories(parameters) }
+                        "/getExploreBooks" -> runBlocking { ExploreController.books(parameters) }
+                        "/getExploreBookInfo" -> runBlocking { ExploreController.info(parameters) }
+                        "/getExploreCover" -> ExploreController.cover(parameters)
                         "/getBookSource" -> BookSourceController.getSource(parameters)
                         "/getBookSources" -> BookSourceController.sources
                         "/getBookSourceLoginInfo" -> BookSourceWebController.getLoginData(parameters)
@@ -90,9 +113,11 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                         "/getBookSourceExploreBooks" -> BookSourceWebController.getDiscoverBooks(parameters)
                         "/getBookSourceDiscoverBooks" -> BookSourceWebController.getDiscoverBooks(parameters)
                         "/getBookshelf" -> BookController.getBookshelf(parameters)
+                        "/getReadProgress" -> ReadProgressController.get(parameters)
                         "/getChapterList" -> BookController.getChapterList(parameters)
                         "/refreshToc" -> BookController.refreshToc(parameters)
                         "/getBookContent" -> BookController.getBookContent(parameters)
+                        "/getBookCover" -> BookController.getRelayBookCover(parameters)
                         "/cover" -> BookController.getCover(parameters)
                         "/image" -> BookController.getImg(parameters)
                         "/getReadConfig" -> BookController.getWebReadConfig()
@@ -143,6 +168,10 @@ class HttpServer(port: Int) : NanoHTTPD(port) {
                 }
             }
             response.addHeader("Access-Control-Allow-Methods", "GET, POST")
+            if (uri == "/getReadProgress" || uri == "/saveReadProgress" || uri == "/getBookshelf" ||
+                uri == "/getWebBookCache" || uri.contains("WebBookTransfer") || uri.contains("WebDownloadSettings") || uri == "/preloadWebChapters" || uri.startsWith("/getExplore") || uri == "/addExploreBook") {
+                response.addHeader("Cache-Control", "no-store")
+            }
             response.addHeader("Access-Control-Allow-Origin", session.headers["origin"])
             LogUtils.d(TAG) {
                 "${session.method.name} - $uri - ${session.queryParameterString} - End($startAt)"

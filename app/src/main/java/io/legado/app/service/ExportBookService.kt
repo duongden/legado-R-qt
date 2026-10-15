@@ -23,6 +23,7 @@ import io.legado.app.help.book.ContentProcessor
 import io.legado.app.help.book.getExportFileName
 import io.legado.app.help.book.isLocalModified
 import io.legado.app.help.config.AppConfig
+import io.legado.app.model.WebLibraryTransfer
 import io.legado.app.model.ReadBook
 import io.legado.app.model.localBook.LocalBook
 import io.legado.app.ui.book.cache.CacheActivity
@@ -46,7 +47,11 @@ import io.legado.app.utils.servicePendingIntent
 import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.writeFile
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -70,6 +75,7 @@ import splitties.init.appCtx
 import splitties.systemservices.notificationManager
 import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
+import java.util.Collections
 import kotlin.math.min
 
 /**
@@ -88,12 +94,15 @@ class ExportBookService : BaseService() {
         val path: String,
         val type: String,
         val epubSize: Int = 1,
-        val epubScope: String? = null
+        val epubScope: String? = null,
+        val webExportId: String? = null
     )
 
     private val groupKey = "${appCtx.packageName}.exportBook"
-    private val waitExportBooks = linkedMapOf<String, ExportConfig>()
+    private val waitExportBooks = Collections.synchronizedMap(linkedMapOf<String, ExportConfig>())
     private var exportJob: Job? = null
+    @Volatile private var activeWebExportId: String? = null
+    @Volatile private var activeWebExportJob: Job? = null
     private var notificationContentText = appCtx.getString(R.string.service_starting)
 
 
@@ -101,22 +110,39 @@ class ExportBookService : BaseService() {
         when (intent?.action) {
             IntentAction.start -> kotlin.runCatching {
                 val bookUrl = intent.getStringExtra("bookUrl")!!
-                if (!exportProgress.contains(bookUrl)) {
+                val webId = intent.getStringExtra("webExportId")
+                if (webId != null && !WebLibraryTransfer.isExportRequested(webId)) {
+                    if (exportJob?.isActive != true && waitExportBooks.isEmpty()) stopSelf()
+                    return super.onStartCommand(intent, flags, startId)
+                }
+                if (!exportProgress.contains(bookUrl) && (webId == null || !waitExportBooks.containsKey(bookUrl))) {
+                    // Preserve native queued-export replacement; finish any replaced LAN job explicitly.
+                    if (webId == null) waitExportBooks[bookUrl]?.webExportId?.let { WebLibraryTransfer.exportFinished(it, false) }
                     val exportConfig = ExportConfig(
                         path = intent.getStringExtra("exportPath")!!,
                         type = intent.getStringExtra("exportType")!!,
                         epubSize = intent.getIntExtra("epubSize", 1),
-                        epubScope = intent.getStringExtra("epubScope")
+                        epubScope = intent.getStringExtra("epubScope"),
+                        webExportId = webId
                     )
                     waitExportBooks[bookUrl] = exportConfig
                     exportMsg[bookUrl] = getString(R.string.export_wait)
                     postEvent(EventBus.EXPORT_BOOK, bookUrl)
                     export()
+                } else if (webId != null) {
+                    WebLibraryTransfer.exportFinished(webId, false)
                 }
             }.onFailure {
+                intent.getStringExtra("webExportId")?.let { id -> WebLibraryTransfer.exportFinished(id, false) }
                 toastOnUi(it.localizedMessage)
             }
 
+            IntentAction.remove -> {
+                val id = intent.getStringExtra("webExportId")
+                if (id != null && id == activeWebExportId) activeWebExportJob?.cancel()
+                synchronized(waitExportBooks) { waitExportBooks.entries.removeAll { id != null && it.value.webExportId == id } }
+                if (exportJob?.isActive != true && waitExportBooks.isEmpty()) stopSelf()
+            }
             IntentAction.stop -> {
                 notificationManager.cancel(NotificationId.ExportBook)
                 stopSelf()
@@ -127,9 +153,11 @@ class ExportBookService : BaseService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        activeWebExportId?.let { WebLibraryTransfer.exportFinished(it, false) }
+        synchronized(waitExportBooks) { waitExportBooks.values.mapNotNull { it.webExportId } }.forEach { WebLibraryTransfer.exportFinished(it, false) }
         exportProgress.clear()
         exportMsg.clear()
-        waitExportBooks.keys.forEach {
+        synchronized(waitExportBooks) { waitExportBooks.keys.toList() }.forEach {
             postEvent(EventBus.EXPORT_BOOK, it)
         }
     }
@@ -172,7 +200,7 @@ class ExportBookService : BaseService() {
         }
         exportJob = lifecycleScope.launch(IO) {
             while (isActive) {
-                val (bookUrl, exportConfig) = waitExportBooks.entries.firstOrNull() ?: let {
+                val (bookUrl, exportConfig) = synchronized(waitExportBooks) { waitExportBooks.entries.firstOrNull()?.let { it.key to it.value } } ?: let {
                     notificationContentText = "导出完成"
                     upExportNotification(true)
                     stopSelf()
@@ -190,24 +218,36 @@ class ExportBookService : BaseService() {
                         waitExportBooks.size
                     )
                     upExportNotification()
-                    if (exportConfig.type == "epub") {
-                        if (exportConfig.epubScope.isNullOrBlank()) {
-                            exportEpub(exportConfig.path, book)
-                        } else {
-                            CustomExporter(
-                                exportConfig.epubScope,
-                                exportConfig.epubSize
-                            ).export(exportConfig.path, book)
+                    activeWebExportId = exportConfig.webExportId
+                    supervisorScope {
+                        val work = async(start = CoroutineStart.LAZY) {
+                            exportConfig.webExportId?.let {
+                                if (!WebLibraryTransfer.isExportRequested(it)) throw CancellationException("Web export cancelled")
+                            }
+                            if (exportConfig.type == "epub") {
+                                if (exportConfig.epubScope.isNullOrBlank()) {
+                                    exportEpub(exportConfig.path, book)
+                                } else {
+                                    CustomExporter(exportConfig.epubScope, exportConfig.epubSize).export(exportConfig.path, book)
+                                }
+                            } else {
+                                exportTxt(exportConfig.path, book)
+                            }
                         }
-                    } else {
-                        exportTxt(exportConfig.path, book)
+                        activeWebExportJob = work
+                        work.start()
+                        work.await()
                     }
+                    exportConfig.webExportId?.let { WebLibraryTransfer.exportFinished(it, true) }
                     exportMsg[book.bookUrl] = getString(R.string.export_success)
                 } catch (e: Throwable) {
+                    exportConfig.webExportId?.let { WebLibraryTransfer.exportFinished(it, false) }
                     ensureActive()
                     exportMsg[bookUrl] = e.localizedMessage ?: "ERROR"
                     AppLog.put("导出书籍<${book?.name ?: bookUrl}>出错", e)
                 } finally {
+                    activeWebExportId = null
+                    activeWebExportJob = null
                     exportProgress.remove(bookUrl)
                     postEvent(EventBus.EXPORT_BOOK, bookUrl)
                 }
@@ -243,7 +283,7 @@ class ExportBookService : BaseService() {
     }
 
     private suspend fun exportTxt(fileDoc: FileDoc, book: Book) {
-        val filename = book.getExportFileName("txt")
+        val filename = if (activeWebExportId != null) "book.txt" else book.getExportFileName("txt")
         fileDoc.find(filename)?.delete()
 
         val bookDoc = fileDoc.createFileIfNotExist(filename)
@@ -266,7 +306,7 @@ class ExportBookService : BaseService() {
                 }
             }
         }
-        if (AppConfig.exportToWebDav) {
+        if (AppConfig.exportToWebDav && activeWebExportId == null) {
             // 导出到webdav
             AppCloudStorage.export(bookDoc.uri, filename)
         }
@@ -324,7 +364,7 @@ class ExportBookService : BaseService() {
                 chineseConvert = false,
                 reSegment = false
             ).toString()
-        if (AppConfig.exportPictureFile) {
+        if (AppConfig.exportPictureFile && activeWebExportId == null) {
             //txt导出图片文件
             val srcList = arrayListOf<SrcData>()
             content?.split("\n")?.forEachIndexed { index, text ->
@@ -354,7 +394,7 @@ class ExportBookService : BaseService() {
     }
 
     private suspend fun exportEpub(fileDoc: FileDoc, book: Book) {
-        val filename = book.getExportFileName("epub")
+        val filename = if (activeWebExportId != null) "book.epub" else book.getExportFileName("epub")
         fileDoc.find(filename)?.delete()
 
         val epubBook = EpubBook()
@@ -374,7 +414,7 @@ class ExportBookService : BaseService() {
             EpubWriter().write(epubBook, bookOs)
         }
 
-        if (AppConfig.exportToWebDav) {
+        if (AppConfig.exportToWebDav && activeWebExportId == null) {
             // 导出到webdav
             AppCloudStorage.export(bookDoc.uri, filename)
         }
@@ -625,17 +665,20 @@ class ExportBookService : BaseService() {
                 matcher.group(1)?.let {
                     if (AppPattern.isVirtualImageSrc(it)) return@let
                     val src = NetworkUtils.getAbsoluteURL(chapter.url, it)
-                    val originalHref =
-                        "${MD5Utils.md5Encode16(src)}.${BookHelp.getImageSuffix(src)}"
-                    val href =
-                        "Images/${MD5Utils.md5Encode16(src)}.${BookHelp.getImageSuffix(src)}"
                     val vFile = BookHelp.getImage(book, src)
+                    val originalHref = vFile.name
+                    // Cache names may contain URL query parameters. EPUB hrefs must
+                    // use a plain extension so readers and ZIP entries agree.
+                    val suffix = BookHelp.getImageSuffix(src).substringBefore('?')
+                        .substringBefore('#').lowercase()
+                        .takeIf { it.matches(Regex("[a-z0-9]{1,8}")) } ?: "jpg"
+                    val href = "Images/${MD5Utils.md5Encode16(src)}.$suffix"
                     val fp = FileResourceProvider(vFile.parent)
                     if (vFile.exists()) {
                         val img = LazyResource(fp, href, originalHref)
                         resources.add(img)
                     }
-                    text1 = text1.replace(src, "../${href}")
+                    text1 = text1.replace("src=\"$it\"", "src=\"../$href\"")
                 }
             }
             data.append(text1).append("\n")
@@ -847,7 +890,7 @@ class ExportBookService : BaseService() {
                     .write(epubBook, bookOs)
             }
 
-            if (AppConfig.exportToWebDav) {
+            if (AppConfig.exportToWebDav && activeWebExportId == null) {
                 // 导出到webdav
                 AppCloudStorage.export(bookDoc.uri, filename)
             }

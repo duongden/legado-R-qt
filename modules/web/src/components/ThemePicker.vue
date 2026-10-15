@@ -1,52 +1,20 @@
 <template>
-  <div class="theme-picker" role="group" aria-label="Giao diện">
-    <button
-      v-for="option in themeOptions"
-      :key="option.id"
-      type="button"
-      :aria-pressed="themeMode === option.id"
-      :aria-label="option.label"
-      :class="{ active: themeMode === option.id }"
-      @click="setThemeMode(option.id)"
-    >
-      <span
-        class="theme-swatch"
-        :style="{ background: option.color }"
-        aria-hidden="true"
-      ></span>
-      <span>{{ option.label }}</span>
-    </button>
+  <div class="compact-appearance">
+    <label class="setting-inline">{{ t('Giao diện') }}
+      <CompactSelect :model-value="themeMode" :options="themeOptions.map(option => ({value:option.id,label:t(option.label)}))" :label="t('Giao diện')" @change="value => setThemeMode(value as typeof themeMode)" />
+    </label>
+    <details class="palette-settings">
+      <summary>{{ t('Tùy chỉnh màu') }}</summary>
+      <label class="setting-inline">{{ t('Chế độ') }}<select v-model="editing"><option value="light">{{ t('Sáng') }}</option><option value="dark">{{ t('Tối') }}</option></select></label>
+      <div class="palette-grid"><label v-for="field in paletteFields" :key="field.key">{{ t(field.label) }}<input type="color" :aria-label="t(field.label)" v-model="draft[field.key]" /></label></div>
+      <p v-if="lowContrast" role="status">{{ t('Chữ hoặc màu nhấn chưa đủ tương phản với nền. Hãy chỉnh màu trước khi áp dụng.') }}</p>
+      <div class="palette-actions"><button type="button" :disabled="lowContrast" @click="savePalette(editing, draft)">{{ t('Áp dụng') }}</button><button type="button" @click="restore">{{ t('Khôi phục mặc định') }}</button></div>
+    </details>
   </div>
-  <details class="palette-settings">
-    <summary>Tùy chỉnh màu Sáng / Tối</summary>
-    <label
-      >Chế độ
-      <select v-model="editing">
-        <option value="light">Sáng</option>
-        <option value="dark">Tối</option>
-      </select></label
-    >
-    <label v-for="field in paletteFields" :key="field.key"
-      >{{ field.label
-      }}<input
-        type="color"
-        :aria-label="field.label"
-        v-model="draft[field.key]"
-    /></label>
-    <p v-if="lowContrast" role="status">
-      Chữ hoặc màu nhấn chưa đủ tương phản với nền. Hãy chỉnh màu trước khi áp dụng.
-    </p>
-    <div class="palette-actions">
-      <button type="button" :disabled="lowContrast" @click="savePalette(editing, draft)">Áp dụng</button
-      ><button type="button" @click="restore">Khôi phục mặc định</button>
-    </div>
-    <small
-      >Lưu trên trình duyệt này. Theo hệ thống sẽ dùng màu Sáng / Tối tương
-      ứng.</small
-    >
-  </details>
 </template>
 <script setup lang="ts">
+import CompactSelect from './CompactSelect.vue'
+import { t } from '@/config/uiLanguage'
 import {
   paletteFields,
   customPalettes,
@@ -91,76 +59,14 @@ const lowContrast = computed(() =>
 )
 </script>
 <style scoped>
-.theme-picker {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 12px 4px;
-  border: var(--border-ui);
-  border-radius:var(--radius-control);
-  background: var(--surface);
-  color: var(--muted);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-button:disabled { opacity:.55; cursor:not-allowed; }
-button:hover {
-  background: var(--hover);
-}
-button.active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-.theme-swatch {
-  width: 25px;
-  height: 25px;
-  border: var(--border-ui);
-  border-radius: 50%;
-}
-.palette-settings {
-  margin-top: 14px;
-  color: var(--ink);
-  font-size: 13px;
-}
-summary {
-  cursor: pointer;
-  padding: 10px 0;
-}
-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 10px 0;
-}
-select,
-input {
-  color: var(--ink);
-  background: var(--surface);
-  border: var(--border-ui);
-  border-radius:var(--radius-control);
-  min-height: 32px;
-}
-.palette-actions {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0;
-}
-small {
-  display: block;
-  line-height: 1.5;
-  color: var(--muted);
-}
-p {
-  line-height: 1.5;
-}
+.compact-appearance { width:100%; min-width:0; }
+.palette-settings { margin:10px 0 16px; font-size:12px; color:var(--muted); }
+summary { cursor:pointer; padding:7px 0; }
+.palette-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:12px 0; }
+.palette-grid label { display:flex; align-items:center; justify-content:space-between; gap:6px; font-size:11px; }
+input[type=color] { width:32px; height:30px; padding:2px; border:var(--border-ui); border-radius:6px; background:var(--surface); }
+.palette-actions { display:flex; flex-wrap:wrap; gap:6px; }
+button { border:var(--border-ui); background:var(--surface); color:var(--ink); border-radius:8px; padding:7px 10px; font:inherit; cursor:pointer; }
+button:disabled { opacity:.5; }
+p { line-height:1.6; }
 </style>

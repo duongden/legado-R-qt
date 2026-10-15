@@ -10,6 +10,8 @@ declare module 'vue' {
     BookItems: typeof import('./components/BookItems.vue')['default']
     CatalogItem: typeof import('./components/CatalogItem.vue')['default']
     ChapterContent: typeof import('./components/ChapterContent.vue')['default']
+    CompactSelect: typeof import('./components/CompactSelect.vue')['default']
+    DownloadSettings: typeof import('./components/DownloadSettings.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElCheckboxGroup: typeof import('element-plus/es')['ElCheckboxGroup']
@@ -19,7 +21,6 @@ declare module 'vue' {
     ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElInput: typeof import('element-plus/es')['ElInput']
     ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
-    ElLink: typeof import('element-plus/es')['ElLink']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElPopover: typeof import('element-plus/es')['ElPopover']
     ElSelect: typeof import('element-plus/es')['ElSelect']
@@ -31,6 +32,7 @@ declare module 'vue' {
     ReadSettings: typeof import('./components/ReadSettings.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ServiceHeader: typeof import('./components/ServiceHeader.vue')['default']
     SourceDebug: typeof import('./components/SourceDebug.vue')['default']
     SourceHelp: typeof import('./components/SourceHelp.vue')['default']
     SourceItem: typeof import('./components/SourceItem.vue')['default']
@@ -41,5 +43,6 @@ declare module 'vue' {
     ThemePicker: typeof import('./components/ThemePicker.vue')['default']
     ToolBar: typeof import('./components/ToolBar.vue')['default']
     TranslationToggle: typeof import('./components/TranslationToggle.vue')['default']
+    ViewToggle: typeof import('./components/ViewToggle.vue')['default']
   }
 }

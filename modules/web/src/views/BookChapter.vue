@@ -13,7 +13,7 @@
       :aria-expanded="showToolBar"
       aria-controls="reader-tools"
       @click.stop="showToolBar = !showToolBar"
-    >{{ showToolBar ? 'Ẩn công cụ' : 'Công cụ đọc' }}</button>
+    >{{ showToolBar ? t('Ẩn công cụ') : t('Công cụ đọc') }}</button>
     <div id="reader-tools" class="tool-bar" :style="leftBarTheme" @click.stop @keydown.stop @keyup.stop>
       <div class="tools">
         <el-popover
@@ -28,7 +28,7 @@
           <template #reference>
             <button type="button" class="tool-icon" :class="{ 'no-point': false }">
               <div class="iconfont" aria-hidden="true">&#58905;</div>
-              <div class="icon-text">Mục lục</div>
+              <div class="icon-text">{{ t("Mục lục") }}</div>
             </button>
           </template>
         </el-popover>
@@ -44,17 +44,18 @@
           <template #reference>
             <button type="button" class="tool-icon" :disabled="noPoint" :class="{ 'no-point': noPoint }">
               <div class="iconfont" aria-hidden="true">&#58971;</div>
-              <div class="icon-text">Cài đặt</div>
+              <div class="icon-text">{{ t("Cài đặt") }}</div>
             </button>
           </template>
         </el-popover>
+        <button v-if="!isRelay" type="button" class="tool-icon" @click="router.push({ name: 'downloads', query: { bookUrl: store.readingBook.bookUrl } })"><div class="iconfont" aria-hidden="true">↓</div><div class="icon-text">{{ t('Tải / Xuất') }}</div></button>
         <button type="button" class="tool-icon" @click="toShelf">
           <div class="iconfont" aria-hidden="true">&#58892;</div>
-          <div class="icon-text">Tủ sách</div>
+          <div class="icon-text">{{ t("Tủ sách") }}</div>
         </button>
         <button type="button" class="tool-icon" :disabled="noPoint" :class="{ 'no-point': noPoint }" @click="toTop">
           <div class="iconfont" aria-hidden="true">&#58914;</div>
-          <div class="icon-text">Đầu trang</div>
+          <div class="icon-text">{{ t("Đầu trang") }}</div>
         </button>
         <button type="button"
           class="tool-icon"
@@ -62,7 +63,7 @@
           @click="toBottom"
         >
           <div class="iconfont" aria-hidden="true">&#58915;</div>
-          <div class="icon-text">Cuối trang</div>
+          <div class="icon-text">{{ t("Cuối trang") }}</div>
         </button>
       </div>
     </div>
@@ -71,23 +72,26 @@
         <button type="button"
           class="tool-icon"
           :disabled="noPoint" :class="{ 'no-point': noPoint }"
-          aria-label="Chương trước"
+          :aria-label="t('Chương trước')"
           @click="toPreChapter"
         >
           <div class="iconfont" aria-hidden="true">&#58920;</div>
-          <span v-if="miniInterface">Chương trước</span>
+          <span v-if="miniInterface">{{ t("Chương trước") }}</span>
         </button>
         <button type="button"
           class="tool-icon"
           :disabled="noPoint" :class="{ 'no-point': noPoint }"
-          aria-label="Chương sau"
+          :aria-label="t('Chương sau')"
           @click="toNextChapter"
         >
-          <span v-if="miniInterface">Chương sau</span>
+          <span v-if="miniInterface">{{ t("Chương sau") }}</span>
           <div class="iconfont" aria-hidden="true">&#58913;</div>
         </button>
       </div>
     </div>
+    <button v-if="!isRelay" class="progress-sync-status" type="button"
+      :data-status="store.progressSyncStatus" @click.stop="refreshProgress"
+      aria-live="polite">{{ syncStatusText }}</button>
     <div class="chapter-bar"></div>
     <div class="chapter" ref="content" :style="chapterTheme">
       <div class="content">
@@ -118,6 +122,7 @@
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import { translationEpoch } from '@/api/translation'
 let translationViewAlive = true
 const translationViewEpoch = translationEpoch.value
@@ -125,12 +130,16 @@ import jump from '@/plugins/jump'
 import settings from '@/config/themeConfig'
 import API from '@api'
 import { useLoading } from '@/hooks/loading'
-import { useThrottleFn } from '@vueuse/shared'
+import { useDebounceFn } from '@vueuse/shared'
+import { getRelayBootstrap } from '@/api/relay'
+const isRelay = !!getRelayBootstrap()
+import { resolvedTheme } from '@/config/appearance'
+import { preloadChapters, cancelTransfer, downloadSettings } from '@/api/bookTransfer'
 import { isNullOrBlank } from '@/utils/utils'
 
 const content = ref()
 // loading spinner
-const { isLoading, loadingWrapper } = useLoading(content, 'Đang tải thông tin')
+const { isLoading, loadingWrapper } = useLoading(content, t('Đang tải thông tin'))
 const store = useBookStore()
 
 const {
@@ -139,7 +148,6 @@ const {
   readSettingsVisible,
   miniInterface,
   showContent,
-  bookProgress,
   theme,
   isNight,
 } = storeToRefs(store)
@@ -173,7 +181,7 @@ watch(
 )
 
 // 无限滚动
-const infiniteLoading = computed(() => store.config.infiniteLoading)
+const infiniteLoading = computed(() => resolvedTheme.value !== 'eink' && store.config.infiniteLoading)
 let scrollObserver: IntersectionObserver | null
 const loading = ref()
 watchEffect(() => {
@@ -187,7 +195,6 @@ const loadMore = () => {
   const index = chapterData.value.slice(-1)[0].index
   if (catalog.value.length - 1 > index) {
     getContent(index + 1, false)
-    store.saveBookProgress() // 保存的是Chương trước的进度，不是预载的本章进度
   }
 }
 // IntersectionObserver回调 底部加载
@@ -279,10 +286,10 @@ watch(
 const top = ref()
 const bottom = ref()
 const toTop = () => {
-  jump(top.value)
+  jump(top.value, { duration: resolvedTheme.value === 'eink' ? 0 : store.config.jumpDuration })
 }
 const toBottom = () => {
-  jump(bottom.value)
+  jump(bottom.value, { duration: resolvedTheme.value === 'eink' ? 0 : store.config.jumpDuration })
 }
 
 // 书架路由切换
@@ -296,7 +303,17 @@ const chapterData = ref<{ index: number; content: string[]; title: string }[]>(
   [],
 )
 const noPoint = ref(true)
-const getContent = (index: number, reloadChapter = true, chapterPos = 0) => {
+let contentRequest = 0
+let restoringPosition = true
+let restoreTimer: ReturnType<typeof setTimeout> | undefined
+const getContent = (index: number, reloadChapter = true, chapterPos = 0, persist = true) => {
+  if (!catalog.value[index]) return
+  const request = reloadChapter ? ++contentRequest : contentRequest
+  if (reloadChapter) {
+    restoringPosition = true
+    clearTimeout(restoreTimer)
+    noPoint.value = true
+  }
   if (reloadChapter) {
     //展示进度条
     store.setShowContent(false)
@@ -312,12 +329,11 @@ const getContent = (index: number, reloadChapter = true, chapterPos = 0) => {
   loadingWrapper(
     API.getBookContent(bookUrl, chapterIndex).then(
       res => {
-        if (!translationViewAlive || translationViewEpoch !== translationEpoch.value) return
+        if (!translationViewAlive || translationViewEpoch !== translationEpoch.value || request !== contentRequest) return
         if (res.data.isSuccess) {
           const data = res.data.data
           const content = data.split(/\n+/)
           chapterData.value.push({ index, content, title })
-          if (reloadChapter) toChapterPos(chapterPos)
         } else {
           ElMessage({ message: res.data.errorMsg, type: 'error' })
           const content = [res.data.errorMsg]
@@ -326,20 +342,42 @@ const getContent = (index: number, reloadChapter = true, chapterPos = 0) => {
         store.setContentLoading(true)
         noPoint.value = false
         store.setShowContent(true)
-        if (!res.data.isSuccess) {
-          throw res.data
+        if (res.data.isSuccess && reloadChapter) {
+          void prefetch(index)
+          toChapterPos(chapterPos)
+          restoreTimer = setTimeout(() => { restoringPosition = false }, 250)
+          if (persist) {
+            store.markReadProgress()
+            void store.saveBookProgress()
+          }
         }
       },
-      err => {
-        if (!translationViewAlive || translationViewEpoch !== translationEpoch.value) return
-        const content = ['Không tải được nội dung chương!']
+      () => {
+        if (!translationViewAlive || translationViewEpoch !== translationEpoch.value || request !== contentRequest) return
+        const content = [t('Không tải được nội dung chương!')]
         chapterData.value.push({ index, content, title })
         store.setShowContent(true)
-        throw err
+        ElMessage.error(t('Không tải được nội dung chương'))
       },
     ),
   )
 }
+
+let prefetchId: string | undefined
+let prefetchEpoch = 0
+async function prefetch(index: number) {
+  if (isRelay || !translationViewAlive) return
+  const request = ++prefetchEpoch
+  try {
+    const task = await preloadChapters(store.readingBook.bookUrl, index)
+    if (task && task.kind === 'preload') {
+      if (!translationViewAlive || request !== prefetchEpoch) { await cancelTransfer(task.id); return }
+      prefetchId = task.id
+    }
+  } catch { /* Prefetch never replaces a chapter or interrupts manual reading. */ }
+}
+watch(() => downloadSettings.value.preDownloadNum, () => { if (!noPoint.value) void prefetch(chapterIndex.value) })
+onUnmounted(() => { prefetchEpoch++; if (prefetchId) void cancelTransfer(prefetchId).catch(() => {}) })
 
 // 章节进度跳转和计算
 const chapter = ref()
@@ -351,16 +389,16 @@ const toChapterPos = (pos: number) => {
   })
 }
 
-// 60秒保存一次进度
-const saveBookProgressThrottle = useThrottleFn(
-  () => store.saveBookProgress(),
-  60000,
+const saveBookProgressSoon = useDebounceFn(
+  () => store.saveBookProgress(), 700, { maxWait: 2000 },
 )
 
 const onReadedLengthChange = (index: number, pos: number) => {
-  if (!translationViewAlive || translationViewEpoch !== translationEpoch.value) return
+  if (!translationViewAlive || translationViewEpoch !== translationEpoch.value ||
+      restoringPosition || document.visibilityState === 'hidden') return
   saveReadingBookProgressToBrowser(index, pos)
-  saveBookProgressThrottle()
+  store.markReadProgress()
+  void saveBookProgressSoon()
 }
 
 // 文档标题
@@ -384,12 +422,29 @@ const saveReadingBookProgressToBrowser = (index: number, pos: number) => {
  * 监听关闭页面 切换tab 返回桌面 等操作
  * 注意不用监听点击链接导航变化 不对Safari<14.5兼容处理
  **/
-const onVisibilityChange = () => {
-  const _bookProgress = bookProgress.value
-  if (document.visibilityState == 'hidden' && _bookProgress) {
-    store.saveBookProgress()
-  }
+const syncStatusText = computed(() => ({
+  loading: t('Đang lấy tiến trình…'), saved: t('Đã đồng bộ'), pending: t('Chờ đồng bộ…'),
+  saving: t('Đang đồng bộ…'), offline: t('Chưa đồng bộ · Thử lại'),
+}[store.progressSyncStatus]))
+let progressRefresh: Promise<void> | undefined
+const refreshProgress = () => {
+  if (isRelay || !translationViewAlive || document.visibilityState === 'hidden') return
+  if (progressRefresh) return progressRefresh
+  progressRefresh = store.refreshReadProgress().catch(() => {}).finally(() => {
+    progressRefresh = undefined
+  })
+  return progressRefresh
 }
+const onVisibilityChange = () => {
+  if (document.visibilityState === 'hidden') void store.saveBookProgress(true)
+  else void refreshProgress()
+}
+const onPageHide = () => { void store.saveBookProgress(true) }
+let progressTimer: ReturnType<typeof setInterval> | undefined
+watch(() => store.remoteProgressEpoch, () => {
+  if (!translationViewAlive) return
+  getContent(store.readingBook.chapterIndex, true, store.readingBook.chapterPos, false)
+})
 // 定时同步
 
 // 章节切换
@@ -398,14 +453,13 @@ const toNextChapter = () => {
   const index = chapterIndex.value + 1
   if (typeof catalog.value[index] !== 'undefined') {
     ElMessage({
-      message: 'Chương sau',
+      message: t('Chương sau'),
       type: 'info',
     })
     getContent(index)
-    store.saveBookProgress()
   } else {
     ElMessage({
-      message: 'Đây là chương cuối',
+      message: t('Đây là chương cuối'),
       type: 'error',
     })
   }
@@ -415,14 +469,13 @@ const toPreChapter = () => {
   const index = chapterIndex.value - 1
   if (typeof catalog.value[index] !== 'undefined') {
     ElMessage({
-      message: 'Chương trước',
+      message: t('Chương trước'),
       type: 'info',
     })
     getContent(index)
-    store.saveBookProgress()
   } else {
     ElMessage({
-      message: 'Đây là chương đầu',
+      message: t('Đây là chương đầu'),
       type: 'error',
     })
   }
@@ -451,11 +504,11 @@ const handleKeyPress = (event: KeyboardEvent) => {
       event.stopPropagation()
       event.preventDefault()
       if (document.documentElement.scrollTop === 0) {
-        ElMessage.warning('Đã đến đầu trang')
+        ElMessage.warning(t('Đã đến đầu trang'))
       } else {
         canJump = false
         jump(0 - document.documentElement.clientHeight + 100, {
-          duration: store.config.jumpDuration,
+          duration: resolvedTheme.value === 'eink' ? 0 : store.config.jumpDuration,
           callback: () => (canJump = true),
         })
       }
@@ -468,11 +521,11 @@ const handleKeyPress = (event: KeyboardEvent) => {
           document.documentElement.scrollTop ===
         document.documentElement.scrollHeight
       ) {
-        ElMessage.warning('Đã đến cuối trang')
+        ElMessage.warning(t('Đã đến cuối trang'))
       } else {
         canJump = false
         jump(document.documentElement.clientHeight - 100, {
-          duration: store.config.jumpDuration,
+          duration: resolvedTheme.value === 'eink' ? 0 : store.config.jumpDuration,
           callback: () => (canJump = true),
         })
       }
@@ -500,7 +553,7 @@ onMounted(async () => {
   const chapterPos = Number(sessionStorage.getItem('chapterPos') || 0)
   const isSeachBook = sessionStorage.getItem('isSeachBook') === 'true'
   if (isNullOrBlank(bookUrl) || isNullOrBlank(name) || author === null) {
-    ElMessage.warning('Không có thông tin sách, đang quay về tủ sách…')
+    ElMessage.warning(t('Không có thông tin sách, đang quay về tủ sách…'))
     return setTimeout(toShelf, 500)
   }
   const book: typeof store.readingBook = {
@@ -516,14 +569,22 @@ onMounted(async () => {
   onResize()
   window.addEventListener('resize', onResize)
   loadingWrapper(
-    store.loadWebCatalog(book).then(chapters => {
+    store.loadWebCatalog(book).then(async chapters => {
       if (!translationViewAlive || translationViewEpoch !== translationEpoch.value) return
       store.setReadingBook(book)
-      getContent(chapterIndex, true, chapterPos)
+      if (isRelay) getContent(chapterIndex, true, chapterPos, false)
+      else {
+        try { await store.startProgressSync() } catch { /* Retry through the status button. */ }
+      }
+      if (!translationViewAlive) return
       window.addEventListener('keyup', handleKeyPress)
       window.addEventListener('keydown', ignoreKeyPress)
       // 兼容Safari < 14
       document.addEventListener('visibilitychange', onVisibilityChange)
+      window.addEventListener('pagehide', onPageHide)
+      window.addEventListener('focus', refreshProgress)
+      window.addEventListener('online', refreshProgress)
+      if (!isRelay) progressTimer = setInterval(() => { void refreshProgress() }, 5000)
       //监听底部加载
       scrollObserver = new IntersectionObserver(onReachBottom, {
         rootMargin: '-100% 0% 20% 0%',
@@ -531,13 +592,19 @@ onMounted(async () => {
       if (infiniteLoading.value === true) scrollObserver.observe(loading.value)
       //第二次点击同一本书 页面标题不会变化
       document.title = '...'
-      document.title = (name as string) + ' | ' + chapters[chapterIndex].title
+      document.title = (name as string) + ' | ' + (chapters[store.readingBook.chapterIndex]?.title || '')
     }),
   )
 })
 
 onUnmounted(() => {
   translationViewAlive = false
+  clearInterval(progressTimer)
+  clearTimeout(restoreTimer)
+  window.removeEventListener('pagehide', onPageHide)
+  window.removeEventListener('focus', refreshProgress)
+  window.removeEventListener('online', refreshProgress)
+  store.stopProgressSync()
   window.removeEventListener('keyup', handleKeyPress)
   window.removeEventListener('keydown', ignoreKeyPress)
   window.removeEventListener('resize', onResize)
@@ -553,9 +620,9 @@ const addToBookShelfConfirm = async () => {
   const book = store.readingBook
   // 阅读的是搜索的书籍 并未在书架
   if (book.isSeachBook === true) {
-    await ElMessageBox.confirm(`Thêm “${book.name}” vào tủ sách?`, 'Thêm vào tủ sách', {
-      confirmButtonText: 'Xác nhận',
-      cancelButtonText: 'Không',
+    await ElMessageBox.confirm(`${t('Thêm vào tủ sách')}: “${book.name}”?`, t('Thêm vào tủ sách'), {
+      confirmButtonText: t('Xác nhận'),
+      cancelButtonText: t('Không'),
       type: 'info',
       /*
         ElMessageBox.confirm默认在触发hashChange事件时自动关闭
@@ -576,6 +643,11 @@ const addToBookShelfConfirm = async () => {
   }
 }
 onBeforeRouteLeave(async () => {
+  await store.saveBookProgress()
+  if (!isRelay && store.hasPendingReadProgress()) {
+    ElMessage.warning(t('Chưa lưu được tiến trình. Hãy kết nối lại rồi thử rời trang.'))
+    return false
+  }
   // 弹窗时停止响应按键翻页
   window.removeEventListener('keyup', handleKeyPress)
   await addToBookShelfConfirm()
@@ -583,13 +655,16 @@ onBeforeRouteLeave(async () => {
 </script>
 
 <style scoped>
+.progress-sync-status { position:fixed; top:76px; right:12px; z-index:102; border:var(--border-ui); border-radius:12px; background:var(--surface); color:var(--muted); font:12px/1.5 var(--font-ui); padding:5px 10px; cursor:pointer; }
+.progress-sync-status[data-status="offline"] { color:var(--ink); }
+@media(max-width:775px) { .progress-sync-status { top:auto; bottom:68px; right:12px; } }
 .chapter-wrapper { min-height:100vh; color:var(--ink); }
 .chapter { padding:0 65px; margin:0 auto; min-height:100vh; border-inline:1px solid var(--line); }
 .content { line-height:1.8; }
 .top-bar { height:56px; }
 .bottom-bar { height:120px; }
 .tool-bar,.read-bar { position:fixed; z-index:100; border:var(--border-ui); border-radius:var(--radius-card); box-shadow:var(--shadow-overlay); overflow:hidden; }
-.tool-bar { top:24px; left:50%; }
+.tool-bar { top:80px; left:50%; }
 .read-bar { bottom:24px; right:50%; }
 .tools { display:flex; flex-direction:column; }
 .tool-icon { border:0; background:transparent; color:var(--ink); font:inherit; cursor:pointer; width:58px; min-height:60px; padding:10px 2px; }
@@ -598,11 +673,13 @@ onBeforeRouteLeave(async () => {
 .iconfont { font-family:iconfont; font-size:18px; }
 .icon-text { font-size:11px; margin-top:6px; }
 .read-bar .tool-icon { width:42px; min-height:48px; }
-.toolbar-toggle { position:fixed; right:16px; bottom:78px; z-index:101; border:var(--border-ui); border-radius:24px; padding:12px 16px; color:var(--ink); font:inherit; box-shadow:var(--shadow-overlay); cursor:pointer; }
+.toolbar-toggle { position:fixed; right:16px; bottom:114px; z-index:101; border:var(--border-ui); border-radius:24px; padding:12px 16px; color:var(--ink); font:inherit; box-shadow:var(--shadow-overlay); cursor:pointer; }
 @media(max-width:775px) {
  .chapter { width:100% !important; padding:0 22px; box-sizing:border-box; border:0; }
- .top-bar { height:76px; }
- .tool-bar { top:8px; left:8px; width:calc(100% - 18px); }
+ .top-bar { height:92px; }
+ .tool-bar .tool-icon { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:68px; height:68px; padding:6px 2px; }
+ .tool-bar .icon-text { font-size:10px; line-height:1.3; margin:0; }
+ .tool-bar { top:72px; left:8px; width:calc(100% - 18px); }
  .tools { flex-direction:row; justify-content:space-around; }
  .read-bar { right:8px; bottom:8px; width:calc(100% - 18px); }
  .read-bar .tool-icon { width:auto; padding:12px; display:flex; align-items:center; gap:10px; font-size:13px; }

@@ -10,6 +10,7 @@ export const themeOptions = [
   { id: 'dark', label: 'Tối', color: '#20262d' },
   { id: 'oled', label: 'Đen OLED', color: '#000000' },
   { id: 'paper', label: 'Giấy ngà', color: '#f6eddb' },
+  { id: 'eink', label: 'E-ink', color: '#ffffff' },
   { id: 'gray', label: 'Xám dịu', color: '#dfe3e5' },
 ] as const
 export type ThemeMode = (typeof themeOptions)[number]['id']

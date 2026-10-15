@@ -1,5 +1,6 @@
 package io.legado.app.ui.book.import
 
+import io.legado.app.utils.readLocalizedMarkdown
 import android.os.Bundle
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModel
@@ -61,7 +62,7 @@ abstract class BaseImportBookActivity<VM : ViewModel> :
             return@sc
         }
         //测试读写??
-        val storageHelp = String(assets.open("storageHelp.md").readBytes())
+        val storageHelp = readLocalizedMarkdown("storageHelp.md")
         val hint = getString(R.string.select_book_folder)
         alert(hint, storageHelp) {
             okButton {

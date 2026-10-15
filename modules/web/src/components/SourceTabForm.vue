@@ -2,8 +2,8 @@
   <el-tabs id="source-edit">
     <el-tab-pane
       v-for="{ name, children } in Object.values(config)"
-      :label="name"
-      :key="name"
+      :label="t(name)"
+      :key="t(name)"
     >
       <el-form label-position="right" label-width="auto">
         <el-form-item
@@ -16,22 +16,22 @@
             hint,
             required = false,
           } in children"
-          :label="title"
-          :key="title"
+          :label="t(title)"
+          :key="t(title)"
           :required="required"
         >
           <el-input
             v-if="type == 'String' && typeof namespace == 'undefined'"
             type="textarea"
             v-model="currentSource[id]"
-            :placeholder="hint"
+            :placeholder="t(hint)"
             autosize
           />
           <el-input
             v-if="type == 'String' && typeof namespace != 'undefined'"
             type="textarea"
             v-model="currentSource[namespace][id]"
-            :placeholder="hint"
+            :placeholder="t(hint)"
             autosize
           />
 
@@ -53,8 +53,8 @@
             <el-option
               v-for="(optionName, index) in array"
               :value="index"
-              :key="optionName"
-              :label="optionName"
+              :key="t(optionName)"
+              :label="t(optionName)"
             />
           </el-select>
         </el-form-item>
@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import type { SourceConfig } from '@/config/sourceConfig'
 
 const store = useSourceStore()
@@ -78,7 +79,7 @@ const { currentSource } = storeToRefs(store);
 
 <style lang="scss" scoped>
 :deep(.el-tab-pane) {
-  height: calc(100vh - 125px);
+  height: calc(100dvh - 190px);
   padding-top: 15px;
   padding-right: 5px;
   overflow-y: auto;

@@ -3,30 +3,30 @@
     v-model="searchKey"
     class="search"
     :prefix-icon="Search"
-    placeholder="Lọc nguồn"
+    :placeholder="t('Lọc nguồn')"
   />
   <div class="tool">
-    <el-button @click="importSourceFile" :icon="Folder">Mở</el-button>
+    <el-button @click="importSourceFile" :icon="Folder">{{ t("Mở") }}</el-button>
     <el-button
       :disabled="sourcesFiltered.length === 0"
       @click="outExport"
       :icon="Download"
     >
-      Xuất</el-button
+{{ t("Xuất") }}</el-button
     >
     <el-button
       type="danger"
       :icon="Delete"
       @click="deleteSelectSources"
       :disabled="sourceSelect.length === 0"
-      >Xóa</el-button
+      >{{ t("Xóa") }}</el-button
     >
     <el-button
       type="danger"
       :icon="Delete"
       @click="clearAllSources"
       :disabled="sources.length === 0"
-      >Xóa hết</el-button
+      >{{ t("Xóa hết") }}</el-button
     >
   </div>
   <el-checkbox-group id="source-list" v-model="sourceUrlSelect">
@@ -41,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import API from '@api'
 import { Folder, Delete, Download, Search } from '@element-plus/icons-vue'
 import {
@@ -105,7 +106,7 @@ const importSourceFile = () => {
   input.addEventListener('change', () => {
     const files = input.files
     if (files === null) {
-      return ElMessage.info('Chưa chọn tệp')
+      return ElMessage.info(t('Chưa chọn tệp'))
     }
     const reader = new FileReader()
     reader.readAsText(files[0])
@@ -114,7 +115,7 @@ const importSourceFile = () => {
         const jsonData = JSON.parse(reader.result as string)
         store.saveSources(jsonData)
       } catch (e: unknown) {
-        ElMessage.error('Nguồn tải lên sai định dạng: ' + (e as Error).message)
+        ElMessage.error(t('Nguồn tải lên sai định dạng') + ': ' + (e as Error).message)
       }
     }
   })
@@ -152,7 +153,7 @@ const outExport = () => {
 
 #source-list {
   margin-top: 6px;
-  height: calc(100vh - 112px - 7px);
+  height: calc(100dvh - 280px);
   :deep(.el-checkbox) {
     margin-bottom: 4px;
     width: 100%;

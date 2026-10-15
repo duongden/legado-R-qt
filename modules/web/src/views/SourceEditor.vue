@@ -1,41 +1,33 @@
 <template>
-  <header class="editor-header">
-    <a href="#/">Tủ sách</a
-    ><strong>{{ isBookSource ? 'Nguồn sách' : 'Nguồn RSS' }}</strong
-    ><el-popover trigger="click" :width="340"
-      ><template #reference><el-button>Giao diện</el-button></template
-      ><theme-picker
-    /></el-popover>
-  </header>
-  <div class="editor">
-    <source-tab-form class="left" :config="config" />
+  <main class="source-page">
     <tool-bar />
-    <source-tab-tools class="right" />
-  </div>
+    <div class="editor">
+      <source-tab-form class="left" :config="config" />
+      <source-tab-tools class="right" />
+    </div>
+  </main>
 </template>
 <script setup lang="ts">
+import { t } from '@/config/uiLanguage'
 import bookSourceConfig from '@/config/bookSourceEditConfig'
 import rssSourceConfig from '@/config/rssSourceEditConfig'
 import '@/assets/sourceeditor.css'
 
 import type { SourceConfig } from '@/config/sourceConfig'
 
-let config: SourceConfig
-const isBookSource = ref<boolean>(/bookSource/i.test(location.href))
+const route = useRoute()
+const isBookSource = computed(() => /bookSource/i.test(route.path))
 provide('isBookSource', isBookSource)
-if (isBookSource.value) {
-  config = bookSourceConfig as SourceConfig
-  document.title = 'Quản lý nguồn sách'
-} else {
-  config = rssSourceConfig as SourceConfig
-  document.title = 'Quản lý nguồn RSS'
-}
+const config = computed(() => (isBookSource.value ? bookSourceConfig : rssSourceConfig) as SourceConfig)
+watchEffect(() => { document.title = isBookSource.value ? t('Quản lý nguồn sách') : t('Quản lý nguồn RSS') })
 </script>
 <style lang="scss" scoped>
 .editor {
   display: flex;
-  height: calc(100vh - 64px);
+  height: calc(100dvh - 130px);
   overflow: hidden;
+  gap: 24px;
+  padding-top: 16px;
   .left {
     flex: 1;
     min-width: 0;
