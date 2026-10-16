@@ -47,6 +47,13 @@ internal class WebViewUiTranslation(
                                 items.forEach(function(item) {
                                     var entry = state.nodes[item.id];
                                     if (entry && entry.node.isConnected && entry.node.nodeValue === item.raw) {
+                                        var option = entry.node.parentElement.closest('option');
+                                        // An option without a value attribute uses its text as the value.
+                                        // Pin that original value before changing only its display label.
+                                        if (option && !option.hasAttribute('value')) {
+                                            option.setAttribute('value', option.value);
+                                            state.optionValues.push(option);
+                                        }
                                         entry.display = item.display;
                                         entry.node.nodeValue = item.display;
                                     }
@@ -79,6 +86,7 @@ internal class WebViewUiTranslation(
                         entry.node.nodeValue = entry.raw;
                     }
                 });
+                state.optionValues.forEach(function(option) { option.removeAttribute('value'); });
                 delete window.__legadoViDisplay;
             })();
         """.trimIndent()
@@ -89,7 +97,7 @@ internal class WebViewUiTranslation(
                 var state = window.__legadoViDisplay;
                 if (!state) state = window.__legadoViDisplay = {
                     token: String(Date.now()) + ':' + String(Math.random()),
-                    nodes: {}, ids: new WeakMap(), next: 0
+                    nodes: {}, ids: new WeakMap(), next: 0, optionValues: []
                 };
                 Object.keys(state.nodes).forEach(function(id) {
                     if (!state.nodes[id].node.isConnected) delete state.nodes[id];
@@ -98,7 +106,10 @@ internal class WebViewUiTranslation(
                 var node, items = [];
                 while ((node = walker.nextNode()) && items.length < 80) {
                     var parent = node.parentElement;
-                    if (!parent || parent.closest('script,style,noscript,textarea,input,select,option,code,pre,[contenteditable],[translate="no"]') || !parent.getClientRects().length) continue;
+                    if (!parent || parent.closest('script,style,noscript,textarea,input,code,pre,[contenteditable],[translate="no"]')) continue;
+                    // Native select popups have no DOM rows; their labels come from option text.
+                    var visible = parent.closest('select') || parent;
+                    if (!visible.getClientRects().length) continue;
                     var raw = node.nodeValue;
                     if (!/[\u3400-\u9fff]/.test(raw) || raw.length > 4000) continue;
                     var id = state.ids.get(node), entry = state.nodes[id];
@@ -111,6 +122,40 @@ internal class WebViewUiTranslation(
                     items.push({id: id, raw: raw});
                 }
                 return JSON.stringify({token: state.token, items: items});
+            })();
+        """.trimIndent()
+
+        // Return source labels to scripts while retaining the user's selections and edits.
+        internal val SOURCE_HTML = """
+            (function() {
+                var root = document.documentElement, copy = root.cloneNode(true);
+                var state = window.__legadoViDisplay;
+                if (!state) return copy.outerHTML;
+                function cloned(node) {
+                    var path = [];
+                    while (node && node !== root) {
+                        var parent = node.parentNode;
+                        if (!parent) return null;
+                        path.unshift(Array.prototype.indexOf.call(parent.childNodes, node));
+                        node = parent;
+                    }
+                    if (node !== root) return null;
+                    var target = copy;
+                    path.forEach(function(index) { target = target.childNodes[index]; });
+                    return target;
+                }
+                Object.keys(state.nodes).forEach(function(id) {
+                    var entry = state.nodes[id];
+                    if (entry.node.isConnected && entry.node.nodeValue === entry.display) {
+                        var target = cloned(entry.node);
+                        if (target) target.nodeValue = entry.raw;
+                    }
+                });
+                state.optionValues.forEach(function(option) {
+                    var target = cloned(option);
+                    if (target) target.removeAttribute('value');
+                });
+                return copy.outerHTML;
             })();
         """.trimIndent()
     }

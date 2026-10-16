@@ -5,6 +5,8 @@ import android.content.DialogInterface
 import android.graphics.drawable.Drawable
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -162,8 +164,13 @@ internal class AndroidAlertBuilder(override val ctx: Context) : AlertBuilder<Ale
             dialog.getButton(DialogInterface.BUTTON_NEGATIVE),
             dialog.getButton(DialogInterface.BUTTON_NEUTRAL)
         ).map { it to it.text.toString() }
+        val list = dialog.listView
+        val adapter = list?.adapter
+        val options = adapter?.let { source ->
+            List(source.count) { source.getItem(it).toString() }
+        }.orEmpty()
         val block: suspend kotlinx.coroutines.CoroutineScope.() -> List<String> = {
-            labels.map { UiTranslation.translateMessage(it.second) }
+            (labels.map { it.second } + options).map { UiTranslation.translateMessage(it) }
         }
         val owner = ctx as? LifecycleOwner
         val job = if (owner != null) Coroutine.async(scope = owner.lifecycleScope, start = CoroutineStart.LAZY, block = block)
@@ -172,6 +179,24 @@ internal class AndroidAlertBuilder(override val ctx: Context) : AlertBuilder<Ale
             if (dialog.isShowing && UiTranslation.isEnabled()) {
                 labels.forEachIndexed { index, (view, raw) ->
                     if (view.text.toString() == raw) view.text = translated[index]
+                }
+                if (list != null && adapter != null && options.isNotEmpty()) {
+                    val checked = List(adapter.count) { list.isItemChecked(it) }
+                    list.adapter = object : BaseAdapter() {
+                        override fun getCount() = adapter.count
+                        override fun getItem(position: Int) = adapter.getItem(position)
+                        override fun getItemId(position: Int) = adapter.getItemId(position)
+                        override fun hasStableIds() = adapter.hasStableIds()
+                        override fun areAllItemsEnabled() = adapter.areAllItemsEnabled()
+                        override fun isEnabled(position: Int) = adapter.isEnabled(position)
+                        override fun getItemViewType(position: Int) = adapter.getItemViewType(position)
+                        override fun getViewTypeCount() = adapter.viewTypeCount
+                        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
+                            adapter.getView(position, convertView, parent).also { row ->
+                                row.findViewById<TextView>(android.R.id.text1)?.text = translated[labels.size + position]
+                            }
+                    }
+                    checked.forEachIndexed { index, value -> list.setItemChecked(index, value) }
                 }
             }
         }

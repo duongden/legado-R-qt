@@ -1697,4 +1697,24 @@
     <string name="menu_page">Trang %d</string>
     <string name="change_page">Chọn trang</string>
     <string name="bookshelf_import_result">Đã nhập: %1$d; thất bại: %2$d; bỏ qua: %3$d</string>
+    <string name="modern_discovery_page">Chế độ trang khám phá</string>
+    <string name="modern_discovery_page_summary">Chọn trang khám phá cổ điển, hiện đại hoặc theo bộ.</string>
+    <string name="discovery_settings_title">Cài đặt khám phá</string>
+    <string name="discovery_settings_summary">Thiết lập lối vào và giao diện trang khám phá.</string>
+    <string name="subscription_settings_title">Cài đặt đăng ký</string>
+    <string name="subscription_settings_summary">Thiết lập lối vào và giao diện trang đăng ký.</string>
+    <string name="discovery_page_mode_modern">Khám phá hiện đại</string>
+    <string name="discovery_page_mode_legacy">Khám phá cổ điển</string>
+    <string name="discovery_page_mode_suite">Khám phá theo bộ</string>
+    <string name="modern_rss_page">Chế độ trang đăng ký</string>
+    <string name="modern_rss_page_summary">Sử dụng giao diện đăng ký mới với chuyển nguồn, danh mục và nội dung nhúng.</string>
+    <string name="rss_page_mode_modern">Đăng ký hiện đại</string>
+    <string name="rss_page_mode_legacy">Đăng ký cổ điển</string>
+    <string name="discovery_page_layout">Bố cục trang khám phá</string>
+    <string name="discovery_page_layout_summary">Hiện tại: %1$s</string>
+    <string name="discovery_page_layout_list">Danh sách</string>
+    <string name="discovery_page_layout_waterfall">Xếp so le</string>
+    <string name="discovery_page_layout_grid">Lưới ba cột</string>
+    <string name="source_option_selection">Chọn tùy chọn</string>
+    <string name="source_option_numbers">Nhập số thứ tự</string>
 </resources>

@@ -133,7 +133,7 @@ class WebViewModel(application: Application) : BaseViewModel(application) {
                 success.invoke()
             }
         } else {
-            webView.evaluateJavascript("document.documentElement.outerHTML") {
+            webView.evaluateJavascript(WebViewUiTranslation.SOURCE_HTML) {
                 execute {
                     html = StringEscapeUtils.unescapeJson(it).trim('"')
                 }.onSuccess {

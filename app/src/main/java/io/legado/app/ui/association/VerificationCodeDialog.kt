@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
@@ -25,9 +26,11 @@ import io.legado.app.lib.theme.primaryColor
 import io.legado.app.model.ImageProvider
 import io.legado.app.ui.widget.dialog.PhotoDialog
 import io.legado.app.utils.applyTint
+import io.legado.app.utils.UiTranslation
 import io.legado.app.utils.setLayout
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
+import kotlinx.coroutines.launch
 
 /**
  * 图片验证码对话框
@@ -73,6 +76,22 @@ class VerificationCodeDialog() : BaseDialogFragment(R.layout.dialog_verification
         loadImage(imageUrl, sourceOrigin)
         verificationCodeImageView.setOnClickListener {
             showDialogFragment(PhotoDialog(imageUrl, sourceOrigin))
+        }
+        val labels = SvgOptionLabels.parse(imageUrl)
+        if (labels != null && UiTranslation.isEnabled()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val translated = labels.map { SvgOptionLabels.translate(it, UiTranslation::translateMessage) }
+                if (!UiTranslation.isEnabled()) return@launch
+                sourceOptionLabels.text = translated.joinToString("\n")
+                sourceOptionScroll.layoutParams.height = minOf(
+                    (resources.displayMetrics.heightPixels * 0.5f).toInt(),
+                    ((labels.size * 30 + 100) * resources.displayMetrics.density).toInt()
+                )
+                verificationCodeImageView.visibility = View.GONE
+                sourceOptionScroll.visibility = View.VISIBLE
+                toolBar.setTitle(R.string.source_option_selection)
+                verificationInputLayout.hint = getString(R.string.source_option_numbers)
+            }
         }
     }
 
