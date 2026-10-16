@@ -57,7 +57,7 @@ Khi báo lỗi, vui lòng cung cấp phiên bản ứng dụng, chế độ đ�
 
 ## Mã nguồn mở và ghi nhận
 
-README này được biên soạn dựa trên [README gốc của duongden/legado-R](https://github.com/duongden/legado-R/blob/main/README.md). Cảm ơn [gedoor/legado](https://github.com/gedoor/legado), [Luoyacheng/legado](https://github.com/Luoyacheng/legado), [Rimchars/legado](https://github.com/Rimchars/legado) và các tác giả đóng góp. Chức năng tác vụ định kỳ có sự đóng góp và hỗ trợ của 明月.
+Cảm ơn [gedoor/legado](https://github.com/gedoor/legado), [Luoyacheng/legado](https://github.com/Luoyacheng/legado).
 
 Phần dịch kế thừa mã từ [dat-bi/legado-qt](https://github.com/dat-bi/legado-qt) và [VietPhrase translator](https://github.com/duongden/duongden-vietphrase-translator).
 
