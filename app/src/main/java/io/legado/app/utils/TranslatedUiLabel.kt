@@ -9,6 +9,7 @@ import io.legado.app.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 
 private class UiLabelState(var raw: CharSequence) {
     var job: Job? = null
@@ -46,7 +47,9 @@ private fun TextView.bindTranslatedUiText(raw: CharSequence, hintOnly: Boolean, 
     state.display = initial
     val owner = lifecycleOwner ?: findViewTreeLifecycleOwner() ?: return
     state.job = owner.lifecycleScope.launch {
-        TranslateUtils.updates.collectLatest {
+        combine(TranslateUtils.updates, UiTranslation.languageUpdates) { revision, language ->
+            revision to language
+        }.collectLatest {
             if (current().toString() != state.display.toString()) return@collectLatest
             val enabled = UiTranslation.isEnabled()
             val display = if (enabled) UiTranslation.translate(raw.toString()) else raw

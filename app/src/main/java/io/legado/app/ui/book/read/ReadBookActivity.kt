@@ -500,6 +500,13 @@ class ReadBookActivity : BaseReadBookActivity(),
     private var epubCoreLoadingChapterIndex: Int? = null
     private var epubCoreRequestSeq = 0L
     private var epubCoreLoadJob: Job? = null
+    private val readerChapterNavigation by lazy {
+        ReaderChapterNavigationCoordinator(lifecycleScope, viewModel.readerChapters) { error ->
+            AppLog.put("Reader chapter snapshot failed", error)
+            binding.epubReadView.cancelPendingBoundaryTurn()
+            toastOnUi(R.string.error)
+        }
+    }
     private var epubCoreLoadTimeoutJob: Job? = null
     private val readerTemplateActiveClock = EpubTemplateActiveClock(SystemClock::uptimeMillis).also { it.pause() }
     private data class DirectPrefetchOwner(
@@ -847,16 +854,20 @@ class ReadBookActivity : BaseReadBookActivity(),
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        viewModel.initReadBookConfig(intent)
-        binding.root.post {
+        val startupIntent = intent
+        lifecycleScope.launch {
+            val startupBook = viewModel.initialBookAsync(startupIntent)
+            if (intent !== startupIntent) return@launch
+            startupBook?.let(ReadBook::upReadBookConfig)
             AppLog.put("read-init: schedule, source=postCreate")
-            viewModel.initData(intent)
+            viewModel.initData(startupIntent)
         }
         justInitData = true
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        cancelPendingReaderChapterRequest()
         setIntent(intent)
         val openReadAloudPanel = requestOpenReadAloudPanelFromIntent(intent)
         if (openReadAloudPanel &&
@@ -1113,9 +1124,11 @@ class ReadBookActivity : BaseReadBookActivity(),
 
             R.id.menu_chapter_change_source -> lifecycleScope.launch {
                 val book = ReadBook.book ?: return@launch
-                val chapter =
-                    appDb.bookChapterDao.getChapter(book.bookUrl, ReadBook.durChapterIndex)
-                        ?: return@launch
+                val chapterIndex = ReadBook.durChapterIndex
+                val chapter = withContext(IO) {
+                    appDb.bookChapterDao.getChapter(book.bookUrl, chapterIndex)
+                } ?: return@launch
+                if (ReadBook.book !== book || ReadBook.durChapterIndex != chapterIndex) return@launch
                 binding.readMenu.runMenuOut()
                 showDialogFragment(
                     ChangeChapterSourceDialog(book.name, book.author, chapter.index, chapter.title)
@@ -1798,8 +1811,11 @@ class ReadBookActivity : BaseReadBookActivity(),
     private fun showShareNotePreviewOverlay(selection: String) {
         val text = selection.trim()
         if (text.isBlank()) return
-        val payload = buildShareNotePayload(text)
+        val book = ReadBook.book
         lifecycleScope.launch {
+            val readTime = withContext(IO) { book?.let { appDb.readRecordDao.getReadTime(it.name) } ?: 0L }
+            if (ReadBook.book !== book) return@launch
+            val payload = buildShareNotePayload(text, readTime)
             val entries = runCatching {
                 withContext(IO) {
                     ShareNoteTemplateManager.loadEntries()
@@ -1825,11 +1841,11 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
-    private fun buildShareNotePayload(text: String): ShareNoteImageRenderer.Payload {
+    private fun buildShareNotePayload(text: String, savedReadTime: Long): ShareNoteImageRenderer.Payload {
         val book = ReadBook.book
         val now = Date()
         val goalConfig = ReadRecordWidgetStore.loadGoalConfig()
-        val readTimeMs = book?.let { currentShareNoteReadTime(it, now.time) } ?: 0L
+        val readTimeMs = book?.let { currentShareNoteReadTime(it, now.time, savedReadTime) } ?: 0L
         val readTimeText = readTimeMs.takeIf { it > 0L }?.let(::formatShareNoteDuration).orEmpty()
         val progressText = currentShareNoteProgressText()
         val tags = book?.shareNoteTags().orEmpty()
@@ -1864,8 +1880,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         )
     }
 
-    private fun currentShareNoteReadTime(book: Book, now: Long): Long {
-        val saved = appDb.readRecordDao.getReadTime(book.name) ?: 0L
+    private fun currentShareNoteReadTime(book: Book, now: Long, saved: Long): Long {
         val live = if (AppConfig.enableReadRecord && ReadBook.book?.bookUrl == book.bookUrl) {
             (now - ReadBook.readStartTime).coerceAtLeast(0L)
         } else {
@@ -1995,8 +2010,11 @@ class ReadBookActivity : BaseReadBookActivity(),
         text: String,
         entry: ShareNoteTemplateManager.Entry
     ) {
-        val payload = buildShareNotePayload(text)
+        val book = ReadBook.book
         lifecycleScope.launch {
+            val readTime = withContext(IO) { book?.let { appDb.readRecordDao.getReadTime(it.name) } ?: 0L }
+            if (ReadBook.book !== book) return@launch
+            val payload = buildShareNotePayload(text, readTime)
             toastOnUi("正在生成分享图片")
             kotlin.runCatching {
                 ShareNoteImageRenderer.renderShareImage(this@ReadBookActivity, entry, payload)
@@ -2489,6 +2507,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     private fun deactivateEpubCore() {
+        cancelPendingReaderChapterRequest()
         val hasDirectState = epubCoreActive ||
             epubCoreLoading ||
             epubCoreLoadJob != null ||
@@ -2544,6 +2563,11 @@ class ReadBookActivity : BaseReadBookActivity(),
             onFinish?.invoke()
             return
         }
+        cancelPendingReaderChapterRequest()
+        if (!ensureReaderChapterSnapshot(book) {
+                loadDirectEpubContent(relativePosition, targetChapterIndex, resetPageOffset,
+                    boundaryTransition, onFinish, targetFragmentId)
+            }) return
         updateEpubReaderChromeData()
         val pendingRequest = epubCoreForegroundTarget?.takeIf {
             epubCoreLoading && targetChapterIndex == null
@@ -3638,6 +3662,11 @@ class ReadBookActivity : BaseReadBookActivity(),
             binding.epubReadView.cancelPendingBoundaryTurn()
             return
         }
+        val book = ReadBook.book ?: return
+        cancelPendingReaderChapterRequest()
+        if (!ensureReaderChapterSnapshot(book) {
+                requestEpubCoreChapterByDirection(direction, intent)
+            }) return
         val target = EpubChapterNavigationPolicy.resolve(direction, intent) ?: run {
             binding.epubReadView.cancelPendingBoundaryTurn()
             return
@@ -3674,6 +3703,16 @@ class ReadBookActivity : BaseReadBookActivity(),
         )
     }
 
+    private fun cancelPendingReaderChapterRequest() = readerChapterNavigation.cancel()
+
+    private fun ensureReaderChapterSnapshot(book: Book, resume: () -> Unit): Boolean {
+        val revision = ReadBook.directTextRevision
+        return readerChapterNavigation.ensure(book.bookUrl, ownsRequest = {
+            ReadBook.book === book && (book.isEpub || revision == ReadBook.directTextRevision) &&
+                !isFinishing && !isDestroyed
+        }, sourceRevision = revision, resume = resume)
+    }
+
     private fun isCurrentDirectSession(session: EpubDirectSession, book: io.legado.app.data.entities.Book): Boolean =
         !session.isClosed && session.bookUrl == book.bookUrl &&
             (book.isEpub || session.sourceRevision == ReadBook.directTextRevision)
@@ -3687,8 +3726,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         epubDirectSession?.takeIf { isCurrentDirectSession(it, book) }?.let { session ->
             session.resolveReadableChapterIndex(requestedIndex, preferredDirection)?.let { return it }
         }
-        val chapters = runCatching { appDb.bookChapterDao.getChapterList(bookUrl) }
-            .getOrDefault(emptyList())
+        val chapters = viewModel.readerChapters.current(bookUrl)?.chapters.orEmpty()
         if (chapters.isEmpty()) {
             return requestedIndex.takeIf { it in 0 until ReadBook.chapterSize }
         }
@@ -3702,8 +3740,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         epubDirectSession?.takeIf { isCurrentDirectSession(it, book) }?.let { session ->
             session.adjacentLogicalChapterIndex(currentIndex, direction)?.let { return it }
         }
-        val chapters = runCatching { appDb.bookChapterDao.getChapterList(bookUrl) }
-            .getOrDefault(emptyList())
+        val chapters = viewModel.readerChapters.current(bookUrl)?.chapters.orEmpty()
         if (chapters.isEmpty()) {
             return (currentIndex + if (direction < 0) -1 else 1)
                 .takeIf { it in 0 until ReadBook.chapterSize }
@@ -5007,11 +5044,21 @@ class ReadBookActivity : BaseReadBookActivity(),
     override fun payAction() {
         val book = ReadBook.book ?: return
         if (book.isLocal) return
-        val chapter = appDb.bookChapterDao.getChapter(book.bookUrl, ReadBook.durChapterIndex)
-        if (chapter == null) {
-            toastOnUi("no chapter")
-            return
+        val chapterIndex = ReadBook.durChapterIndex
+        lifecycleScope.launch {
+            val chapter = withContext(IO) {
+                appDb.bookChapterDao.getChapter(book.bookUrl, chapterIndex)
+            }
+            if (ReadBook.book !== book || ReadBook.durChapterIndex != chapterIndex) return@launch
+            if (chapter == null) {
+                toastOnUi("no chapter")
+                return@launch
+            }
+            showChapterPayDialog(book, chapter)
         }
+    }
+
+    private fun showChapterPayDialog(book: Book, chapter: BookChapter) {
         alert(R.string.chapter_pay) {
             setMessage(chapter.title)
             yesButton {
@@ -5741,7 +5788,8 @@ class ReadBookActivity : BaseReadBookActivity(),
             ?: epubCoreLoadingChapterIndex
             ?: binding.epubReadView.currentPage()?.chapterIndex
             ?: ReadBook.durChapterIndex
-        return appDb.bookChapterDao.getChapter(book.bookUrl, chapterIndex)?.title
+        return viewModel.readerChapters.current(book.bookUrl)?.chapter(chapterIndex)?.title
+            ?: ReadBook.curTextChapter?.chapter?.takeIf { it.bookUrl == book.bookUrl && it.index == chapterIndex }?.title
             ?: book.durChapterTitle?.takeIf { it.isNotBlank() }
     }
 
@@ -5751,7 +5799,8 @@ class ReadBookActivity : BaseReadBookActivity(),
             ?: epubCoreLoadingChapterIndex
             ?: binding.epubReadView.currentPage()?.chapterIndex
             ?: ReadBook.durChapterIndex
-        return appDb.bookChapterDao.getChapter(book.bookUrl, chapterIndex)?.url
+        return viewModel.readerChapters.current(book.bookUrl)?.chapter(chapterIndex)?.url
+            ?: ReadBook.curTextChapter?.chapter?.takeIf { it.bookUrl == book.bookUrl && it.index == chapterIndex }?.url
     }
 
     override fun skipToEpubCorePage(index: Int): Boolean {
@@ -5893,7 +5942,11 @@ class ReadBookActivity : BaseReadBookActivity(),
     override fun changeSourceSingle() {
         lifecycleScope.launch {
             val book = ReadBook.book ?: return@launch
-            val chapter = appDb.bookChapterDao.getChapter(book.bookUrl, ReadBook.durChapterIndex) ?: return@launch
+            val chapterIndex = ReadBook.durChapterIndex
+            val chapter = withContext(IO) {
+                appDb.bookChapterDao.getChapter(book.bookUrl, chapterIndex)
+            } ?: return@launch
+            if (ReadBook.book !== book || ReadBook.durChapterIndex != chapterIndex) return@launch
             binding.readMenu.runMenuOut()
             showDialogFragment(
                 ChangeChapterSourceDialog(book.name, book.author, chapter.index, chapter.title)
@@ -6108,6 +6161,7 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     override fun onDestroy() {
+        cancelPendingReaderChapterRequest()
         binding.epubReadView.setListener(null)
         epubLoadingWindow?.dismiss()
         epubLoadingWindow = null

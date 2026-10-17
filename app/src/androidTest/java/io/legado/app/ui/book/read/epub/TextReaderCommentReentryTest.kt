@@ -204,12 +204,22 @@ class TextReaderCommentReentryTest {
         @Suppress("DEPRECATION")
         val opened = instrumentation.startActivitySync(intent) as ReadBookActivity
         activity = opened
-        val web = awaitValue("production reader ready for ${book.name}") {
+        onMain { opened.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        val web = try { awaitValue("production reader ready for ${book.name}") {
             val layer = onMain { findLayer(opened.window.decorView) } ?: return@awaitValue null
             onMain {
                 if (!layer.hasVisibleDocument || layer.position?.chapterIndex != 0) null
                 else readField(layer, "currentWebView") as? WebView
             }?.takeIf { evaluate(it, "document.body.textContent").contains("STABILITY_BODY") }
+        } } catch (failure: AssertionError) {
+            val diagnostic = onMain {
+                val layer = findLayer(opened.window.decorView)
+                val view = layer?.let { readField(it, "currentWebView") as? WebView }
+                "owned=${ReadBook.book?.bookUrl == book.bookUrl}, chapters=${ReadBook.chapterSize}, " +
+                    "finished=${opened.isFinishing}, layer=${layer != null}, visible=${layer?.hasVisibleDocument}, " +
+                    "position=${layer?.position}, webUrl=${view?.url}"
+            }
+            throw AssertionError("${failure.message}; $diagnostic", failure)
         }
         awaitCondition("reader layout settled") {
             val metrics = metrics(web)

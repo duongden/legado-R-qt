@@ -9,6 +9,8 @@ import io.legado.app.help.webView.WebViewLifecycleTestSupport.awaitMain
 import io.legado.app.help.webView.WebViewLifecycleTestSupport.main
 import org.junit.After
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +21,7 @@ class WebViewPoolLifecycleTest {
     private lateinit var reader: WebView
     private var readerProbe = Heartbeat()
     private val acquired = mutableSetOf<PooledWebView>()
+
 
     @Before
     fun setUp() {
@@ -88,6 +91,40 @@ class WebViewPoolLifecycleTest {
             reader = WebViewLifecycleTestSupport.reader(host, readerProbe)
         }
         advancing(readerProbe, "new reader after GLOBAL reset")
+    }
+
+    @Test
+    fun doubleReleaseBeforeAndAfterResetPreservesTheIdleInstance() {
+        lateinit var pooled: PooledWebView
+        main {
+            pooled = WebViewPool.acquire(host, WebViewPool.Scope.DISCOVERY).also(acquired::add)
+            WebViewPool.release(pooled)
+            WebViewPool.release(pooled)
+            assertFalse(pooled.isDestroyed)
+        }
+        awaitMain("double release reset did not finish") { !pooled.isInUse }
+        main {
+            WebViewPool.release(pooled)
+            assertFalse(pooled.isDestroyed)
+            val reused = WebViewPool.acquire(host, WebViewPool.Scope.DISCOVERY)
+            assertSame(pooled, reused)
+            assertTrue(reused.isInUse)
+        }
+        advancing(readerProbe, "reader after double release")
+    }
+
+    @Test
+    fun destroyingScopeDuringResetCannotReturnDestroyedViewToPool() {
+        lateinit var pooled: PooledWebView
+        main {
+            pooled = WebViewPool.acquire(host, WebViewPool.Scope.RSS).also(acquired::add)
+            WebViewPool.release(pooled)
+            WebViewPool.destroyScope(WebViewPool.Scope.RSS)
+            assertTrue(pooled.isDestroyed)
+            val fresh = WebViewPool.acquire(host, WebViewPool.Scope.RSS).also(acquired::add)
+            assertTrue(fresh !== pooled)
+        }
+        advancing(readerProbe, "reader after resetting scope destroyed")
     }
 
     private fun release(pooled: PooledWebView) {

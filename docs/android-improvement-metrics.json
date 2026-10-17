@@ -1,0 +1,97 @@
+{
+  "device_model": "SM-M515F",
+  "sdk": 31,
+  "launcher_initial_baseline": {
+    "sdk": 31,
+    "cold_launches_ms": [
+      {
+        "TotalTime": 4820,
+        "WaitTime": 4826
+      },
+      {
+        "TotalTime": 4729,
+        "WaitTime": 4731
+      },
+      {
+        "TotalTime": 4781,
+        "WaitTime": 4789
+      }
+    ],
+    "pss_kb": 349082,
+    "scope": "launcher only; no claim about reader or TTS performance",
+    "median_total_ms": 4781
+  },
+  "launcher_initial_final": {
+    "sdk": 31,
+    "cold_launches_ms": [
+      {
+        "TotalTime": 4956,
+        "WaitTime": 4963
+      },
+      {
+        "TotalTime": 5082,
+        "WaitTime": 5103
+      },
+      {
+        "TotalTime": 5064,
+        "WaitTime": 5068
+      }
+    ],
+    "median_total_ms": 5064,
+    "pss_kb": 352352,
+    "scope": "launcher only; no claim about reader or TTS performance"
+  },
+  "reader_single_samples": [
+    {
+      "engine": "native",
+      "open_ms": 2358,
+      "next_chapter_ms": 813
+    },
+    {
+      "engine": "epub",
+      "open_ms": 4045,
+      "next_chapter_ms": 1071
+    }
+  ],
+  "limits": "Three launches per APK and single reader samples; no statistical or reader before/after performance claim.",
+  "launcher_repeated_baseline": {
+    "sdk": 31,
+    "cold_launches_ms": [
+      {
+        "TotalTime": 5030,
+        "WaitTime": 5034
+      },
+      {
+        "TotalTime": 4980,
+        "WaitTime": 4985
+      },
+      {
+        "TotalTime": 5050,
+        "WaitTime": 5062
+      }
+    ],
+    "median_total_ms": 5030,
+    "pss_kb": 354826,
+    "scope": "launcher only; no claim about reader or TTS performance"
+  },
+  "launcher_repeated_final": {
+    "sdk": 31,
+    "cold_launches_ms": [
+      {
+        "TotalTime": 5677,
+        "WaitTime": 5695
+      },
+      {
+        "TotalTime": 5115,
+        "WaitTime": 5120
+      },
+      {
+        "TotalTime": 5038,
+        "WaitTime": 5040
+      }
+    ],
+    "median_total_ms": 5115,
+    "pss_kb": 354129,
+    "scope": "launcher only; no claim about reader or TTS performance"
+  }
+}

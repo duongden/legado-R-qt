@@ -226,7 +226,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
     private val suiteHorizontalPagingStates = hashMapOf<String, SuiteHorizontalPagingState>()
     private val suiteRankedPagingStates = hashMapOf<String, SuiteRankedPagingState>()
     private val suiteWidgetLoadSemaphore = Semaphore(SUITE_WIDGET_LOAD_PARALLELISM)
-    private val suiteTargetLoadSemaphore = Semaphore(SUITE_TARGET_LOAD_PARALLELISM)
+    private val suiteBooksRepository = DiscoveryBooksRepository(SUITE_TARGET_LOAD_PARALLELISM)
     private val suiteCoverPreloadSemaphore = Semaphore(SUITE_COVER_PRELOAD_PARALLELISM)
     private var composeDiscoverCanScrollBackward = false
     private var composeSuiteCanScrollBackward = false
@@ -805,7 +805,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
             books
         }
         if (books.isNotEmpty()) {
-            appDb.searchBookDao.insert(*books.toTypedArray())
+            suiteBooksRepository.remember(books)
         }
         return books
     }
@@ -815,12 +815,12 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
         state.nextPage = 2
         state.exhausted = false
         val target = widget.validRandomTargets().firstOrNull() ?: return emptyList()
-        val source = appDb.bookSourceDao.getBookSource(target.sourceUrl) ?: return emptyList()
+        val source = suiteBooksRepository.source(target.sourceUrl) ?: return emptyList()
         val books = loadSuiteTargetPage(source, target.tagUrl, 1)
             .distinctBy { it.suiteDeckKey() }
             .take(HORIZONTAL_SUITE_PAGE_BOOK_LIMIT)
         if (books.isNotEmpty()) {
-            appDb.searchBookDao.insert(*books.toTypedArray())
+            suiteBooksRepository.remember(books)
         }
         state.exhausted = books.isEmpty()
         return books
@@ -835,7 +835,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
             .take(RANKED_SUITE_TARGET_LIMIT)
                 .map { target ->
                     async {
-                        val source = appDb.bookSourceDao.getBookSource(target.sourceUrl)
+                        val source = suiteBooksRepository.source(target.sourceUrl)
                         val books = if (source == null) {
                             emptyList()
                         } else {
@@ -856,7 +856,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
         entries
             .flatMap { it.second }
             .takeIf { it.isNotEmpty() }
-            ?.let { appDb.searchBookDao.insert(*it.toTypedArray()) }
+            ?.let { suiteBooksRepository.remember(it) }
         return result
     }
 
@@ -881,7 +881,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
                 val targetKey = target.deckKey()
                 val page = deck.nextPageByTarget[targetKey] ?: 1
                 deck.nextPageByTarget[targetKey] = if (page >= RANDOM_SUITE_MAX_PAGE) 1 else page + 1
-                val source = appDb.bookSourceDao.getBookSource(target.sourceUrl) ?: continue
+                val source = suiteBooksRepository.source(target.sourceUrl) ?: continue
                 val seed = "${widget.id}|$targetKey|$page|${deck.seenKeys.size}".hashCode()
                 requests += SuiteDeckPageRequest(
                     tagUrl = target.tagUrl,
@@ -927,23 +927,7 @@ class ExploreFragment() : VMBaseFragment<ExploreViewModel>(R.layout.fragment_exp
         source: BookSource,
         tagUrl: String,
         page: Int
-    ): List<SearchBook> {
-        return suiteTargetLoadSemaphore.withPermit {
-            try {
-                WebBook.exploreBookAwait(
-                    source,
-                    tagUrl,
-                    page,
-                    WebViewPool.Scope.DISCOVERY
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Throwable) {
-                AppLog.put("濂椾欢鍙戠幇鍔犺浇鍒嗙被澶辫触", e)
-                emptyList()
-            }
-        }
-    }
+    ): List<SearchBook> = suiteBooksRepository.page(source, tagUrl, page)
 
     private fun prefetchSuiteWidgetDeck(widget: DiscoverySuiteWidget) {
         if (!usingSuiteDiscovery ||

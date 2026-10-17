@@ -141,6 +141,7 @@ class EpubDirectWebResourceRenderTest {
         activity = instrumentation.startActivitySync(intent) as EpubDirectWebResourceTestActivity
         instrumentation.waitForIdleSync()
         instrumentation.runOnMainSync {
+            activity!!.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             layer = EpubDirectWebLayer(activity!!).apply {
                 setListener(object : EpubDirectWebLayer.Listener {
                     override fun onReady(position: EpubDirectPosition) {
@@ -263,7 +264,12 @@ class EpubDirectWebResourceRenderTest {
             ) return latest
             SystemClock.sleep(100)
         }
-        return latest
+        var views = ""
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            views = descendants(layer!!).filterIsInstance<WebView>()
+                .joinToString { "url=${it.url}, visibility=${it.visibility}, size=${it.width}x${it.height}" }
+        }
+        error("Resource readiness timed out: state=$latest, views=$views")
     }
 
     private fun diagnostic(state: JSONObject, requested: List<String>): String {
@@ -295,8 +301,13 @@ class EpubDirectWebResourceRenderTest {
         val latch = CountDownLatch(1)
         var decoded: String? = null
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            currentWebView(expectedChapterPath).evaluateJavascript(script) { raw ->
-                decoded = runCatching { JSONArray("[$raw]").optString(0) }.getOrNull()
+            val view = currentWebView(expectedChapterPath)
+            if (view == null) {
+                latch.countDown()
+                return@runOnMainSync
+            }
+            view.evaluateJavascript(script) { raw ->
+                decoded = runCatching { JSONArray("[$raw]").opt(0) as? String }.getOrNull()
                 latch.countDown()
             }
         }
@@ -304,15 +315,15 @@ class EpubDirectWebResourceRenderTest {
         return decoded
     }
 
-    private fun currentWebView(expectedChapterPath: String): WebView {
+    private fun currentWebView(expectedChapterPath: String): WebView? {
         val candidates = descendants(layer!!).filterIsInstance<WebView>()
             .filter { it.visibility == View.VISIBLE }
             .toList()
-        return candidates.singleOrNull { it.url?.contains(expectedChapterPath) == true }
-            ?: error(
-                "No unique visible WebView for $expectedChapterPath; " +
-                    "visible=${candidates.map { it.url }}"
-            )
+        val matching = candidates.filter { it.url?.contains(expectedChapterPath) == true }
+        check(matching.size <= 1) { "Multiple visible WebViews for $expectedChapterPath" }
+        // loadDataWithBaseURL(..., historyUrl = null) may report about:blank from getUrl.
+        // The readiness script checks location.href and the publisher resources instead.
+        return matching.singleOrNull() ?: candidates.singleOrNull()
     }
 
     private fun captureLayerColors(): IntArray {

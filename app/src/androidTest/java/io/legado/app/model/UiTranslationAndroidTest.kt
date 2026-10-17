@@ -9,10 +9,85 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
+import org.junit.Before
+import org.junit.After
+import io.legado.app.constant.PreferKey
+import io.legado.app.utils.defaultSharedPreferences
+import splitties.init.appCtx
+import io.legado.app.utils.setTranslatedUiLabel
+import io.legado.app.help.webView.WebViewLifecycleTestSupport
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class UiTranslationAndroidTest {
+    private var oldLanguage: String? = null
+    private var hadLanguage = false
+    private var oldTranslation = false
+    private var hadTranslation = false
+
+    @Before fun selectVietnamese() {
+        val prefs = appCtx.defaultSharedPreferences
+        hadLanguage = prefs.contains(PreferKey.language)
+        oldLanguage = prefs.getString(PreferKey.language, null)
+        hadTranslation = prefs.contains(TranslateUtils.ENABLE_KEY)
+        oldTranslation = prefs.getBoolean(TranslateUtils.ENABLE_KEY, true)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            prefs.edit().putString(PreferKey.language, "vi").commit()
+        }
+    }
+
+    @After fun restoreSettings() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            appCtx.defaultSharedPreferences.edit().apply {
+                if (hadLanguage) putString(PreferKey.language, oldLanguage) else remove(PreferKey.language)
+                if (hadTranslation) putBoolean(TranslateUtils.ENABLE_KEY, oldTranslation)
+                else remove(TranslateUtils.ENABLE_KEY)
+            }.commit()
+        }
+    }
+
+    @Test fun uiLanguageIsIndependentOfNovelTranslationAndCachedLabels() = runBlocking {
+        for (language in listOf("vi", "en", "zh", "tw")) {
+            for (translation in listOf(false, true)) {
+                InstrumentationRegistry.getInstrumentation().runOnMainSync {
+                    appCtx.defaultSharedPreferences.edit().putString(PreferKey.language, language)
+                        .putBoolean(TranslateUtils.ENABLE_KEY, translation).commit()
+                }
+                assertEquals(language == "vi", UiTranslation.isEnabled())
+                val expected = if (language == "vi") "Cài đặt" else "设置"
+                assertEquals(expected, UiTranslation.translate("设置"))
+                if (language != "vi") assertEquals(null, UiTranslation.cached("设置"))
+            }
+        }
+    }
+
+    @Test fun changingLanguageUpdatesAnAttachedSourceLabel() {
+        val host = WebViewLifecycleTestSupport.startHost()
+        lateinit var label: android.widget.TextView
+        try {
+            WebViewLifecycleTestSupport.main {
+                label = android.widget.TextView(host)
+                host.testRoot.addView(label)
+                label.setTranslatedUiLabel("书源详情", host)
+            }
+            WebViewLifecycleTestSupport.awaitMain("Vietnamese label not shown") {
+                label.text.toString() == "Chi tiết nguồn"
+            }
+            WebViewLifecycleTestSupport.main {
+                appCtx.defaultSharedPreferences.edit().putString(PreferKey.language, "en").commit()
+            }
+            WebViewLifecycleTestSupport.awaitMain("English selection reused Vietnamese label") {
+                label.text.toString() == "书源详情"
+            }
+            WebViewLifecycleTestSupport.main {
+                appCtx.defaultSharedPreferences.edit().putString(PreferKey.language, "vi").commit()
+            }
+            WebViewLifecycleTestSupport.awaitMain("Vietnamese selection did not restore label") {
+                label.text.toString() == "Chi tiết nguồn"
+            }
+        } finally { WebViewLifecycleTestSupport.main { host.finish() } }
+    }
+
     @Test
     fun settingsPreferVietnameseResources() = runBlocking {
         assertEquals("Cài đặt", UiTranslation.translate("设置"))

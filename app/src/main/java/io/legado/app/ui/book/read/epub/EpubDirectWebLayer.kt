@@ -264,19 +264,16 @@ class EpubDirectWebLayer @JvmOverloads constructor(
         val config: EpubCoreLayoutConfig,
         val action: Runnable
     )
-    private val preloadRunnables = LinkedHashMap<String, ScheduledPreload>()
     private var preloadChapterOrder = emptyList<Int>()
     private var preloadGestureActive = false
     private var performanceBudget = resolvePerformanceBudget(context)
     val preloadCapacity: Int
         get() = performanceBudget.preloadedWebViews
-    private val preloadedWebViews = EpubDirectPreloadCache<ReaderWebView>(
-        preloadCapacity,
-        ::destroyWebView
-    )
-    // A preloading WebView owns native resources before it can safely enter the ready cache.
-    // Keep it addressable during that interval so it can be promoted or discarded deterministically.
-    private val loadingPreloadedWebViews = LinkedHashMap<String, ReaderWebView>()
+    private val preloadRegistry = EpubPreloadRegistry<ReaderWebView, ScheduledPreload>(
+        { preloadCapacity }, ::destroyWebView)
+    private val preloadRunnables get() = preloadRegistry.scheduled
+    private val preloadedWebViews get() = preloadRegistry.ready
+    private val loadingPreloadedWebViews get() = preloadRegistry.loading
     private var renderRecoveryRunnable: Runnable? = null
     private var renderRecoveryRequest: RenderRecoveryRequest? = null
     private var renderRecoveryAttempts = 0
@@ -2983,39 +2980,23 @@ class EpubDirectWebLayer @JvmOverloads constructor(
         preloadRunnables.clear()
     }
 
-    private fun isPreloadOwned(key: String): Boolean {
-        return preloadedWebViews.contains(key) || loadingPreloadedWebViews.containsKey(key) ||
-            preloadRunnables.containsKey(key)
-    }
+    private fun isPreloadOwned(key: String): Boolean = preloadRegistry.owns(key)
 
-    private fun hasPreloadCapacity(): Boolean {
-        return preloadedWebViews.size + loadingPreloadedWebViews.size + preloadRunnables.size < preloadCapacity
-    }
+    private fun hasPreloadCapacity(): Boolean = preloadRegistry.hasCapacity()
 
-    private fun takeLoadingPreload(key: String): ReaderWebView? {
-        val view = loadingPreloadedWebViews.remove(key) ?: return null
-        return view.takeIf {
+    private fun takeLoadingPreload(key: String): ReaderWebView? =
+        preloadRegistry.takeLoading(key) {
             it.loadedChapterKey == key && it.preloading && !destroyed
-        } ?: run {
-            destroyWebView(view)
-            null
         }
-    }
 
     private fun removeLoadingPreload(view: ReaderWebView): Boolean {
-        val entry = loadingPreloadedWebViews.entries.firstOrNull { it.value === view } ?: return false
-        loadingPreloadedWebViews.remove(entry.key)
+        if (!preloadRegistry.removeLoading(view)) return false
         resumeScheduledPreloads()
         return true
     }
 
-    private fun clearPreloadedWebViews() {
-        preloadedWebViews.clear()
-        val loading = loadingPreloadedWebViews.values.toList()
-        loadingPreloadedWebViews.clear()
-        loading.forEach { view ->
-            if (view !== currentWebView && view !== standbyWebView) destroyWebView(view)
-        }
+    private fun clearPreloadedWebViews() = preloadRegistry.clearRetained {
+        it === currentWebView || it === standbyWebView
     }
 
     private fun discardFailedPreload(view: ReaderWebView) {

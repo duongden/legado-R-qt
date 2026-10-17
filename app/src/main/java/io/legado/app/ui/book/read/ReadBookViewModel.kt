@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppLog
@@ -46,6 +47,8 @@ import io.legado.app.utils.mapParallelSafe
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.toStringArray
 import io.legado.app.utils.toastOnUi
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.catch
@@ -65,6 +68,9 @@ import java.io.FileOutputStream
  * 阅读界面数据处理
  */
 class ReadBookViewModel(application: Application) : BaseViewModel(application) {
+    internal val readerChapters = ReaderChapterRepository(viewModelScope) {
+        appDb.bookChapterDao.observeChapterList(it)
+    }
     val permissionDenialLiveData = MutableLiveData<Int>()
     var isInitFinish = false
     var searchContentQuery = ""
@@ -77,12 +83,19 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun initReadBookConfig(intent: Intent) {
+        initialBook(intent)?.let(ReadBook::upReadBookConfig)
+    }
+
+    internal suspend fun initialBookAsync(intent: Intent): Book? = withContext(Dispatchers.IO) {
+        initialBook(intent)
+    }
+
+    private fun initialBook(intent: Intent): Book? {
         val bookUrl = intent.getStringExtra("bookUrl")
-        val book = when {
+        return when {
             bookUrl.isNullOrEmpty() -> appDb.bookDao.lastReadBook
             else -> appDb.bookDao.getBook(bookUrl)
-        } ?: return
-        ReadBook.upReadBookConfig(book)
+        }
     }
 
     /**
@@ -139,6 +152,7 @@ class ReadBookViewModel(application: Application) : BaseViewModel(application) {
     }
 
     private suspend fun initBook(book: Book) {
+        withContext(Dispatchers.Main.immediate) { readerChapters.bind(book.bookUrl) }
         val isSameBook = ReadBook.book?.bookUrl == book.bookUrl
         val startup = ReadBookStartupPolicy.decide(
             isEpub = book.isEpub,

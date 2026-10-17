@@ -21,9 +21,9 @@ class EpubDirectWebViewBudgetPolicyTest {
     }
 
     @Test
-    fun `smart mode prioritizes warm pages even with a small Java heap`() {
+    fun `smart mode respects low RAM without penalizing ordinary small heaps`() {
         assertEquals(
-            EpubPerformanceMode.Smooth,
+            EpubPerformanceMode.PowerSave,
             EpubDirectWebViewBudgetPolicy.resolve("smart", true, 768).effectiveMode
         )
         assertEquals(
@@ -50,6 +50,8 @@ class EpubDirectWebViewBudgetPolicyTest {
         assertEquals(4, smooth.preloadedWebViews)
         assertEquals(4, smooth.chapterPreloadLimit)
         assertEquals(true, smooth.farFramePrefetchEnabled)
+        assertEquals(EpubPerformanceMode.Extreme,
+            EpubDirectWebViewBudgetPolicy.resolve("extreme", true, 128).effectiveMode)
         assertEquals(6, extreme.preloadedWebViews)
         assertEquals(6, extreme.chapterPreloadLimit)
         assertEquals(13, extreme.adjacentFrameCacheCapacity)

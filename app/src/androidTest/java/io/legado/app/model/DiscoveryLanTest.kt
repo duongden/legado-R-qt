@@ -40,6 +40,9 @@ class DiscoveryLanTest {
         val context = instrumentation.targetContext
         val sourceName = "LAN Discovery Fixture"
         val name = "LAN Discovery Story"
+        val oldEngine = AppConfig.textReadEngine
+        val requestedEngine = InstrumentationRegistry.getArguments().getString("readerEngine")
+            ?.takeIf { it == "native" || it == "epub" }
         val oldPrefetch = AppConfig.preDownloadNum
         val oldInterval = context.getPrefInt("webChapterIntervalMs", 1000)
         val requests = java.util.Collections.synchronizedList(mutableListOf<Long>())
@@ -160,9 +163,46 @@ class DiscoveryLanTest {
             if (transfers) {
                 AppConfig.preDownloadNum = 0
             }
+            requestedEngine?.let { AppConfig.textReadEngine = it }
+            val readerStart = SystemClock.uptimeMillis()
             reader = instrumentation.startActivitySync(Intent(context, ReadBookActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("bookUrl", bookUrl).putExtra("inBookshelf", true)) as ReadBookActivity
+            instrumentation.runOnMainSync {
+                reader!!.window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
             await("native reader resumes discovered book at chapter three") { ReadBook.book?.bookUrl == bookUrl && ReadBook.durChapterIndex == 2 }
+            if (!transfers && requestedEngine != null) {
+                fun readerReady(index: Int): Boolean {
+                    if (ReadBook.book?.bookUrl != bookUrl || ReadBook.durChapterIndex != index) return false
+                    if (requestedEngine == "native") return ReadBook.curTextChapter?.isCompleted == true &&
+                        ReadBook.curTextChapter?.chapter?.index == index
+                    var ready = false
+                    instrumentation.runOnMainSync {
+                        ready = reader!!.findViewById<io.legado.app.ui.book.read.epub.EpubReadView>(
+                            io.legado.app.R.id.epub_read_view).hasDirectContent && reader!!.epubCorePageCount() > 0
+                    }
+                    return ready
+                }
+                await("fixture reader first chapter ready", 45000) { readerReady(2) }
+                val openMillis = SystemClock.uptimeMillis() - readerStart
+                val turnStart = SystemClock.uptimeMillis()
+                instrumentation.runOnMainSync {
+                    if (requestedEngine == "epub") reader!!.openNextEpubCoreChapter()
+                    else ReadBook.moveToNextChapter(true, fromReadAloud = false)
+                }
+                await("fixture reader next chapter ready", 45000) { readerReady(3) }
+                val nextMillis = SystemClock.uptimeMillis() - turnStart
+                instrumentation.runOnMainSync {
+                    if (requestedEngine == "epub") reader!!.openPreviousEpubCoreChapter()
+                    else ReadBook.moveToPrevChapter(upContent = true, toLast = false, fromReadAloud = false)
+                }
+                await("fixture reader previous chapter ready", 45000) { readerReady(2) }
+                android.util.Log.i("AndroidReaderJourney",
+                    "engine=$requestedEngine openMillis=$openMillis nextChapterMillis=$nextMillis")
+                instrumentation.sendStatus(0, android.os.Bundle().apply {
+                    putString("readerJourney", "engine=$requestedEngine openMillis=$openMillis nextChapterMillis=$nextMillis")
+                })
+            }
             if (transfers) {
                 await("native reader loaded") { ReadBook.curTextChapter?.isCompleted == true }
                 // Keep a foreground activity, but stop native adjacent-chapter loads so rate/cache assertions measure LAN only.
@@ -176,6 +216,7 @@ class DiscoveryLanTest {
             assertFalse(request("/getExploreBookInfo?id=$id").getBoolean("isSuccess"))
             assertFalse(request("/addExploreBook", JSONObject().put("id", id)).getBoolean("isSuccess"))
         } finally {
+            AppConfig.textReadEngine = oldEngine
             AppConfig.preDownloadNum = oldPrefetch
             context.putPrefInt("webChapterIntervalMs", oldInterval)
             WebLibraryTransfer.discardBook(bookUrl)

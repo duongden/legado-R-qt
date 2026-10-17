@@ -1,8 +1,12 @@
 package io.legado.app.utils
 
+import android.content.ComponentCallbacks
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.content.res.Resources
 import io.legado.app.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import splitties.init.appCtx
@@ -11,13 +15,35 @@ import java.util.Locale
 /** Display-only translations. Prefer the app's Vietnamese labels over novel dictionaries. */
 object UiTranslation {
     private val displayCache = android.util.LruCache<String, String>(512)
-    fun cached(text: String): String? = displayCache.get("${TranslateUtils.revisionKey()}:$text")
+    internal fun languageKey(): String = UiLanguagePolicy.resolve(
+        appCtx.getPrefString(io.legado.app.constant.PreferKey.language),
+        androidx.core.os.ConfigurationCompat.getLocales(sysConfiguration)[0]?.language
+    )
+
+    private val languageChanges = MutableStateFlow(languageKey())
+    internal val languageUpdates = languageChanges.asStateFlow()
+    private val languageListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == io.legado.app.constant.PreferKey.language) refreshLanguage()
+    }
+
+    init {
+        appCtx.defaultSharedPreferences.registerOnSharedPreferenceChangeListener(languageListener)
+        appCtx.registerComponentCallbacks(object : ComponentCallbacks {
+            override fun onConfigurationChanged(newConfig: Configuration) = refreshLanguage()
+            override fun onLowMemory() { displayCache.evictAll() }
+        })
+    }
+
+    private fun refreshLanguage() {
+        displayCache.evictAll()
+        languageChanges.value = languageKey()
+    }
+
+    private fun cacheKey(text: String) = "${languageKey()}:${TranslateUtils.revisionKey()}:$text"
+    fun cached(text: String): String? = if (isEnabled()) displayCache.get(cacheKey(text)) else null
 
     /** App language controls UI independently of the novel translation switch. */
-    fun isEnabled(): Boolean =
-        appCtx.getPrefString(io.legado.app.constant.PreferKey.language) == "vi" ||
-            androidx.core.os.ConfigurationCompat.getLocales(appCtx.resources.configuration)[0]?.language == "vi" ||
-            TranslateUtils.isTranslateEnabled()
+    fun isEnabled(): Boolean = languageKey() == "vi"
 
     private val builtinLabels = auditedUiLabels + mapOf(
         "书源详情" to "Chi tiết nguồn",
@@ -220,7 +246,9 @@ object UiTranslation {
         }.joinToString("\n")
 
     suspend fun translate(text: String): String {
-        if (text.isBlank()) return text
+        if (text.isBlank() || !isEnabled()) return text
+        val requestKey = cacheKey(text)
+        displayCache.get(requestKey)?.let { return it }
         relativeTime.matchEntire(text)?.let { match ->
             val (count, unit, direction) = match.destructured
             return "$count ${timeUnits.getValue(unit)} ${if (direction == "前") "trước" else "sau"}"
@@ -237,6 +265,6 @@ object UiTranslation {
                 }
             }
         }
-        return UiTextSpacing.normalize(io.legado.app.model.TranslationEngine.normalizeDisplayText(label ?: TranslateUtils.translate(text))).also { displayCache.put("${TranslateUtils.revisionKey()}:$text", it) }
+        return UiTextSpacing.normalize(io.legado.app.model.TranslationEngine.normalizeDisplayText(label ?: TranslateUtils.translate(text))).also { if (requestKey == cacheKey(text) && isEnabled()) displayCache.put(requestKey, it) }
     }
 }

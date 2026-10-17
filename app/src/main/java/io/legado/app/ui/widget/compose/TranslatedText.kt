@@ -13,15 +13,16 @@ import androidx.annotation.StringRes
 @Composable
 fun translatedUiString(@StringRes id: Int, vararg args: Any): String {
     val tick by TranslateUtils.updates.collectAsState()
+    val language by UiTranslation.languageUpdates.collectAsState()
     val context = LocalContext.current
-    val raw = remember(context, id, tick, args.toList()) {
+    val raw = remember(context, id, tick, language, args.toList()) {
         if (UiTranslation.isEnabled()) UiTranslation.vietnameseString(id, *args)
         else context.getString(id, *args)
     }
     return translatedUiText(raw)
 }
 
-private data class TranslationRequest(val text: String, val kind: TranslateUtils.Kind, val tick: Long)
+private data class TranslationRequest(val text: String, val kind: TranslateUtils.Kind, val tick: Long, val language: String)
 
 /** Translation belongs to the displayed item; never writes into its persisted model. */
 @Composable
@@ -36,8 +37,9 @@ fun translatedUiText(text: String): String = translationResult(text, TranslateUt
 @Composable
 private fun translationResult(text: String, kind: TranslateUtils.Kind, uiLabel: Boolean): String {
     val tick by TranslateUtils.updates.collectAsState()
+    val language by UiTranslation.languageUpdates.collectAsState()
     val enabled = if (uiLabel) UiTranslation.isEnabled() else TranslateUtils.isTranslateEnabled()
-    val request = TranslationRequest(text, kind, tick)
+    val request = TranslationRequest(text, kind, tick, if (uiLabel) language else "")
     val result by produceState<Pair<TranslationRequest, String>?>(null, request, enabled, uiLabel) {
         value = null
         if (enabled) value = request to if (uiLabel) UiTranslation.translate(text) else TranslateUtils.translate(text, kind)
@@ -54,8 +56,9 @@ private fun translationResult(text: String, kind: TranslateUtils.Kind, uiLabel: 
 @Composable
 fun fixedUiText(text: String): String {
     val tick by TranslateUtils.updates.collectAsState()
+    val language by UiTranslation.languageUpdates.collectAsState()
     val context = LocalContext.current
-    return remember(text, tick, context, UiTranslation.isEnabled()) {
+    return remember(text, tick, language, context, UiTranslation.isEnabled()) {
         UiTranslation.builtinLabel(text)
     }
 }

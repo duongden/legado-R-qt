@@ -27,10 +27,10 @@ configurations.configureEach {
 def name = "legado-R-qt"
 def version = project.hasProperty("VERSION_NAME")
         ? project.property("VERSION_NAME").toString()
-        : "3.26.1016.1"
+        : "3.26.1017.1"
 def buildVersionCode = project.hasProperty("VERSION_CODE")
         ? project.property("VERSION_CODE").toString().toInteger()
-        : 12032
+        : 12033
 
 android {
     compileSdk = compile_sdk_version

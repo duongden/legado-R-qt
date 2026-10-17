@@ -510,18 +510,25 @@ class TextFile(private var book: Book) {
             var csNum = 0
             var numE = 0
             var lastTitle: String? = null
-            while (matcher.find()) {
-                val contentLength = matcher.start() - start
-                if (start == 0 || contentLength > 1000) {
-                    val title = replacement(matcher.group(), tocRule.replacement, csNum, lastTitle, contentLength)
-                    if (title.isNotEmpty()) {
-                        lastTitle = title
-                        csNum++
+            try {
+                while (matcher.find()) {
+                    val contentLength = matcher.start() - start
+                    if (start == 0 || contentLength > 1000) {
+                        val title = replacement(matcher.group(), tocRule.replacement, csNum, lastTitle, contentLength)
+                        if (title.isNotEmpty()) {
+                            lastTitle = title
+                            csNum++
+                        }
+                        start = matcher.end()
+                    } else if (contentLength < 100) {
+                        numE++ //这种不足100字的一般被识别为卷，即错误识别，正常章节数小于卷3倍的不选
                     }
-                    start = matcher.end()
-                } else if (contentLength < 100) {
-                    numE++ //这种不足100字的一般被识别为卷，即错误识别，正常章节数小于卷3倍的不选
                 }
+            } catch (e: com.script.ScriptException) {
+                // Auto-detection must still try the other enabled rules. Explicitly selected
+                // rules retain their error instead of silently changing the user's TOC.
+                AppLog.put("TXT目录规则脚本错误:${tocRule.name}", e)
+                continue
             }
             if (csNum >= numE * 3 && (csNum > maxNum + overRuleCount)) { //后面的规则匹配数量没超过最大值2个，那么依旧用前面那个
                 maxNum = csNum
@@ -585,7 +592,7 @@ class TextFile(private var book: Book) {
             bindings["prevLength"] = prevLength
             bindings["lastVolumeTitle"] = lastVolumeTitle.value
             bindings["java"] = JsExtensions(lastVolumeTitle, toc)
-            eval(jsStr, bindings)
+            eval(TxtTocScript.normalize(jsStr), bindings)
         }.toString()
     }
 

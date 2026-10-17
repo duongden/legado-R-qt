@@ -1,6 +1,7 @@
 package io.legado.app.help.webView
 
 import android.os.Bundle
+import android.view.WindowManager
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 
@@ -11,6 +12,7 @@ class WebViewDialogLifecycleTestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         testRoot = FrameLayout(this)
         setContentView(testRoot)
     }

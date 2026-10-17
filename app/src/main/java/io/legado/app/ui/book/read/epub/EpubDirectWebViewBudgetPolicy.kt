@@ -43,10 +43,11 @@ internal object EpubDirectWebViewBudgetPolicy {
     ): EpubPerformanceBudget {
         val selected = EpubPerformanceMode.fromKey(modeKey)
         val effective = if (selected == EpubPerformanceMode.Smart) {
-            // The default prioritizes ready pages. A small Java heap is not a reason
-            // to disable the compositor-backed frame pipeline on modern WebView.
-            if (!isLowRamDevice && memoryClassMb >= 768) EpubPerformanceMode.Extreme
-            else EpubPerformanceMode.Smooth
+            when {
+                isLowRamDevice -> EpubPerformanceMode.PowerSave
+                memoryClassMb >= 768 -> EpubPerformanceMode.Extreme
+                else -> EpubPerformanceMode.Smooth
+            }
         } else {
             selected
         }

@@ -694,52 +694,28 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
         }
     }
 
-    private fun selectChapterFromPanel(index: Int) {
-        val chapterCount = ReadBook.chapterSize
-        if (chapterCount <= 0) return
-        val targetIndex = index.coerceIn(0, chapterCount - 1)
-        val shouldContinueReadAloud = BaseReadAloudService.isRun
-        val shouldPlay = !BaseReadAloudService.pause
-        prepareChapterNavigation(targetIndex)
-        if (shouldContinueReadAloud) {
-            ReadAloud.selectChapter(context, targetIndex, continuePlayback = shouldPlay)
-            return
-        }
-        ReadBook.openChapter(targetIndex, upContent = true) {
-            onChapterContentChanged()
-        }
+    private val chapterController by lazy {
+        ReadAloudPanelController(
+            state = { ReadAloudPanelRuntimeState(ReadBook.chapterSize, ReadBook.durChapterIndex,
+                BaseReadAloudService.isRun, BaseReadAloudService.isPlay(), BaseReadAloudService.pause) },
+            prepare = ::prepareChapterNavigation,
+            selectTts = { index, play -> ReadAloud.selectChapter(context, index, continuePlayback = play) },
+            openReader = { index -> ReadBook.openChapter(index, upContent = true) { onChapterContentChanged() } },
+            moveTts = { delta, play ->
+                if (delta < 0) ReadAloud.prevChapter(context, play) else ReadAloud.nextChapter(context, play)
+            },
+            moveReader = { delta ->
+                if (delta < 0) ReadBook.moveToPrevChapter(upContent = true, toLast = false, fromReadAloud = false)
+                else ReadBook.moveToNextChapter(true, fromReadAloud = false)
+            },
+            changed = { post { onChapterContentChanged() } },
+            failed = ::refresh
+        )
     }
 
-    private fun moveChapterFromPanel(delta: Int) {
-        val chapterCount = ReadBook.chapterSize
-        if (chapterCount <= 0) return
-        val targetIndex = (ReadBook.durChapterIndex + delta).coerceIn(0, chapterCount - 1)
-        if (targetIndex == ReadBook.durChapterIndex) return
-        prepareChapterNavigation(targetIndex)
-        if (BaseReadAloudService.isRun) {
-            val continuePlayback = BaseReadAloudService.isPlay()
-            if (delta < 0) {
-                ReadAloud.prevChapter(context, continuePlayback)
-            } else {
-                ReadAloud.nextChapter(context, continuePlayback)
-            }
-            return
-        }
-        val moved = if (delta < 0) {
-            ReadBook.moveToPrevChapter(
-                upContent = true,
-                toLast = false,
-                fromReadAloud = false
-            )
-        } else {
-            ReadBook.moveToNextChapter(true, fromReadAloud = false)
-        }
-        if (!moved) {
-            refresh()
-            return
-        }
-        post { onChapterContentChanged() }
-    }
+    private fun selectChapterFromPanel(index: Int) = chapterController.select(index)
+
+    private fun moveChapterFromPanel(delta: Int) = chapterController.move(delta)
 
     private fun prepareChapterNavigation(chapterIndex: Int) {
         chapterModelCache = null
@@ -822,13 +798,12 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
     }
 
     private fun syncPlaybackUiState() {
-        val servicePlaying = playbackActualPlaying ?: BaseReadAloudService.isPlay()
+        val playback = ReadAloudPanelPlayback.resolve(playbackActualPlaying,
+            BaseReadAloudService.isPlay(), playbackPhase, playbackBuffering)
         uiState = uiState.copy(
-            playing = servicePlaying,
+            playing = playback.playing,
             playbackPhase = playbackPhase,
-            playbackBusy = playbackBuffering ||
-                    playbackPhase == ReadAloudPlaybackState.PHASE_PREPARING ||
-                    playbackPhase == ReadAloudPlaybackState.PHASE_BUFFERING,
+            playbackBusy = playback.busy,
             serviceRunning = BaseReadAloudService.isRun,
             foregroundActive = foregroundActive && visibility == VISIBLE
         )
@@ -1328,7 +1303,8 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
             currentSpeechItem?.route ?: speechRoute
         )
         val timerMinute = BaseReadAloudService.timeMinute
-        val servicePlaying = playbackActualPlaying ?: BaseReadAloudService.isPlay()
+        val playback = ReadAloudPanelPlayback.resolve(playbackActualPlaying,
+            BaseReadAloudService.isPlay(), playbackPhase, playbackBuffering)
         val roleEventVisible = multiRoleEnabled &&
                 roleStatusText.isNotBlank() &&
                 !roleDetailClosed &&
@@ -1342,11 +1318,9 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
             coverAllowNameOverlay = model?.coverAllowNameOverlay,
             chapterTitle = model?.chapterTitle.orEmpty(),
             chapterIndexText = model?.chapterIndexText.orEmpty(),
-            playing = servicePlaying,
+            playing = playback.playing,
             playbackPhase = playbackPhase,
-            playbackBusy = playbackBuffering ||
-                    playbackPhase == ReadAloudPlaybackState.PHASE_PREPARING ||
-                    playbackPhase == ReadAloudPlaybackState.PHASE_BUFFERING,
+            playbackBusy = playback.busy,
             serviceRunning = BaseReadAloudService.isRun,
             timerMinute = timerMinute,
             progress = paragraphProgress,

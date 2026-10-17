@@ -21,6 +21,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import io.legado.app.utils.isMainThread
 import splitties.init.appCtx
 import java.util.Stack
 import kotlin.math.max
@@ -56,7 +58,7 @@ object WebViewPool {
     private const val SCOPED_WEB_VIEW_MAX_NUM = 2
     private const val SCOPED_IDLE_TIME_OUT: Long = 30 * 1000
     private const val RESET_TIME_OUT: Long = 10 * 1000
-    private val cleanupScope by lazy { CoroutineScope(Dispatchers.IO + SupervisorJob()) }
+    private val cleanupScope by lazy { CoroutineScope(Dispatchers.Main.immediate + SupervisorJob()) }
     private val pools = mutableMapOf<Scope, ScopePool>()
 
     private fun pool(scope: Scope): ScopePool {
@@ -73,9 +75,15 @@ object WebViewPool {
         }
     }
 
-    // 获取一个WebView
+    // Preserve synchronous callers while serializing every WebView operation on Main.
+    fun acquire(context: Context, scope: Scope = Scope.GLOBAL): PooledWebView =
+        onMain { acquireOnMain(context, scope) }
+
+    private fun <T> onMain(action: () -> T): T =
+        if (isMainThread) action() else runBlocking(Dispatchers.Main) { action() }
+
     @Synchronized
-    fun acquire(context: Context, scope: Scope = Scope.GLOBAL): PooledWebView {
+    private fun acquireOnMain(context: Context, scope: Scope): PooledWebView {
         val scopePool = pool(scope)
         scopePool.destroyJob?.cancel()
         scopePool.destroyJob = null
@@ -101,17 +109,14 @@ object WebViewPool {
         return pooledWebView
     }
 
-    // 释放WebView回池
+    fun release(pooledWebView: PooledWebView) = onMain { releaseOnMain(pooledWebView) }
+
     @Synchronized
-    fun release(pooledWebView: PooledWebView) {
+    private fun releaseOnMain(pooledWebView: PooledWebView) {
         if (pooledWebView.isDestroyed) return
         val scopePool = pool(pooledWebView.scope)
-        if (scopePool.inUsePool.remove(pooledWebView.id) == null) {
-            scopePool.resettingPool.remove(pooledWebView.id)
-            pooledWebView.isDestroyed = true
-            pooledWebView.realWebView.destroy()
-            return
-        }
+        // A second release owns neither the pending reset nor an idle lease.
+        if (scopePool.inUsePool.remove(pooledWebView.id) == null) return
         scopePool.resettingPool[pooledWebView.id] = pooledWebView
         val resetToken = ++pooledWebView.resetToken
         // 重置WebView状态
@@ -140,11 +145,10 @@ object WebViewPool {
             clearDisappearingChildren() //清除消失中的子视图
             clearAnimation() //清除动画
             pooledWebView.upContext(appCtx)
-            if (scopePool.idlePool.size >= scopePool.maxCached - scopePool.inUsePool.size) {
+            if (scopePool.idlePool.size + scopePool.inUsePool.size +
+                scopePool.resettingPool.size > scopePool.maxCached) {
                 // 池子已满，直接销毁
-                scopePool.resettingPool.remove(pooledWebView.id)
-                pooledWebView.isDestroyed = true
-                pooledWebView.realWebView.destroy()
+                destroyNow(pooledWebView)
                 return
             }
             webViewClient = object: WebViewClient() {
@@ -220,7 +224,10 @@ object WebViewPool {
         }
     }
 
-    fun scheduleDestroyScope(scope: Scope, delayMillis: Long = SCOPED_IDLE_TIME_OUT) {
+    fun scheduleDestroyScope(scope: Scope, delayMillis: Long = SCOPED_IDLE_TIME_OUT) =
+        onMain { scheduleDestroyScopeOnMain(scope, delayMillis) }
+
+    private fun scheduleDestroyScopeOnMain(scope: Scope, delayMillis: Long) {
         if (scope == Scope.GLOBAL) return
         logScopedDestroy(scope, "计划销毁")
         val scopePool = synchronized(this) { pool(scope) }
@@ -231,7 +238,9 @@ object WebViewPool {
         }
     }
 
-    fun destroyScope(scope: Scope) {
+    fun destroyScope(scope: Scope) = onMain { destroyScopeOnMain(scope) }
+
+    private fun destroyScopeOnMain(scope: Scope) {
         if (scope == Scope.GLOBAL) return
         val toDestroy = synchronized(this) {
             val scopePool = pool(scope)
@@ -263,7 +272,17 @@ object WebViewPool {
     }
 
     private fun destroyNow(pooledWebView: PooledWebView) {
-        pooledWebView.isDestroyed = true
+        if (pooledWebView.isDestroyed) return
+        synchronized(this) {
+            pools[pooledWebView.scope]?.let { pool ->
+                pool.idlePool.remove(pooledWebView)
+                pool.inUsePool.remove(pooledWebView.id)
+                pool.resettingPool.remove(pooledWebView.id)
+            }
+            pooledWebView.resetToken++
+            pooledWebView.isInUse = false
+            pooledWebView.isDestroyed = true
+        }
         runOnUI {
             try {
                 pooledWebView.realWebView.run {

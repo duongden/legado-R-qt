@@ -1,5 +1,9 @@
 # Lịch sử thay đổi R-qt
 
+## 3.26.1017.1 · 17/10/2026 · Build 12033
+
+- fix bugs
+
 ## 3.26.1015.1 — 15/10/2026 · Build 12031
 
 - Tìm và thêm sách từ Khám phá trên Web Service.
