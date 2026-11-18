@@ -52,7 +52,7 @@ class DiscoverySubscriptionConfigFragment : ComposeSettingFragment() {
                             key = PreferKey.discoveryPageLayout,
                             title = getString(R.string.discovery_page_layout),
                             summary = discoveryLayoutSummary(),
-                            visible = discoveryMode == AppConfig.DISCOVERY_PAGE_MODE_MODERN,
+                            visible = discoveryMode != AppConfig.DISCOVERY_PAGE_MODE_LEGACY,
                             onClick = ::showDiscoveryLayoutDialog
                         )
                     )
@@ -145,6 +145,7 @@ class DiscoverySubscriptionConfigFragment : ComposeSettingFragment() {
         return when (value) {
             2 -> getString(R.string.discovery_page_layout_waterfall)
             3 -> getString(R.string.discovery_page_layout_grid)
+            4 -> getString(R.string.book_list_no_cover)
             else -> getString(R.string.discovery_page_layout_list)
         }
     }
@@ -183,6 +184,6 @@ class DiscoverySubscriptionConfigFragment : ComposeSettingFragment() {
         private const val KEY_SEARCH_JUMP_MODERN_RSS_PAGE = "search_jump_modernRssPage"
         private const val KEY_SEARCH_JUMP_DISCOVERY_MODE = "search_jump_modernDiscoveryMode"
         private const val KEY_SEARCH_JUMP_RSS_MODE = "search_jump_modernRssMode"
-        private val DISCOVERY_LAYOUT_VALUES = listOf(1, 2, 3)
+        private val DISCOVERY_LAYOUT_VALUES = listOf(1, 2, 3, 4)
     }
 }

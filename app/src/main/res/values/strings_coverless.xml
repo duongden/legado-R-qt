@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="book_list_no_cover">List without covers</string>
+    <string name="book_list_hide_covers">Hide covers</string>
+</resources>

@@ -40,7 +40,9 @@ class SearchContentViewModel(application: Application) : BaseViewModel(applicati
 
     suspend fun searchChapter(
         query: String,
-        chapter: BookChapter
+        chapter: BookChapter,
+        useReplace: Boolean = replaceEnabled,
+        useRegex: Boolean = regexReplace
     ): List<SearchResult> {
         val searchResultsWithinChapter: MutableList<SearchResult> = mutableListOf()
         val book = book ?: return searchResultsWithinChapter
@@ -53,9 +55,9 @@ class SearchContentViewModel(application: Application) : BaseViewModel(applicati
         }
         currentCoroutineContext().ensureActive()
         val mContent = contentProcessor!!.getContent(
-            book, chapter, chapterContent, useReplace = replaceEnabled
+            book, chapter, chapterContent, useReplace = useReplace
         ).toString()
-        val positions = searchPosition(mContent, query)
+        val positions = searchPosition(mContent, query, useRegex)
         positions.forEachIndexed { index, position ->
             currentCoroutineContext().ensureActive()
             val construct = getResultAndQueryIndex(mContent, position, query)
@@ -67,23 +69,24 @@ class SearchContentViewModel(application: Application) : BaseViewModel(applicati
                 chapterIndex = chapter.index,
                 queryIndexInResult = construct.first,
                 queryIndexInChapter = position,
-                isRegex = regexReplace
+                isRegex = useRegex
             )
             searchResultsWithinChapter.add(result)
         }
-        searchResultCounts += searchResultsWithinChapter.size
         return searchResultsWithinChapter
     }
 
-    private suspend fun searchPosition(content: String, pattern: String): List<Int> {
+    private suspend fun searchPosition(content: String, pattern: String, useRegex: Boolean): List<Int> {
         val position: MutableList<Int> = mutableListOf()
-        if (regexReplace) { // 正则表达式搜索
+        if (useRegex) { // 正则表达式搜索
             try {
                 Regex(pattern).findAll(content).forEach { match ->
                     currentCoroutineContext().ensureActive()
                     position.add(match.range.first)
                 }
-            } catch (e: Exception) {
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: IllegalArgumentException) {
                 return position
             }
         } else {

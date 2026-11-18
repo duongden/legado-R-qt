@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cache_repair_indexes">Check and rebuild cache index</string>
+    <string name="cache_repair_complete">Checked cache indexes for %1$d books</string>
+    <string name="search_scope_title">Search scope</string>
+    <string name="search_direction_title">Search direction</string>
+    <string name="search_scope_all">Whole book</string>
+    <string name="search_scope_current">Current chapter</string>
+    <string name="search_scope_forward">Current chapter to end</string>
+    <string name="search_scope_backward">Start to current chapter</string>
+    <string name="search_direction_forward">Forward</string>
+    <string name="search_direction_backward">Backward</string>
+    <string name="webdav_retention_title">WebDAV backup retention</string>
+    <string name="webdav_retention_summary">Backups per device (0: unlimited). Requires a device name.</string>
+    <string name="webdav_auto_upload_books">Upload local books after import</string>
+    <string name="webdav_auto_upload_books_summary">Off by default. Upload failures are reported; existing remote files are preserved.</string>
+    <string name="highlight_day_color">Day color</string>
+    <string name="highlight_night_color">Night color</string>
+    <string name="highlight_color_follow_day">Follow day color</string>
+</resources>

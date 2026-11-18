@@ -167,6 +167,8 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                                 else -> tv.gravity = Gravity.CENTER
                             }
                             apply(tv)
+                            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
+                                tv.textSize + 2f * context.resources.displayMetrics.scaledDensity)
                         }
                         if (viewName == null) {
                             tv.setTranslatedUiLabel(title)
@@ -232,6 +234,8 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                                 else -> tv.gravity = Gravity.CENTER
                             }
                             apply(tv)
+                            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
+                                tv.textSize + 2f * context.resources.displayMetrics.scaledDensity)
                         }
                         if (viewName == null) {
                             tv.setTranslatedUiLabel(title)
@@ -353,6 +357,8 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
                                 else -> tv.gravity = Gravity.CENTER
                             }
                             apply(tv)
+                            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX,
+                                tv.textSize + 2f * context.resources.displayMetrics.scaledDensity)
                         }
                         val chars = kind.chars?.filterNotNull() ?: listOf("chars","is null")
                         val infoV = infoMap[title]
@@ -524,11 +530,11 @@ class ExploreAdapter(context: Context, val callBack: CallBack) :
 
     @Synchronized
     private fun getFlexboxChild(flexbox: FlexboxLayout): TextView {
-        return if (recycler.isEmpty()) {
+        return (if (recycler.isEmpty()) {
             ItemFilletTextBinding.inflate(inflater, flexbox, false).also { it.root.applyThemedFilletControlBackground() }.root
         } else {
             recycler.removeLastElement().also { it.applyThemedFilletControlBackground() }
-        }
+        }).also { it.textSize = 14f }
     }
 
     @Synchronized

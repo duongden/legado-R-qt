@@ -19,6 +19,7 @@ object CoverThumbnailCache {
     private const val thumbWidth = 240
     private const val thumbHeight = 320
     private const val dirName = "cover_thumbs_v2"
+    private val workGate = CoverThumbnailWorkGate(8)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     private fun file(context: Context, key: String?, extension: String): File? {
@@ -41,9 +42,26 @@ object CoverThumbnailCache {
         val source = (drawable as? BitmapDrawable)?.bitmap ?: return
         if (source.isRecycled || source.width <= 0 || source.height <= 0) return
         val appContext = context.applicationContext
+        if (!workGate.acquire(cacheKey)) return
+        // Capture a small owned bitmap while the drawable is still valid; queued jobs
+        // must not retain full-size Glide bitmaps or read them after Glide recycles them.
+        val thumb = try {
+            val scaled = Bitmap.createScaledBitmap(source, thumbWidth, thumbHeight, true)
+            if (scaled === source) source.copy(Bitmap.Config.ARGB_8888, false) else scaled
+        } catch (_: Exception) {
+            workGate.release(cacheKey)
+            return
+        }
+        if (thumb == null) {
+            workGate.release(cacheKey)
+            return
+        }
         scope.launch {
-            runCatching {
-                saveBitmap(appContext, cacheKey, source)
+            try {
+                runCatching { saveThumbnail(appContext, cacheKey, thumb) }
+            } finally {
+                thumb.recycle()
+                workGate.release(cacheKey)
             }
         }
     }
@@ -61,15 +79,25 @@ object CoverThumbnailCache {
     private fun saveBitmap(context: Context, key: String, source: Bitmap) {
         val thumb = Bitmap.createScaledBitmap(source, thumbWidth, thumbHeight, true)
         try {
-            val extension = thumb.preferredCoverExtension()
-            val target = file(context, key, extension) ?: return
-            if (target.exists() && target.length() > 0L) return
-            target.parentFile?.mkdirs()
-            FileOutputStream(target).use { out ->
-                thumb.compressPreservingAlpha(out, 86)
-            }
+            saveThumbnail(context, key, thumb)
         } finally {
             if (thumb !== source) thumb.recycle()
+        }
+    }
+
+    private fun saveThumbnail(context: Context, key: String, thumb: Bitmap) {
+        val extension = thumb.preferredCoverExtension()
+        val target = file(context, key, extension) ?: return
+        if (target.exists() && target.length() > 0L) return
+        target.parentFile?.mkdirs()
+        val staging = File.createTempFile("thumb-", ".tmp", target.parentFile)
+        try {
+            FileOutputStream(staging).use { out ->
+                check(thumb.compressPreservingAlpha(out, 86)) { "Cover thumbnail encoding failed" }
+            }
+            check(staging.renameTo(target)) { "Cannot publish cover thumbnail" }
+        } finally {
+            staging.delete()
         }
     }
 }

@@ -177,6 +177,13 @@ java.connect(urlStr, header = null, callTimeout: Int? = null): StrResponse
 
 java.post(url: String, body: String, headerMap: Map<String, String>, timeout: Int? = null): Connection.Response
 
+java.post(url: String, body: ByteArray, headerMap: Map<String, String>, timeout: Int? = null): Connection.Response
+
+java.strResponse(url: String, body: String?): StrResponse
+java.strResponse(url: String): StrResponse
+// ByteArray POST 保留原始字节；strResponse 为登录检查/解密脚本构造替换响应。
+
+
 java.get(url: String, headerMap: Map<String, String>, timeout: Int? = null): Connection.Response
 
 java.head(url: String, headerMap: Map<String, String>, timeout: Int? = null): Connection.Response

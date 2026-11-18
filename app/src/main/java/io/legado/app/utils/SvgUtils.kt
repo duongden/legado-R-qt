@@ -97,7 +97,7 @@ object SvgUtils {
 
         val viewBox: RectF? = svg.documentViewBox
         if (viewBox == null && size.width > 0 && size.height > 0) {
-            svg.setDocumentViewBox(0f, 0f, svg.documentWidth, svg.documentHeight)
+            svg.setDocumentViewBox(0f, 0f, size.width.toFloat(), size.height.toFloat())
         }
 
         svg.setDocumentWidth("100%")
@@ -110,11 +110,11 @@ object SvgUtils {
     }
 
     private fun getSize(svg: SVG): Size {
-        val width = svg.documentWidth.toInt().takeIf { it > 0 }
-            ?: (svg.documentViewBox.right - svg.documentViewBox.left).toInt()
-        val height = svg.documentHeight.toInt().takeIf { it > 0 }
-            ?: (svg.documentViewBox.bottom - svg.documentViewBox.top).toInt()
-        return Size(width, height)      
+        val viewBox = svg.documentViewBox
+        val size = requireNotNull(SvgBitmapSizePolicy.intrinsicSize(
+            svg.documentWidth, svg.documentHeight, viewBox?.width(), viewBox?.height()
+        )) { "SVG has no usable intrinsic dimensions or viewBox" }
+        return Size(size.width, size.height)
     }
 
 }

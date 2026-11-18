@@ -142,6 +142,11 @@ class WebDavCloudStorageBackend : CloudStorageBackend {
         WebDav(resolve(webDav.config.rootUrl, path), webDav.authorization).upload(uri, contentType)
     }
 
+    suspend fun uploadIfAbsent(path: String, file: File): Boolean {
+        val webDav = ensureConfigured()
+        return WebDav(resolve(webDav.config.rootUrl, path), webDav.authorization).uploadIfAbsent(file)
+    }
+
     override suspend fun download(path: String): ByteArray {
         val webDav = ensureConfigured(prepareRoot = false)
         return WebDav(resolve(webDav.config.rootUrl, path), webDav.authorization).download()

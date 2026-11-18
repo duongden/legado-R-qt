@@ -52,6 +52,9 @@ import java.net.URI
 
 @Suppress("MemberVisibilityCanBePrivate", "ConstPropertyName")
 object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
+    val paragraphReadMode get() = appCtx.getPrefBoolean(PreferKey.paragraphReadMode, false)
+    val paragraphReadControls get() = appCtx.getPrefBoolean(PreferKey.paragraphReadControls, true)
+    val paragraphReadProgress get() = appCtx.getPrefBoolean(PreferKey.paragraphReadProgress, true)
     const val DISCOVERY_PAGE_MODE_LEGACY = "legacy"
     const val DISCOVERY_PAGE_MODE_MODERN = "modern"
     const val DISCOVERY_PAGE_MODE_SUITE = "suite"
@@ -258,11 +261,9 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
         }
 
     var bookshelfListItemStyle: Int
-        get() = appCtx.getPrefInt(PreferKey.bookshelfListItemStyle, 0).let {
-            if (it > 1) 1 else it.coerceAtLeast(0)
-        }
+        get() = appCtx.getPrefInt(PreferKey.bookshelfListItemStyle, 0).coerceIn(0, 2)
         set(value) {
-            appCtx.putPrefInt(PreferKey.bookshelfListItemStyle, value.coerceIn(0, 1))
+            appCtx.putPrefInt(PreferKey.bookshelfListItemStyle, value.coerceIn(0, 2))
         }
 
     var bookshelfListIntroLines: Int
@@ -425,10 +426,16 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
     val modernRssPage: Boolean
         get() = appCtx.getPrefBoolean(PreferKey.modernRssPage, true)
 
-    var discoveryPageLayout: Int
-        get() = appCtx.getPrefInt(PreferKey.discoveryPageLayout, 1).coerceIn(1, 3)
+    var exploreShowCover: Boolean
+        get() = appCtx.getPrefBoolean(PreferKey.exploreShowCover, discoveryPageLayout != 4)
         set(value) {
-            appCtx.putPrefInt(PreferKey.discoveryPageLayout, value.coerceIn(1, 3))
+            appCtx.putPrefBoolean(PreferKey.exploreShowCover, value)
+        }
+
+    var discoveryPageLayout: Int
+        get() = appCtx.getPrefInt(PreferKey.discoveryPageLayout, 1).coerceIn(1, 4)
+        set(value) {
+            appCtx.putPrefInt(PreferKey.discoveryPageLayout, value.coerceIn(1, 4))
         }
 
     val mergeDiscoveryRss: Boolean
@@ -2516,6 +2523,11 @@ object AppConfig : SharedPreferences.OnSharedPreferenceChangeListener {
     var pauseReadAloudWhilePhoneCalls
         get() = appCtx.getPrefBoolean(PreferKey.pauseReadAloudWhilePhoneCalls, false)
         set(value) = appCtx.putPrefBoolean(PreferKey.pauseReadAloudWhilePhoneCalls, value)
+
+    val webDavBackupKeepCount get() = appCtx.getPrefString(PreferKey.webDavBackupKeepCount, "0")
+        ?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+
+    val autoUploadLocalBooks get() = appCtx.getPrefBoolean(PreferKey.autoUploadLocalBooks, false)
 
     val onlyLatestBackup get() = appCtx.getPrefBoolean(PreferKey.onlyLatestBackup, true)
 

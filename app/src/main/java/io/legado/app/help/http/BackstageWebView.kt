@@ -171,7 +171,7 @@ class BackstageWebView(
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun createWebView(): WebView {
-        val pooledWebView = WebViewPool.acquire(appCtx, poolScope)
+        val pooledWebView = WebViewPool.acquire(appCtx, poolScope, forBackground = true)
         this.pooledWebView = pooledWebView
         val webView = pooledWebView.realWebView
         webView.setBackgroundColor(Color.TRANSPARENT)

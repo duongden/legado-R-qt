@@ -1,9 +1,10 @@
 package io.legado.app.ui.association
 
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
-import com.jayway.jsonpath.JsonPath
 import io.legado.app.R
 import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppConst
@@ -19,13 +20,8 @@ import io.legado.app.help.http.newCallResponseBody
 import io.legado.app.help.http.importHttpClient as okHttpClient
 import io.legado.app.help.source.SourceHelp
 import io.legado.app.model.RuleUpdate
-import io.legado.app.utils.GSON
-import io.legado.app.utils.fromJsonArray
-import io.legado.app.utils.fromJsonObject
 import io.legado.app.utils.inputStream
 import io.legado.app.utils.isAbsUrl
-import io.legado.app.utils.isJsonArray
-import io.legado.app.utils.isJsonObject
 import io.legado.app.utils.isUri
 import io.legado.app.utils.splitNotBlank
 
@@ -233,54 +229,26 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
 
     fun importSource(text: String) {
         execute {
-            val mText = text.trim()
-            when {
-                mText.isJsonObject() -> {
-                    kotlin.runCatching {
-                        val json = JsonPath.parse(mText)
-                        json.read<List<String>>("$.sourceUrls")
-                    }.onSuccess { listUrl ->
-                        listUrl.forEach {
-                            importSourceUrl(it)
-                        }
-                    }.onFailure {
-                        GSON.fromJsonObject<BookSource>(mText).getOrThrow().let {
-                            if (it.bookSourceUrl.isEmpty()) {
-                                throw NoStackTraceException("不是书源")
-                            }
-                            allSources.add(it)
-                        }
-                    }
+            val mText = text.trim().removePrefix("\uFEFF").trimStart()
+            val jobContext = currentCoroutineContext()
+            val check = { jobContext.ensureActive() }
+            // Publish the preview only after the complete input and subscriptions validate.
+            val parsed = when {
+                mText.startsWith("{") || mText.startsWith("[") ->
+                    readBookSourceImport(mText.reader(), check)
+                mText.isAbsUrl() -> BookSourceImportData(importSourceUrl(mText))
+                mText.isUri() -> Uri.parse(mText).inputStream(context).getOrThrow().use {
+                    readBookSourceImport(it.reader(Charsets.UTF_8), check)
                 }
-
-                mText.isJsonArray() -> GSON.fromJsonArray<BookSource>(mText).getOrThrow()
-                    .let { items ->
-                        val source = items.firstOrNull() ?: return@let
-                        if (source.bookSourceUrl.isEmpty()) {
-                            throw NoStackTraceException("不是书源")
-                        }
-                        allSources.addAll(items)
-                    }
-
-                mText.isAbsUrl() -> {
-                    importSourceUrl(mText)
-                }
-
-                mText.isUri() -> {
-                    val uri = Uri.parse(mText)
-                    uri.inputStream(context).getOrThrow().use { inputS ->
-                        GSON.fromJsonArray<BookSource>(inputS).getOrThrow().let {
-                            val source = it.firstOrNull() ?: return@let
-                            if (source.bookSourceUrl.isEmpty()) {
-                                throw NoStackTraceException("不是书源")
-                            }
-                            allSources.addAll(it)
-                        }
-                    }
-                }
-
                 else -> throw NoStackTraceException(context.getString(R.string.wrong_format))
             }
+            val pending = ArrayList(parsed.sources)
+            parsed.sourceUrls.forEach { url ->
+                check()
+                pending.addAll(importSourceUrl(url))
+            }
+            check()
+            allSources.addAll(pending)
         }.onError {
             errorLiveData.postValue("ImportError:${it.localizedMessage}")
             AppLog.put("ImportError:${it.localizedMessage}", it)
@@ -289,34 +257,33 @@ class ImportBookSourceViewModel(app: Application) : BaseViewModel(app) {
         }
     }
 
-    private suspend fun importSourceUrl(url: String) {
+    private suspend fun importSourceUrl(url: String): List<BookSource> {
+        currentCoroutineContext().ensureActive()
         RuleUpdate.cacheBookSourceMap[url]?.also {
-            allSources.addAll(it)
             RuleUpdate.cacheBookSourceMap.remove(url)
-            return
+            return it
         }
-        okHttpClient.newCallResponseBody {
+        val jobContext = currentCoroutineContext()
+        return okHttpClient.newCallResponseBody {
             if (url.endsWith("#requestWithoutUA")) {
                 url(url.substringBeforeLast("#requestWithoutUA"))
                 header(AppConst.UA_NAME, "null")
             } else {
                 url(url)
             }
-        }.useLimitedImportStream {
-            GSON.fromJsonArray<BookSource>(it).getOrThrow().let { list ->
-                val source = list.firstOrNull() ?: return@let
-                if (source.bookSourceUrl.isEmpty()) {
-                    throw NoStackTraceException("不是书源")
-                }
-                allSources.addAll(list)
-            }
+        }.useStreamingImport {
+            val parsed = readBookSourceImport(it.reader(Charsets.UTF_8)) { jobContext.ensureActive() }
+            require(parsed.sourceUrls.isEmpty()) { "Không hỗ trợ đăng ký nguồn lồng nhau" }
+            parsed.sources
         }
     }
 
     private fun comparisonSource() {
         execute {
+            val localSources = appDb.bookSourceDao.allPart.associateBy { it.bookSourceUrl }
             allSources.forEach { importedSource ->
-                val localSource = appDb.bookSourceDao.getBookSourcePart(importedSource.bookSourceUrl)
+                currentCoroutineContext().ensureActive()
+                val localSource = localSources[importedSource.bookSourceUrl]
                 val conflict = resolveBookSourceImportConflict(importedSource, localSource)
                 checkSources.add(conflict.localSource)
                 selectStatus.add(conflict.selectedByDefault)

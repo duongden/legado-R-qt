@@ -2,6 +2,8 @@
 
 package io.legado.app.service
 
+import io.legado.app.help.book.usesParagraphReader
+
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -538,7 +540,7 @@ abstract class BaseReadAloudService : BaseService(),
                 }
                 return@execute
             }
-            readAloudByPage = getPrefBoolean(PreferKey.readAloudByPage)
+            readAloudByPage = (getPrefBoolean(PreferKey.readAloudByPage) && ReadBook.book?.usesParagraphReader != true)
             val baseCues = textChapter.buildReadAloudCues(readAloudByPage)
             postReadAloudPlaybackPhase(
                 if (play) ReadAloudPlaybackState.PHASE_PREPARING else ReadAloudPlaybackState.PHASE_PAUSED,

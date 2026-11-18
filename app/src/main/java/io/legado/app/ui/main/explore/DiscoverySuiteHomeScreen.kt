@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -67,6 +68,7 @@ import io.legado.app.ui.main.bookshelf.compose.rememberBookshelfListRenderConfig
 import io.legado.app.ui.widget.compose.AppManagementMenuAction
 import io.legado.app.ui.widget.compose.AppManagementMoreActionButton
 import io.legado.app.ui.widget.compose.BookCoverImage
+import io.legado.app.ui.widget.compose.SearchBookListItem
 import io.legado.app.ui.widget.compose.SearchBookPreviewOverlay
 import io.legado.app.ui.widget.compose.SearchBookPreviewState
 import io.legado.app.ui.widget.compose.appSettingPanelBackground
@@ -437,7 +439,7 @@ private fun DiscoverySuiteWidgetSection(
         if (showTitle) {
             Text(
                 text = widget.displayTitle(context),
-                fontSize = 21.sp,
+                fontSize = 23.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = palette.titleFontFamily,
                 color = palette.primaryText,
@@ -552,6 +554,30 @@ private fun DiscoverySuiteWidgetSection(
 }
 
 @Composable
+private fun DiscoverySuiteTextBookItem(
+    book: SearchBook,
+    renderConfig: BookshelfListRenderConfig,
+    onBookClick: (SearchBook) -> Unit,
+    onBookPreview: (SearchBook, Rect?) -> Unit,
+    fragment: Fragment,
+    lifecycle: Lifecycle,
+    modifier: Modifier = Modifier
+) {
+    SearchBookListItem(
+        book = book,
+        inBookshelf = false,
+        rounded = false,
+        showCover = false,
+        renderConfig = renderConfig,
+        fragment = fragment,
+        lifecycle = lifecycle,
+        modifier = modifier,
+        onClick = { onBookClick(book) },
+        onPreview = { onBookPreview(book, it) }
+    )
+}
+
+@Composable
 private fun DiscoverySuiteWaterfallBooksWidget(
     widget: DiscoverySuiteWidget,
     books: List<SearchBook>,
@@ -563,6 +589,16 @@ private fun DiscoverySuiteWaterfallBooksWidget(
 ) {
     val displayBooks = remember(widget.id, books) {
         books.take(WATERFALL_WIDGET_DISPLAY_COUNT)
+    }
+    if (AppConfig.discoveryPageLayout == 4) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            displayBooks.forEach { book ->
+                DiscoverySuiteTextBookItem(
+                    book, renderConfig, onBookClick, onBookPreview, fragment, lifecycle
+                )
+            }
+        }
+        return
     }
     val columns = remember(displayBooks) {
         displayBooks.withIndex().partition { it.index % 2 == 0 }.let { (left, right) ->
@@ -637,8 +673,8 @@ private fun DiscoverySuiteWaterfallBookCard(
             modifier = Modifier.padding(top = 8.dp),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
+            fontSize = 16.sp,
+            lineHeight = 21.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = palette.titleFontFamily,
             color = palette.primaryText
@@ -699,7 +735,7 @@ private fun DiscoverySuiteHorizontalBooksWidget(
             DiscoverySuiteCoverBookItem(
                 book = book,
                 rank = null,
-                modifier = Modifier.width(74.dp),
+                modifier = Modifier.width(if (AppConfig.discoveryPageLayout == 4) 280.dp else 74.dp),
                 renderConfig = renderConfig,
                 onBookClick = onBookClick,
                 onBookPreview = onBookPreview,
@@ -761,7 +797,7 @@ private fun DiscoverySuiteTagBarWidget(
         ) { target ->
             Box(
                 modifier = Modifier
-                    .height(36.dp)
+                    .heightIn(min = 40.dp)
                     .appSettingPanelBackground(
                         normalColor = palette.rowColor,
                         panelImage = renderConfig.panelImage,
@@ -776,8 +812,8 @@ private fun DiscoverySuiteTagBarWidget(
                     text = target.title.compactTagTitle(),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
                     fontFamily = palette.bodyFontFamily,
                     color = palette.primaryText
                 )
@@ -804,7 +840,7 @@ private fun DiscoverySuiteRankButtonsWidget(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(54.dp)
+                            .heightIn(min = 58.dp)
                             .appSettingPanelBackground(
                                 normalColor = palette.rowColor,
                                 panelImage = renderConfig.panelImage,
@@ -819,8 +855,8 @@ private fun DiscoverySuiteRankButtonsWidget(
                             text = target.title.compactTagTitle(),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = 15.sp,
-                            lineHeight = 18.sp,
+                            fontSize = 17.sp,
+                            lineHeight = 22.sp,
                             fontWeight = FontWeight.SemiBold,
                             fontFamily = palette.bodyFontFamily,
                             color = palette.primaryText
@@ -919,7 +955,7 @@ private fun DiscoverySuiteRankedListWidget(
                             text = target.title.compactTagTitle(),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = if (selected) 16.sp else 15.sp,
+                            fontSize = if (selected) 18.sp else 17.sp,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                             fontFamily = palette.bodyFontFamily,
                             color = if (selected) palette.primaryText else palette.secondaryText
@@ -1008,26 +1044,28 @@ private fun DiscoverySuiteRankedListBookRow(
             fontFamily = palette.titleFontFamily,
             color = if (rank <= 3) palette.accent else palette.primaryText.copy(alpha = 0.88f)
         )
-        Box(
-                modifier = Modifier
-                    .width(40.dp)
-                    .aspectRatio(BOOK_COVER_ASPECT_RATIO)
-                    .onGloballyPositioned { coordinates ->
-                        coverBounds = coordinates.boundsInRoot()
-                    }
-        ) {
-            BookCoverImage(
-                book = book,
-                modifier = Modifier.fillMaxSize(),
-                style = CoverImageView.CoverStyle.COMPACT,
-                loadOnlyWifi = AppConfig.loadCoverOnlyWifi,
-                fragment = fragment,
-                lifecycle = lifecycle,
-                preferThumb = true,
-                fillBounds = true
-            )
+        if (AppConfig.discoveryPageLayout != 4) {
+            Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .aspectRatio(BOOK_COVER_ASPECT_RATIO)
+                        .onGloballyPositioned { coordinates ->
+                            coverBounds = coordinates.boundsInRoot()
+                        }
+            ) {
+                BookCoverImage(
+                    book = book,
+                    modifier = Modifier.fillMaxSize(),
+                    style = CoverImageView.CoverStyle.COMPACT,
+                    loadOnlyWifi = AppConfig.loadCoverOnlyWifi,
+                    fragment = fragment,
+                    lifecycle = lifecycle,
+                    preferThumb = true,
+                    fillBounds = true
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
         }
-        Spacer(modifier = Modifier.width(12.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
@@ -1036,7 +1074,8 @@ private fun DiscoverySuiteRankedListBookRow(
                 text = book.name,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontSize = 15.sp,
+                fontSize = 17.sp,
+                lineHeight = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 fontFamily = palette.titleFontFamily,
                 color = palette.primaryText
@@ -1071,6 +1110,16 @@ private fun DiscoverySuiteCoverGrid(
     lifecycle: Lifecycle
 ) {
     val displayBooks = books.take(maxCount)
+    if (AppConfig.discoveryPageLayout == 4) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            displayBooks.forEach { book ->
+                DiscoverySuiteTextBookItem(
+                    book, renderConfig, onBookClick, onBookPreview, fragment, lifecycle
+                )
+            }
+        }
+        return
+    }
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         displayBooks.chunked(3).forEachIndexed { rowIndex, rowBooks ->
             Row(
@@ -1192,6 +1241,12 @@ private fun DiscoverySuiteCoverBookItem(
     fragment: Fragment,
     lifecycle: Lifecycle
 ) {
+    if (AppConfig.discoveryPageLayout == 4) {
+        DiscoverySuiteTextBookItem(
+            book, renderConfig, onBookClick, onBookPreview, fragment, lifecycle, modifier
+        )
+        return
+    }
     val palette = renderConfig.palette
     var coverBounds by remember(book.displayKey()) { mutableStateOf<Rect?>(null) }
     Box(
@@ -1303,7 +1358,7 @@ private const val HORIZONTAL_WIDGET_MAX_RENDER_COUNT = 72
 private const val RANK_BUTTON_MAX_COUNT = 9
 private const val RANKED_LIST_MAX_TARGET_COUNT = 9
 private const val RANKED_LIST_PAGE_BOOK_COUNT = 4
-private val RANKED_LIST_ROW_HEIGHT = 68.dp
+private val RANKED_LIST_ROW_HEIGHT = 76.dp
 
 private fun DiscoverySuiteWidget.displayTitle(context: Context): String {
     val title = title.trim()

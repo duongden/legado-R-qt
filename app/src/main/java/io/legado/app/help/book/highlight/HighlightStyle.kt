@@ -46,7 +46,8 @@ object HighlightStyle {
                 entry.substring(split + 1).trim()
         }.toMap()
         if (raw.isEmpty() || raw.keys.all { it == "font-family" }) {
-            val color = color(rule.styleColorType, palette)
+            val color = color(if (palette.night) rule.styleColorTypeNight?.takeIf { it.isNotBlank() }
+                ?: rule.styleColorType else rule.styleColorType, palette)
             when (rule.styleType) {
                 "background" -> {
                     values["background-color"] = color

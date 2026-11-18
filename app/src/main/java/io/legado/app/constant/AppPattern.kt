@@ -81,7 +81,7 @@ object AppPattern {
     val debugMessageSymbolRegex = Regex("[⇒◇┌└≡]")
 
     //本地书籍支持类型
-    val bookFileRegex = Regex(".*\\.(txt|epub|umd|pdf|mobi|azw3|azw)", RegexOption.IGNORE_CASE)
+    val bookFileRegex = Regex(".*\\.(txt|epub|umd|pdf|mobi|azw3|azw|md|markdown)", RegexOption.IGNORE_CASE)
     //压缩文件支持类型
     val archiveFileRegex = Regex(".*\\.(zip|rar|7z)$", RegexOption.IGNORE_CASE)
 
@@ -98,7 +98,7 @@ object AppPattern {
     /**
      * 不发音段落判断
      */
-    val notReadAloudRegex = Regex("^(\\s|\\p{C}|\\p{P}|\\p{Z}|\\p{S})+$")
+    val notReadAloudRegex = Regex("^[\\s\\p{C}\\p{P}\\p{Z}\\p{S}]*$")
 
     val xmlContentTypeRegex = "(application|text)/\\w*\\+?xml.*".toRegex()
 

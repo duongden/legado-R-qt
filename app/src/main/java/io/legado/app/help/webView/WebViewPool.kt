@@ -76,19 +76,22 @@ object WebViewPool {
     }
 
     // Preserve synchronous callers while serializing every WebView operation on Main.
-    fun acquire(context: Context, scope: Scope = Scope.GLOBAL): PooledWebView =
-        onMain { acquireOnMain(context, scope) }
+    fun acquire(context: Context, scope: Scope = Scope.GLOBAL, forBackground: Boolean = false): PooledWebView =
+        onMain { acquireOnMain(context, scope, forBackground) }
 
     private fun <T> onMain(action: () -> T): T =
         if (isMainThread) action() else runBlocking(Dispatchers.Main) { action() }
 
     @Synchronized
-    private fun acquireOnMain(context: Context, scope: Scope): PooledWebView {
+    private fun acquireOnMain(context: Context, scope: Scope, forBackground: Boolean): PooledWebView {
         val scopePool = pool(scope)
         scopePool.destroyJob?.cancel()
         scopePool.destroyJob = null
-        val pooledWebView = if (scopePool.idlePool.isNotEmpty()) {
-            scopePool.idlePool.pop() // 复用闲置实例
+        val reusableIndex = if (forBackground) {
+            scopePool.idlePool.indexOfLast { !it.realWebView.hasBeenAttachedToWindow }
+        } else scopePool.idlePool.lastIndex
+        val pooledWebView = if (reusableIndex >= 0) {
+            scopePool.idlePool.removeAt(reusableIndex)
         } else {
             if (scopePool.needInitialize) {
                 scopePool.needInitialize = false

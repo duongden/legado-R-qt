@@ -273,6 +273,10 @@ object LocalBook {
         onStage?.invoke("读取文件信息")
         val fileDoc = FileDoc.fromUri(uri, false)
         if (fileDoc.size == 0L) throw EmptyFileException("Unexpected empty File")
+        if (fileDoc.name.endsWith(".md", true) || fileDoc.name.endsWith(".markdown", true)) {
+            onStage?.invoke("Markdown → EPUB")
+            return importFile(MarkdownBookImporter.convert(fileDoc), onStage)
+        }
         val fileName = fileDoc.name
         val updateTime = fileDoc.lastModified
         val bookUrl = fileDoc.toString()
@@ -383,6 +387,7 @@ object LocalBook {
         } else {
             books.add(importFile(uri, onStage))
         }
+        books.forEach(io.legado.app.help.LocalBookAutoUploader::enqueue)
         return books
     }
 
@@ -391,13 +396,7 @@ object LocalBook {
         uris.forEach { uri ->
             val fileDoc = FileDoc.fromUri(uri, false)
             kotlin.runCatching {
-                if (ArchiveUtils.isArchive(fileDoc.name)) {
-                    importArchiveFile(uri) {
-                        it.matches(AppPattern.bookFileRegex)
-                    }
-                } else {
-                    importFile(uri)
-                }
+                importFiles(uri)
             }.onFailure {
                 AppLog.put("ImportFile Error:\nFile $fileDoc\n${it.localizedMessage}", it)
                 errorCount += 1

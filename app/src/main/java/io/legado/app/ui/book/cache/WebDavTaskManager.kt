@@ -2,6 +2,7 @@ package io.legado.app.ui.book.cache
 
 import android.content.Intent
 import io.legado.app.R
+import io.legado.app.constant.AppLog
 import io.legado.app.service.WebDavTaskService
 import io.legado.app.utils.startForegroundServiceCompat
 import kotlinx.coroutines.CancellationException
@@ -129,7 +130,16 @@ object WebDavTaskManager {
                 message = pendingMessage
             )
         )
-        startService()
+        try {
+            startService()
+        } catch (e: Exception) {
+            updateState(key) {
+                it.copy(status = WebDavTaskStatus.FAILED,
+                    message = e.localizedMessage ?: appCtx.getString(R.string.error), active = false)
+            }
+            AppLog.put("Cannot start WebDAV upload/download task", e, true)
+            return false
+        }
         val job = taskScope.launch(start = CoroutineStart.LAZY) {
             try {
                 taskMutex.withLock {
@@ -198,6 +208,7 @@ object WebDavTaskManager {
 }
 
 enum class WebDavTaskType {
+    LOCAL_BOOK_UPLOAD,
     CACHE_UPLOAD,
     CACHE_DOWNLOAD,
     THEME_PACKAGE_UPLOAD,

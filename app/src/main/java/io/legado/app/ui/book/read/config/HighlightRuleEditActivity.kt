@@ -84,9 +84,13 @@ class HighlightRuleEditActivity : BaseActivity<ActivityHighlightRuleEditBinding>
             }
         }
         binding.btnColor.setOnClickListener {
-            if (loaded && !saving) showComposeChoiceListDialog(getString(R.string.highlight_rule_color), colorLabels) {
-                rule = rule.copy(styleColorType = colors[it])
-                updateButtons()
+            if (loaded && !saving) showComposeChoiceListDialog(getString(R.string.highlight_rule_color),
+                listOf(getString(R.string.highlight_day_color), getString(R.string.highlight_night_color))) { mode ->
+                showComposeChoiceListDialog(getString(R.string.highlight_rule_color), colorLabels) { index ->
+                    rule = if (mode == 0) rule.copy(styleColorType = colors[index])
+                        else rule.copy(styleColorTypeNight = colors[index])
+                    updateButtons()
+                }
             }
         }
         binding.btnPreview.setOnClickListener { preview() }
@@ -165,7 +169,8 @@ class HighlightRuleEditActivity : BaseActivity<ActivityHighlightRuleEditBinding>
         binding.btnType.text = getString(R.string.highlight_rule_option_label,
             getString(R.string.highlight_rule_type), typeLabels.getOrNull(types.indexOf(rule.styleType)) ?: rule.styleType)
         binding.btnColor.text = getString(R.string.highlight_rule_option_label,
-            getString(R.string.highlight_rule_color), colorLabels.getOrNull(colors.indexOf(rule.styleColorType)) ?: rule.styleColorType)
+            getString(R.string.highlight_rule_color), (colorLabels.getOrNull(colors.indexOf(rule.styleColorType)) ?: rule.styleColorType) + " / " +
+                (colorLabels.getOrNull(colors.indexOf(rule.styleColorTypeNight)) ?: getString(R.string.highlight_color_follow_day)))
         updateAssetLabels()
     }
 

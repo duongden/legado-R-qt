@@ -22,6 +22,9 @@ import io.legado.app.help.IntentData
 import io.legado.app.help.book.BookHelp
 import io.legado.app.help.book.isLocal
 import io.legado.app.lib.theme.primaryTextColor
+import io.legado.app.lib.dialogs.selector
+import io.legado.app.utils.getPrefString
+import io.legado.app.utils.putPrefString
 import io.legado.app.ui.widget.recycler.UpLinearLayoutManager
 import io.legado.app.ui.widget.recycler.VerticalDivider
 import io.legado.app.utils.applyNavigationBarMargin
@@ -50,11 +53,19 @@ class SearchContentActivity :
     private val searchView: SearchView by lazy {
         binding.titleBar.findViewById(R.id.search_view)
     }
+    private var searchOptions = ContentSearchOptions()
     private var durChapterIndex = 0
     private var searchJob: Job? = null
+    private var searchGeneration = 0L
     private var initJob: Job? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        searchOptions = ContentSearchOptions(
+            ContentSearchScope.entries.firstOrNull { it.name == getPrefString("contentSearchScope") }
+                ?: ContentSearchScope.ALL,
+            ContentSearchDirection.entries.firstOrNull { it.name == getPrefString("contentSearchDirection") }
+                ?: ContentSearchDirection.FORWARD
+        )
         binding.llSearchBaseInfo.setBackgroundResource(R.drawable.bg_search_glass_panel)
         binding.llSearchBaseInfo.applyNavigationBarMargin()
         binding.tvCurrentSearchInfo.setTextColor(primaryTextColor)
@@ -75,6 +86,8 @@ class SearchContentActivity :
 
     override fun onCompatCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.content_search, menu)
+        menu.add(0, MENU_SCOPE, 2, R.string.search_scope_title)
+        menu.add(0, MENU_DIRECTION, 3, R.string.search_direction_title)
         return super.onCompatCreateOptionsMenu(menu)
     }
 
@@ -86,6 +99,19 @@ class SearchContentActivity :
 
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            MENU_SCOPE -> selector(getString(R.string.search_scope_title), listOf(
+                R.string.search_scope_all, R.string.search_scope_current,
+                R.string.search_scope_forward, R.string.search_scope_backward
+            ).map { getString(it) }) { _, index ->
+                searchOptions = searchOptions.copy(scope = ContentSearchScope.entries[index])
+                putPrefString("contentSearchScope", searchOptions.scope.name)
+            }
+            MENU_DIRECTION -> selector(getString(R.string.search_direction_title), listOf(
+                R.string.search_direction_forward, R.string.search_direction_backward
+            ).map { getString(it) }) { _, index ->
+                searchOptions = searchOptions.copy(direction = ContentSearchDirection.entries[index])
+                putPrefString("contentSearchDirection", searchOptions.direction.name)
+            }
             R.id.menu_enable_replace -> {
                 SearchContentViewModel.replaceEnabled = !SearchContentViewModel.replaceEnabled
                 item.isChecked = SearchContentViewModel.replaceEnabled
@@ -196,44 +222,49 @@ class SearchContentActivity :
         viewModel.lastQuery = query
         binding.refreshProgressBar.isAutoLoading = true
         binding.fbStop.visible()
+        val options = searchOptions
+        val currentChapter = durChapterIndex
+        val generation = ++searchGeneration
+        val useReplace = SearchContentViewModel.replaceEnabled
+        val useRegex = SearchContentViewModel.regexReplace
         searchJob = lifecycleScope.launch(IO) {
-            initJob?.join()
-            kotlin.runCatching {
-                appDb.bookChapterDao.getChapterList(viewModel.bookUrl).forEach { bookChapter ->
-                    ensureActive()
-                    val searchResults = if (isLocalBook
-                        || BookHelp.getChapterCacheFileNames(
-                            viewModel.book ?: return@forEach,
-                            bookChapter
-                        ).any(viewModel.cacheChapterNames::contains)
-                    ) {
-                        viewModel.searchChapter(query, bookChapter)
-                    } else {
-                        return@forEach
-                    }
-                    ensureActive()
-                    if (searchResults.isNotEmpty()) {
-                        viewModel.searchResultList.addAll(searchResults)
-                        binding.tvCurrentSearchInfo.post {
+            try {
+                initJob?.join()
+                val book = viewModel.book ?: return@launch
+                options.chapters(appDb.bookChapterDao.getChapterList(viewModel.bookUrl), currentChapter)
+                    .forEach { chapter ->
+                        ensureActive()
+                        if (!isLocalBook && BookHelp.getChapterCacheFileNames(book, chapter)
+                                .none(viewModel.cacheChapterNames::contains)) return@forEach
+                        val found = viewModel.searchChapter(query, chapter, useReplace, useRegex).let {
+                            if (options.direction == ContentSearchDirection.BACKWARD) it.reversed() else it
+                        }
+                        withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            ensureActive()
+                            if (generation != searchGeneration || found.isEmpty()) return@withContext
+                            viewModel.searchResultList.addAll(found)
+                            viewModel.searchResultCounts += found.size
                             binding.tvCurrentSearchInfo.text =
-                                this@SearchContentActivity.getString(R.string.search_content_size) + ": ${viewModel.searchResultCounts}"
-                            adapter.addItems(searchResults)
+                                getString(R.string.search_content_size) + ": ${viewModel.searchResultCounts}"
+                            adapter.addItems(found)
                         }
                     }
-                }
-                if (viewModel.searchResultCounts == 0) {
-                    val noSearchResult =
-                        SearchResult(resultText = getString(R.string.search_content_empty))
-                    binding.tvCurrentSearchInfo.post {
-                        adapter.addItem(noSearchResult)
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    if (generation == searchGeneration && viewModel.searchResultCounts == 0) {
+                        adapter.addItem(SearchResult(resultText = getString(R.string.search_content_empty)))
                     }
                 }
-            }.onFailure {
-                AppLog.put("全文搜索出错\n${it.localizedMessage}", it)
-            }
-            binding.tvCurrentSearchInfo.post {
-                binding.fbStop.invisible()
-                binding.refreshProgressBar.isAutoLoading = false
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppLog.put("Content search failed\n${e.localizedMessage}", e)
+            } finally {
+                withContext(kotlinx.coroutines.NonCancellable + kotlinx.coroutines.Dispatchers.Main) {
+                    if (generation == searchGeneration) {
+                        binding.fbStop.invisible()
+                        binding.refreshProgressBar.isAutoLoading = false
+                    }
+                }
             }
         }
     }
@@ -259,3 +290,6 @@ class SearchContentActivity :
     }
 
 }
+
+private const val MENU_SCOPE = 0x5410
+private const val MENU_DIRECTION = 0x5411

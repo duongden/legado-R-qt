@@ -161,6 +161,7 @@ object HighlightPackageParser {
                     groupName = obj.string("groupName").take(512),
                     styleType = obj.string("styleType", "textColor"),
                     styleColorType = obj.string("styleColorType", "accent"),
+                    styleColorTypeNight = obj.string("styleColorTypeNight").ifBlank { null },
                     styleMode = obj.string("styleMode"),
                     styleCssText = css,
                     asset = asset,

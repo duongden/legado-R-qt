@@ -98,6 +98,11 @@ class MoreConfigDialog : BasePrefDialogFragment() {
                 sections = listOf(
                     SettingSectionSpec(
                         items = listOf(
+                            switch(
+                                key = PreferKey.paragraphReadMode,
+                                title = getString(R.string.paragraph_read_mode),
+                                defaultValue = false
+                            ),
                             choice(
                                 key = PreferKey.screenOrientation,
                                 title = getString(R.string.screen_direction),
@@ -289,6 +294,7 @@ class MoreConfigDialog : BasePrefDialogFragment() {
 
         override fun onSettingPreferenceChanged(key: String) {
             when (key) {
+                PreferKey.paragraphReadMode -> (activity as? ReadBookActivity)?.updateParagraphMode()
                 PreferKey.readBodyToLh -> activity?.recreate()
                 PreferKey.hideStatusBar -> {
                     ReadBookConfig.hideStatusBar = booleanSetting(PreferKey.hideStatusBar, false)

@@ -149,7 +149,7 @@ class ComposeDirectLinkUploadDialog : ComposeDialogFragment() {
             }
             result.onSuccess { msg ->
                 showComposeConfirmDialog(
-                    title = "result",
+                    title = getString(R.string.ui_result),
                     message = msg,
                     positiveText = getString(android.R.string.ok),
                     negativeText = getString(R.string.copy_text),
@@ -158,7 +158,7 @@ class ComposeDirectLinkUploadDialog : ComposeDialogFragment() {
                 )
             }.onFailure { e ->
                 showComposeConfirmDialog(
-                    title = "result",
+                    title = getString(R.string.ui_result),
                     message = e.localizedMessage ?: "ERROR",
                     positiveText = getString(android.R.string.ok),
                     onPositive = {}

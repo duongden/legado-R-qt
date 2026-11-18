@@ -60,6 +60,7 @@ import io.legado.app.utils.BookIntroUtils
 object BookshelfListItemStyle {
     const val Classic = 0
     const val RoundedCard = 1
+    const val NoCover = 2
 }
 
 @Immutable
@@ -183,6 +184,7 @@ fun BookshelfListItem(
         )
 
         else -> BookshelfClassicListItem(
+            showCover = cardStyle != BookshelfListItemStyle.NoCover,
             item = item,
             compact = compact,
             introMaxLines = normalizedIntroMaxLines,
@@ -199,6 +201,7 @@ fun BookshelfListItem(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookshelfClassicListItem(
+    showCover: Boolean,
     item: BookshelfItemUi,
     compact: Boolean,
     introMaxLines: Int,
@@ -212,6 +215,7 @@ private fun BookshelfClassicListItem(
     val palette = renderConfig.palette
     BookListCardSurface(
         rounded = false,
+        showCover = showCover,
         compact = compact,
         renderConfig = renderConfig,
         modifier = modifier
@@ -219,14 +223,16 @@ private fun BookshelfClassicListItem(
         onClick = { onClick(item) },
         onLongClick = { onLongClick(item) }
     ) { metrics ->
-        BookshelfCoverBlock(
-            item = item,
-            width = metrics.coverWidth,
-            style = CoverImageView.CoverStyle.COMPACT,
-            fragment = fragment,
-            lifecycle = lifecycle
-        )
-        Spacer(modifier = Modifier.width(12.dp))
+        if (showCover) {
+            BookshelfCoverBlock(
+                item = item,
+                width = metrics.coverWidth,
+                style = CoverImageView.CoverStyle.COMPACT,
+                fragment = fragment,
+                lifecycle = lifecycle
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+        }
         BookshelfListTextContent(
             item = item,
             compact = compact,
@@ -366,10 +372,11 @@ private fun BookshelfListTextContent(
         Text(
             text = if (item is BookshelfBookItemUi) translatedText(item.displayName) else item.displayName,
             color = palette.primaryText,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 18.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.SemiBold,
             fontFamily = palette.titleFontFamily,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.height(if (compact) 4.dp else 6.dp))

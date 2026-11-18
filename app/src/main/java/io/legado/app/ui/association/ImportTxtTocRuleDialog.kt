@@ -190,7 +190,7 @@ class ImportTxtTocRuleDialog() : ComposeDialogFragment() {
                                 val localSource = checkSources.getOrNull(index)
                                 val stateText = when {
                                     localSource == null -> "新增"
-                                    item != localSource -> "更新"
+                                    !item.hasSameImportContent(localSource) -> "更新"
                                     else -> "已有"
                                 }
                                 val comment = item.example?.takeIf { it.isNotBlank() }

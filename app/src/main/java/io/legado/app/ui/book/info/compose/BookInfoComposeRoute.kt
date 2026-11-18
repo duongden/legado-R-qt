@@ -1050,12 +1050,13 @@ private fun BookInfoPreviewLine(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BookInfoMoreActionSheet(
+internal fun BookInfoMoreActionSheet(
     state: BookInfoUiState,
     style: BookInfoComposeStyle,
     actions: BookInfoActions,
     onEditQuickActions: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    allowEditQuickActions: Boolean = true
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showCloudOptions by remember { mutableStateOf(false) }
@@ -1116,8 +1117,10 @@ private fun BookInfoMoreActionSheet(
                         actions.onBookAutoTask()
                     }
                 }
-                BookInfoMoreActionItem(translatedUiString(R.string.book_info_quick_action_edit), style) {
-                    onEditQuickActions()
+                if (allowEditQuickActions) {
+                    BookInfoMoreActionItem(translatedUiString(R.string.book_info_quick_action_edit), style) {
+                        onEditQuickActions()
+                    }
                 }
                 if (state.hasBookSource) {
                     BookInfoToggleActionItem(
@@ -1244,7 +1247,7 @@ private fun BookInfoToggleActionItem(
 }
 
 @Composable
-private fun BookInfoCloudEntrySelectorDialog(
+internal fun BookInfoCloudEntrySelectorDialog(
     state: BookInfoUiState,
     style: BookInfoComposeStyle,
     actions: BookInfoActions,
@@ -2138,7 +2141,7 @@ private data class BookInfoRichIntroTag(
 )
 
 @Composable
-private fun BookInfoIntroContent(
+internal fun BookInfoIntroContent(
     rawIntro: String,
     state: BookInfoUiState,
     actions: BookInfoActions,

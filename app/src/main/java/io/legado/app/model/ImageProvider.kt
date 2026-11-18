@@ -230,7 +230,7 @@ object ImageProvider {
         // inJustDecodeBounds如果设置为true,仅仅返回图片实际的宽和高,宽和高是赋值给opts.outWidth,opts.outHeight;
             op.inJustDecodeBounds = true
             BitmapFactory.decodeFile(file.absolutePath, op)
-            if (op.outWidth < 1 && op.outHeight < 1) {
+            if (op.outWidth < 1 || op.outHeight < 1) {
                 if (src.isDataUrl()) {
                     src.decodeBase64DataUrlBytes()?.let { bytes ->
                         val dataOptions = BitmapFactory.Options().apply {
@@ -240,6 +240,7 @@ object ImageProvider {
                         if (dataOptions.outWidth > 0 && dataOptions.outHeight > 0) {
                             return Size(dataOptions.outWidth, dataOptions.outHeight)
                         }
+                        SvgUtils.getSize(ByteArrayInputStream(bytes))?.let { return it }
                     }
                 }
                 //svg size
@@ -369,6 +370,7 @@ object ImageProvider {
             }
             options.inJustDecodeBounds = false
             val bitmap = BitmapFactory.decodeByteArray(dataBytes, 0, dataBytes.size, options)
+                ?: SvgUtils.createBitmap(ByteArrayInputStream(dataBytes), width, height)
                 ?: throw NoStackTraceException(appCtx.getString(R.string.error_decode_bitmap))
             put(cacheKey, bitmap)
             bitmap

@@ -67,6 +67,7 @@ internal fun BookInfoManageScreen(
         val summaryText = when (style) {
             BookInfoPageStyle.CLASSIC -> stringResource(R.string.book_info_components_hint)
             BookInfoPageStyle.IMMERSIVE_COMPOSE -> stringResource(R.string.book_info_style_immersive_hint)
+            BookInfoPageStyle.FLAT -> stringResource(R.string.book_info_style_flat_hint)
         }
         Text(
             text = summaryText,
@@ -114,7 +115,7 @@ internal fun BookInfoManageScreen(
                 )
             }
 
-            BookInfoPageStyle.IMMERSIVE_COMPOSE -> {
+            BookInfoPageStyle.IMMERSIVE_COMPOSE, BookInfoPageStyle.FLAT -> {
                 // Immersive info panel
                 AppManagementCard(
                     palette = palette,
@@ -123,7 +124,7 @@ internal fun BookInfoManageScreen(
                     insidePadding = PaddingValues(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.book_info_style_immersive_title),
+                        text = stringResource(if (style == BookInfoPageStyle.FLAT) R.string.book_info_style_flat else R.string.book_info_style_immersive_title),
                         color = palette.settings.primaryText,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Medium,
@@ -132,7 +133,7 @@ internal fun BookInfoManageScreen(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = stringResource(R.string.book_info_style_immersive_desc),
+                        text = stringResource(if (style == BookInfoPageStyle.FLAT) R.string.book_info_style_flat_hint else R.string.book_info_style_immersive_desc),
                         color = palette.settings.secondaryText,
                         fontSize = 13.5.sp,
                         lineHeight = 20.sp,
@@ -169,9 +170,16 @@ private fun StyleTabBar(
         )
         StyleTabButton(
             text = stringResource(R.string.book_info_style_immersive),
-            selected = !isClassic,
+            selected = style == BookInfoPageStyle.IMMERSIVE_COMPOSE,
             palette = palette,
             onClick = { onStyleChanged(BookInfoPageStyle.IMMERSIVE_COMPOSE) },
+            modifier = Modifier.weight(1f)
+        )
+        StyleTabButton(
+            text = stringResource(R.string.book_info_style_flat),
+            selected = style == BookInfoPageStyle.FLAT,
+            palette = palette,
+            onClick = { onStyleChanged(BookInfoPageStyle.FLAT) },
             modifier = Modifier.weight(1f)
         )
     }

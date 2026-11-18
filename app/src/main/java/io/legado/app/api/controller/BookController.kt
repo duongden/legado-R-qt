@@ -339,7 +339,7 @@ object BookController {
             ?: return returnData.setErrorMsg("fileData 不能为空")
         kotlin.runCatching {
             val uri = LocalBook.saveBookFile(File(fileData).inputStream(), fileName)
-            LocalBook.importFile(uri)
+            LocalBook.importFile(uri).also(io.legado.app.help.LocalBookAutoUploader::enqueue)
         }.onFailure {
             return when (it) {
                 is SecurityException -> returnData.setErrorMsg("需重新设置书籍保存位置!")

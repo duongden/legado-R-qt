@@ -6,6 +6,20 @@ import org.junit.Test
 
 class SvgBitmapSizePolicyTest {
 
+    @Test fun derivesMissingAxisFromViewBoxInsteadOfMixingDifferentScales() {
+        assertEquals(SvgBitmapSize(600, 300), SvgBitmapSizePolicy.intrinsicSize(600f, -1f, 200f, 100f))
+        assertEquals(SvgBitmapSize(600, 300), SvgBitmapSizePolicy.intrinsicSize(-1f, 300f, 200f, 100f))
+        assertEquals(SvgBitmapSize(200, 100), SvgBitmapSizePolicy.intrinsicSize(-1f, -1f, 200f, 100f))
+        assertEquals(SvgBitmapSize(50, 70), SvgBitmapSizePolicy.intrinsicSize(50f, 70f, null, null))
+    }
+
+    @Test fun rejectsMissingInvalidAndOverflowingDimensions() {
+        assertNull(SvgBitmapSizePolicy.intrinsicSize(0f, -1f, null, null))
+        assertNull(SvgBitmapSizePolicy.intrinsicSize(Float.NaN, 10f, 0f, 20f))
+        assertNull(SvgBitmapSizePolicy.intrinsicSize(Float.POSITIVE_INFINITY, 10f, null, null))
+        assertNull(SvgBitmapSizePolicy.intrinsicSize(Float.MAX_VALUE, 10f, 1f, 1f))
+    }
+
     @Test
     fun neverExceedsEitherBound() {
         assertEquals(

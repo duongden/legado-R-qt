@@ -7,6 +7,16 @@ class HighlightStyleTest {
     private val palette = HighlightStyle.Palette(text = "#123456", accent = "#654321", background = "#fafafa")
     private fun style(rule: HighlightRule) = HighlightStyle.declarations(rule, palette) { "https://book.epub.local/highlight-asset/" + it }
 
+    @Test fun independentNightChoiceAndLegacyFallback() {
+        val rule = HighlightRule(styleColorType = "red", styleColorTypeNight = "blue")
+        val day = HighlightStyle.declarations(rule, palette) { "" }
+        val night = HighlightStyle.declarations(rule, palette.copy(night = true)) { "" }
+        assertEquals(HighlightStyle.color("red", palette), day["color"])
+        assertEquals(HighlightStyle.color("blue", palette.copy(night = true)), night["color"])
+        val legacy = HighlightStyle.declarations(rule.copy(styleColorTypeNight = null), palette.copy(night = true)) { "" }
+        assertEquals(HighlightStyle.color("red", palette.copy(night = true)), legacy["color"])
+    }
+
     @Test fun basicStylesAndNightColorsStayReadable() {
         assertEquals("#654321", style(HighlightRule())["color"])
         assertEquals("double", style(HighlightRule(styleType = "doubleLine"))["text-decoration-style"])

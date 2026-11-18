@@ -552,16 +552,7 @@ object BookHelp {
 
     fun remapContentCache(book: Book, oldChapters: List<BookChapter>, newChapters: List<BookChapter>) {
         if (book.isLocal || oldChapters.isEmpty() || newChapters.isEmpty()) return
-        val oldByUrlKey = oldChapters
-            .filter { !it.isVolume && it.url.isNotBlank() }
-            .associateBy { it.contentCacheIdentity() }
-        val oldByTitle = oldChapters
-            .groupBy { it.title.trim() }
-            .mapValues { (_, value) -> value.singleOrNull() }
-        newChapters.forEach { newChapter ->
-            val oldChapter = oldByUrlKey[newChapter.contentCacheIdentity()]
-                ?: oldByTitle[newChapter.title.trim()]
-                ?: return@forEach
+        ChapterCacheRemapPolicy.matches(oldChapters, newChapters).forEach { (oldChapter, newChapter) ->
             migrateChapterCacheFiles(book, oldChapter, newChapter, "nb")
             migrateChapterCacheFiles(book, oldChapter, newChapter, "nr")
         }
@@ -576,8 +567,8 @@ object BookHelp {
         val target = getPrimaryContentFile(book, newChapter, suffix)
         if (target.exists()) return
         val candidates = linkedSetOf<File>()
-        getLegacyContentFile(book, oldChapter, suffix)?.let(candidates::add)
         getStableContentFile(book, oldChapter, suffix)?.let(candidates::add)
+        getLegacyContentFile(book, oldChapter, suffix)?.let(candidates::add)
         val source = candidates.firstOrNull { it.exists() } ?: return
         target.parentFile?.mkdirs()
         kotlin.runCatching {

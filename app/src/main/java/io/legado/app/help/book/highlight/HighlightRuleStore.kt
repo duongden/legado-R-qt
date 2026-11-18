@@ -190,6 +190,7 @@ class HighlightRuleStore(val directory: File, private val sharedAssets: ReaderAs
             text(rule.groupName, 512)
             text(rule.styleType, 512)
             text(rule.styleColorType, 512)
+            rule.styleColorTypeNight?.let { text(it, 512) }
             text(rule.styleMode, 512)
             text(rule.styleCssText, 32768)
             text(rule.importWarning, 32768)

@@ -384,7 +384,7 @@ abstract class AbsCallBack(
                 .asResponseBody(contentType?.toMediaTypeOrNull(), contentLength)
         }
 
-        private fun buildRedirectRequest(
+        internal fun buildRedirectRequest(
             userResponse: Response,
             method: String,
             newLocationUrl: String
@@ -412,7 +412,14 @@ abstract class AbsCallBack(
                 }
             }
 
-            return requestBuilder.url(newLocationUrl).build()
+            requestBuilder.url(newLocationUrl)
+            val target = requestBuilder.build().url
+            val origin = userResponse.request.url
+            if (origin.scheme != target.scheme || origin.host != target.host || origin.port != target.port) {
+                requestBuilder.removeHeader("Authorization")
+                requestBuilder.removeHeader("Cookie")
+            }
+            return requestBuilder.build()
         }
 
         private fun toResponse(

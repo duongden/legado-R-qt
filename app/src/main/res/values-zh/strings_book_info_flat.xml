@@ -1,0 +1,5 @@
+<resources>
+    <string name="book_info_style_flat">平面</string>
+    <string name="book_info_style_flat_hint">小封面与书籍信息、平面操作网格、图片库、更新设置、章节链接及简介。使用现有书籍功能；组件编辑仅适用于经典样式。</string>
+    <string name="book_info_flat_quick_actions">快捷操作</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="cache_repair_indexes">Kiểm tra và khôi phục chỉ mục cache</string>
+    <string name="cache_repair_complete">Đã kiểm tra chỉ mục cache của %1$d sách</string>
+    <string name="search_scope_title">Phạm vi tìm kiếm</string>
+    <string name="search_direction_title">Hướng tìm kiếm</string>
+    <string name="search_scope_all">Toàn bộ sách</string>
+    <string name="search_scope_current">Chương hiện tại</string>
+    <string name="search_scope_forward">Từ chương hiện tại đến cuối</string>
+    <string name="search_scope_backward">Từ đầu đến chương hiện tại</string>
+    <string name="search_direction_forward">Từ đầu về cuối</string>
+    <string name="search_direction_backward">Từ cuối về đầu</string>
+    <string name="webdav_retention_title">Số bản sao lưu WebDAV</string>
+    <string name="webdav_retention_summary">Số bản giữ lại cho mỗi thiết bị (0: không giới hạn). Cần đặt tên thiết bị.</string>
+    <string name="webdav_auto_upload_books">Tải sách local lên WebDAV sau khi nhập</string>
+    <string name="webdav_auto_upload_books_summary">Mặc định tắt. Thông báo khi upload lỗi; giữ nguyên file đã có trên máy chủ.</string>
+    <string name="highlight_day_color">Màu ban ngày</string>
+    <string name="highlight_night_color">Màu ban đêm</string>
+    <string name="highlight_color_follow_day">Theo màu ban ngày</string>
+</resources>

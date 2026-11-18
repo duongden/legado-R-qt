@@ -21,6 +21,7 @@ data class HighlightRule(
     val groupName: String = "",
     val styleType: String = "textColor",
     val styleColorType: String = "accent",
+    val styleColorTypeNight: String? = null,
     val styleMode: String = "",
     val styleCssText: String = "",
     val asset: String? = null,

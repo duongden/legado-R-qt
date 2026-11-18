@@ -1,5 +1,7 @@
 package io.legado.app.ui.book.read
 
+import io.legado.app.help.book.usesParagraphReader
+
 import io.legado.app.ui.widget.compose.fixedUiText
 import android.content.Context
 import android.graphics.Bitmap
@@ -647,7 +649,7 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
                 ?: return@async AiReadAloudRoleService.ManualSegmentAssignmentResult(false, "书籍不存在")
             val chapter = ReadBook.curTextChapter
                 ?: return@async AiReadAloudRoleService.ManualSegmentAssignmentResult(false, "章节不存在")
-            val baseCues = chapter.buildReadAloudCues(context.getPrefBoolean(PreferKey.readAloudByPage))
+            val baseCues = chapter.buildReadAloudCues((context.getPrefBoolean(PreferKey.readAloudByPage) && ReadBook.book?.usesParagraphReader != true))
             AiReadAloudRoleService.updateCachedSegmentAssignment(
                 book = book,
                 textChapter = chapter,
@@ -1084,7 +1086,7 @@ class ReadAloudPlayerPanel @JvmOverloads constructor(
         val book = ReadBook.book ?: return null
         val chapter = ReadBook.curTextChapter ?: return null
         val chapterSequence = chapter.chapter.index
-        val readAloudByPage = context.getPrefBoolean(PreferKey.readAloudByPage)
+        val readAloudByPage = (context.getPrefBoolean(PreferKey.readAloudByPage) && ReadBook.book?.usesParagraphReader != true)
         val paragraphs = chapter.getParagraphs(false)
         val baseCues = chapter.buildReadAloudCues(readAloudByPage)
         val cueTexts = baseCues.map { cue -> cue.text }

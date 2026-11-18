@@ -32,7 +32,8 @@ data class BookInfoComponentItem(
 
 enum class BookInfoPageStyle(val key: String) {
     CLASSIC("classic"),
-    IMMERSIVE_COMPOSE("immersive_compose");
+    IMMERSIVE_COMPOSE("immersive_compose"),
+    FLAT("flat");
 
     companion object {
         fun fromKey(key: String?): BookInfoPageStyle {

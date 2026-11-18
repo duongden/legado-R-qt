@@ -130,12 +130,30 @@ class CacheManageActivity :
             setIcon(R.drawable.ic_outline_cloud_24)
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
         }
+        menu.add(0, MENU_REPAIR, 3, R.string.cache_repair_indexes)
         updateSortButton()
         updateContainerMenu()
         return true
     }
 
     override fun onCompatOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == MENU_REPAIR) {
+            item.isEnabled = false
+            lifecycleScope.launch {
+                try {
+                    val count = viewModel.repairLocalIndexes()
+                    toastOnUi(uiString(R.string.cache_repair_complete, count))
+                    viewModel.load()
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    toastOnUi(e.localizedMessage ?: uiString(R.string.error))
+                } finally {
+                    item.isEnabled = true
+                }
+            }
+            return true
+        }
         if (item.itemId == MENU_SORT) {
             showSortSelector()
             return true
@@ -594,6 +612,7 @@ private const val TERMINAL_TASK_RELOAD_DELAY_MS = 600L
 private const val MENU_SEARCH = 0x53ff
 private const val MENU_SORT = 0x5400
 private const val MENU_CONTAINER = 0x5401
+private const val MENU_REPAIR = 0x5402
 
 enum class CacheManageSortMode(val titleRes: Int) {
     RECENT(R.string.cache_manage_sort_time),

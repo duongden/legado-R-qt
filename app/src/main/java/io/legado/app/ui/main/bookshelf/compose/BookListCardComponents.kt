@@ -52,6 +52,7 @@ fun BookListCardSurface(
     renderConfig: BookshelfListRenderConfig,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
+    showCover: Boolean = true,
     onLongClick: (() -> Unit)? = null,
     content: @Composable RowScope.(BookListCardMetrics) -> Unit
 ) {
@@ -78,7 +79,7 @@ fun BookListCardSurface(
                     Modifier
                 }
             )
-            .heightIn(min = metrics.minHeight)
+            .heightIn(min = if (showCover) metrics.minHeight else 48.dp)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

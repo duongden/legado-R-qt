@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="icon_names">
+        <item>Mặc định</item>
+        <item>Biểu tượng 1</item>
+        <item>Biểu tượng 2</item>
+        <item>Biểu tượng 3</item>
+        <item>Biểu tượng 4</item>
+        <item>Biểu tượng 5</item>
+        <item>Biểu tượng 6</item>
+        <item>Biểu tượng 7</item>
+    </string-array>
+</resources>

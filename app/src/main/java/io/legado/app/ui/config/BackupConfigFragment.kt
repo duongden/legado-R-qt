@@ -297,6 +297,22 @@ class BackupConfigFragment : ComposeSettingFragment(), MenuProvider {
                             summary = uiString(R.string.import_old_summary),
                             onClick = { restoreOld.launch() }
                         ),
+                        SettingChoiceSpec(
+                            key = PreferKey.webDavBackupKeepCount,
+                            title = uiString(R.string.webdav_retention_title),
+                            summary = uiString(R.string.webdav_retention_summary),
+                            options = listOf(0, 1, 3, 5, 10, 20, 30, 50).map {
+                                SettingChoiceOption(it.toString(), if (it == 0) "∞" else it.toString())
+                            },
+                            selectedValue = stringSetting(PreferKey.webDavBackupKeepCount, "0"),
+                            onSelected = { updateStringSetting(PreferKey.webDavBackupKeepCount, it) }
+                        ),
+                        switch(
+                            key = PreferKey.autoUploadLocalBooks,
+                            title = uiString(R.string.webdav_auto_upload_books),
+                            summary = uiString(R.string.webdav_auto_upload_books_summary),
+                            defaultValue = false
+                        ),
                         switch(
                             key = PreferKey.onlyLatestBackup,
                             title = uiString(R.string.only_latest_backup_t),

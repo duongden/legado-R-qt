@@ -660,7 +660,7 @@
     <string name="browser">Trình duyệt</string>
     <string name="import_default_rule">Nhập quy tắc mặc định</string>
     <string name="name">Tên</string>
-    <string name="regex">Regex</string>
+    <string name="regex">Biểu thức chính quy</string>
     <string name="example">Ví dụ</string>
     <string name="more_menu">Menu khác</string>
     <string name="reduce">Trừ</string>
@@ -936,7 +936,7 @@
     <string name="book_tree_uri_t">Vị trí lưu sách</string>
     <string name="book_tree_uri_s">Vị trí lưu sách được mở từ các ứng dụng khác</string>
     <string name="select_book_folder">Chọn thư mục lưu sách</string>
-    <string name="user_agent">User agent</string>
+    <string name="user_agent">Thông tin trình duyệt (User-Agent)</string>
     <string name="bg_alpha">Độ trong suốt của nền</string>
     <string name="check_source_config">Cài đặt xác minh</string>
     <string name="check_source_item">Mục xác minh</string>
@@ -994,7 +994,7 @@
     <string name="import_tts">Nhập TTS</string>
     <string name="import_theme">Nhập chủ đề</string>
     <string name="import_txt_toc_rule">Nhập quy tắc thư mục txt</string>
-    <string name="auto_save_cookie">CookieJar</string>
+    <string name="auto_save_cookie">Tự lưu cookie</string>
     <string name="cookie">Xóa cookie</string>
     <string name="download_and_import_file">Nhập tệp sách trực tuyến</string>
     <string name="upload_book_success">Tải lên thành công</string>

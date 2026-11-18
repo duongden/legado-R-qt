@@ -7,6 +7,7 @@
 
     <io.legado.app.ui.widget.TitleBar
         android:id="@+id/title_bar"
+        app:titleTextAppearance="@style/BookBrowseDiscoveryTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:attachToActivity="false"

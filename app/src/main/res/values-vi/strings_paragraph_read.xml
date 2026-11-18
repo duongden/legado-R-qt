@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paragraph_read_mode">Đọc theo đoạn hoàn chỉnh (sách văn bản)</string>
+    <string name="paragraph_read_menu">Menu đọc sách</string>
+    <string name="paragraph_play">Đọc thành tiếng</string>
+    <string name="paragraph_image">Ảnh %1$d</string>
+</resources>

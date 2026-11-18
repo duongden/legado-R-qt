@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="paragraph_read_mode">Read complete paragraphs (text books)</string>
+    <string name="paragraph_read_menu">Reading menu</string>
+    <string name="paragraph_play">Read aloud</string>
+    <string name="paragraph_image">Image %1$d</string>
+</resources>

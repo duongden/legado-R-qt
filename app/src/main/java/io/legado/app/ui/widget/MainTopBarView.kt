@@ -179,7 +179,19 @@ class MainTopBarView @JvmOverloads constructor(
         starButton.isVisible = mode == Mode.RSS
         refreshButton.isVisible = mode == Mode.RSS
         loginButton.isVisible = mode == Mode.DISCOVERY || mode == Mode.RSS
-        titleText.textSize = if (mode == Mode.BOOKSHELF) 24f else 20f
+        val browseMode = mode == Mode.BOOKSHELF || mode == Mode.DISCOVERY
+        titleText.textSize = when (mode) {
+            Mode.BOOKSHELF -> 26f
+            Mode.DISCOVERY -> 22f
+            else -> 20f
+        }
+        searchEntryText.textSize = if (browseMode) 16f else 14f
+        listOf(primaryBar, selectsBar, tagsBar).forEach {
+            it.setLabelTextSizeSp(if (browseMode) 15f else 13f)
+        }
+        listOf(primaryFilterRow, selectsBar, tagsBar).forEach {
+            it.layoutParams = (it.layoutParams as LayoutParams).apply { height = browseTagBarHeight() }
+        }
         titleText.applyUiTitleTypeface(context)
         applyTopBarStyle(force = true)
     }
@@ -339,11 +351,14 @@ class MainTopBarView @JvmOverloads constructor(
         post { onHeightChanged?.invoke() }
     }
     private fun updateTitleRowControlHeight(height: Int) {
+        val contentHeight = if (mode == Mode.BOOKSHELF || mode == Mode.DISCOVERY) {
+            maxOf(height, kotlin.math.ceil(titleText.paint.fontSpacing).toInt() + 8.dp)
+        } else height
         searchEntry.layoutParams = (searchEntry.layoutParams as? LayoutParams ?: LayoutParams(0, height, 1f)).apply {
-            this.height = height
+            this.height = contentHeight
         }
         titleSelect.layoutParams = (titleSelect.layoutParams as? LayoutParams ?: LayoutParams(LayoutParams.WRAP_CONTENT, height)).apply {
-            this.height = height
+            this.height = contentHeight
         }
     }
 
@@ -537,8 +552,17 @@ class MainTopBarView @JvmOverloads constructor(
     private fun tagLayoutParams(): LayoutParams {
         return LayoutParams(
             LayoutParams.MATCH_PARENT,
-            resources.getDimensionPixelSize(R.dimen.bookshelf_tag_bar_height)
+            browseTagBarHeight()
         )
+    }
+
+    private fun browseTagBarHeight(): Int {
+        val base = resources.getDimensionPixelSize(R.dimen.bookshelf_tag_bar_height)
+        if (mode != Mode.BOOKSHELF && mode != Mode.DISCOVERY) return base
+        val textHeight = kotlin.math.ceil(15f * resources.displayMetrics.scaledDensity * 1.3f).toInt()
+        val padding = resources.getDimensionPixelSize(R.dimen.bookshelf_tag_recycler_padding_vertical) * 4 +
+            resources.getDimensionPixelSize(R.dimen.bookshelf_tag_bar_padding_vertical) * 2
+        return maxOf(base, textHeight + padding)
     }
 
     private fun updateIconColors() {

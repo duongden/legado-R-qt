@@ -115,7 +115,7 @@ class FileAssociationViewModel(application: Application) : BaseAssociationViewMo
     }
 
     fun importBook(uri: Uri) {
-        val book = LocalBook.importFile(uri)
+        val book = LocalBook.importFile(uri).also(io.legado.app.help.LocalBookAutoUploader::enqueue)
         openBookLiveData.postValue(book)
     }
 }

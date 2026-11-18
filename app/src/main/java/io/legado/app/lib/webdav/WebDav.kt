@@ -352,6 +352,22 @@ open class WebDav(
         }
     }
 
+    /** Atomic create for automatic uploads. A pre-existing resource is never replaced. */
+    suspend fun uploadIfAbsent(file: File): Boolean = withContext(IO) {
+        require(file.isFile) { "Local upload file is missing" }
+        val target = httpUrl ?: throw WebDavException("Invalid upload URL")
+        webDavClient.newCallResponse {
+            url(target)
+            header("If-None-Match", "*")
+            put(file.asRequestBody(DEFAULT_CONTENT_TYPE.toMediaType()))
+        }.use { response ->
+            if (response.code == 412) false else {
+                checkResult(response)
+                true
+            }
+        }
+    }
+
     @Throws(WebDavException::class)
     suspend fun upload(byteArray: ByteArray, contentType: String = DEFAULT_CONTENT_TYPE) {
         // 务必注意RequestBody不要嵌套，不然上传时内容可能会被追加多余的文件信息

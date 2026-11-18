@@ -181,9 +181,10 @@ fun BookshelfGridItem(
                         .fillMaxWidth()
                         .padding(horizontal = 6.dp, vertical = 6.dp),
                     color = Color.White,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
                     fontFamily = titleFontFamily,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -196,9 +197,10 @@ fun BookshelfGridItem(
                     .fillMaxWidth()
                     .padding(top = 6.dp),
                 color = titleColor,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
+                    lineHeight = 18.sp,
                 fontFamily = titleFontFamily,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 minLines = 2,

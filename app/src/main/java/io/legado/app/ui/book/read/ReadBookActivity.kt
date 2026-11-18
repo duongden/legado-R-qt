@@ -1,5 +1,11 @@
 package io.legado.app.ui.book.read
 
+import io.legado.app.help.book.usesParagraphReader
+import io.legado.app.ui.book.read.paragraph.ParagraphItem
+import io.legado.app.ui.book.read.paragraph.ParagraphPosition
+import io.legado.app.ui.book.read.paragraph.ParagraphAloudHighlight
+import io.legado.app.ui.book.read.paragraph.completeParagraphItems
+
 import io.legado.app.utils.uiString
 
 import android.annotation.SuppressLint
@@ -547,8 +553,101 @@ class ReadBookActivity : BaseReadBookActivity(),
     private var epubLoadingWindow: EpubLoadingWindowOverlay? = null
 
     @SuppressLint("ClickableViewAccessibility")
+    private var pendingParagraphViewport: io.legado.app.ui.book.read.paragraph.ParagraphReadView.Viewport? = null
+    private var paragraphRenderedPosition = -1
+    private var paragraphItems: List<ParagraphItem> = emptyList()
+    private var paragraphChapter: io.legado.app.ui.book.read.page.entities.TextChapter? = null
+
+    private fun paragraphModeActive() = ReadBook.book?.usesParagraphReader == true
+
+    fun updateParagraphMode() {
+        binding.paragraphReadView.reportTopItem()
+        binding.readView.cancelSelect(true)
+        autoPageStop()
+        if (BaseReadAloudService.isPlay()) ReadAloud.pause(this)
+        paragraphChapter = null
+        ReadBook.reloadCurrentContent("paragraph-mode")
+        renderParagraphContent()
+    }
+
+    private fun saveParagraphTop(item: ParagraphItem) {
+        if (!paragraphModeActive() || paragraphChapter !== ReadBook.curTextChapter) return
+        if (BaseReadAloudService.isPlay() && !ReadBook.isReadAloudUserNavigationActive()) return
+        ReadBook.durChapterPos = item.chapterPosition
+        paragraphRenderedPosition = item.chapterPosition
+        ReadBook.saveRead(true)
+        upSeekBarProgress()
+    }
+
+    private fun renderParagraphContent() {
+        val enabled = paragraphModeActive()
+        binding.paragraphReadView.visibility = if (enabled) View.VISIBLE else View.GONE
+        binding.paragraphReadView.importantForAccessibility = if (enabled) View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            else View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        if (!enabled) {
+            paragraphChapter = null
+            binding.readView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+            return
+        }
+        binding.readView.visibility = View.INVISIBLE
+        binding.readView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        val chapter = ReadBook.curTextChapter
+        if (ReadBook.msg != null || chapter == null || !chapter.isCompleted) {
+            paragraphChapter = null
+            binding.paragraphReadView.showMessage(ReadBook.msg ?: getString(R.string.loading))
+            return
+        }
+        binding.paragraphReadView.upStyle()
+        if (paragraphChapter !== chapter || !binding.paragraphReadView.isShowing(chapter)) {
+            paragraphItems = chapter.completeParagraphItems()
+            paragraphChapter = chapter
+            binding.paragraphReadView.setChapter(chapter, null, ReadBook.durChapterPos)
+            pendingParagraphViewport?.let(binding.paragraphReadView::restoreViewport)
+            pendingParagraphViewport = null
+        } else if (paragraphRenderedPosition != ReadBook.durChapterPos && !BaseReadAloudService.isPlay()) {
+            binding.paragraphReadView.scrollToPosition(ReadBook.durChapterPos)
+        }
+        paragraphRenderedPosition = ReadBook.durChapterPos
+    }
+
+    private fun paragraphSpeechProgress(progress: ReadAloudProgressState) {
+        if (!paragraphModeActive()) return
+        val index = ParagraphPosition.findItemIndex(paragraphItems, progress.chapterPosition)
+        val item = paragraphItems.getOrNull(index) ?: return
+        binding.paragraphReadView.updateReadAloudHighlight(ParagraphAloudHighlight(
+            progress.bookUrl, progress.chapterUrl, item.id, progress.chapterPosition))
+        if (!ReadBook.isReadAloudUserNavigationActive() && BaseReadAloudService.isPlay()) {
+            ReadBook.durChapterPos = progress.chapterPosition
+            binding.paragraphReadView.followSpeech(item.id)
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        @Suppress("DEPRECATION")
+        val restoredParagraphViewport = savedInstanceState?.getParcelable<io.legado.app.ui.book.read.paragraph.ParagraphReadView.Viewport>("paragraphViewport")
+        pendingParagraphViewport = restoredParagraphViewport
+        binding.paragraphReadView.apply {
+            onMenu = { showActionMenu() }
+            onPreviousChapter = { ReadBook.moveToPrevChapter(upContent = true, toLast = false) }
+            onNextChapter = { ReadBook.moveToNextChapter(upContent = true) }
+            onTopItemChanged = { saveParagraphTop(it) }
+            onUserScroll = { ReadBook.markReadAloudUserNavigation() }
+            onPlayPause = {
+                if (BaseReadAloudService.isPlay()) ReadAloud.pause(this@ReadBookActivity)
+                else if (BaseReadAloudService.isRun && BaseReadAloudService.pause && !ReadBook.isReadAloudUserNavigationActive()) {
+                    ReadAloud.resume(this@ReadBookActivity)
+                } else {
+                    val chapter = ReadBook.curTextChapter
+                    val position = topItem?.chapterPosition ?: ReadBook.durChapterPos
+                    if (chapter != null) {
+                        ReadBook.durChapterPos = position
+                        ReadBook.readAloud(startPos = position - chapter.getReadLength(chapter.getPageIndexByCharIndex(position)))
+                    }
+                }
+                updateControls()
+            }
+        }
         volumeControlStream = AudioManager.STREAM_MUSIC
         binding.cursorLeft.setColorFilter(accentColor)
         binding.cursorRight.setColorFilter(accentColor)
@@ -982,7 +1081,13 @@ class ReadBookActivity : BaseReadBookActivity(),
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (paragraphModeActive()) outState.putParcelable("paragraphViewport", binding.paragraphReadView.captureViewport())
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onPause() {
+        if (paragraphModeActive()) binding.paragraphReadView.reportTopItem()
         readerTemplateActiveClock.pause()
         super.onPause()
         binding.epubReadView.onDirectHostPause()
@@ -2231,6 +2336,10 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     private fun keyPage(direction: PageDirection) {
+        if (paragraphModeActive()) {
+            binding.paragraphReadView.scrollScreen(direction == PageDirection.NEXT)
+            return
+        }
         if (epubCoreActive) {
             when (direction) {
                 PageDirection.NEXT -> nextEpubPage()
@@ -2326,6 +2435,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         success: (() -> Unit)?
     ) {
         lifecycleScope.launch {
+            renderParagraphContent()
             if (isEpubCoreMode()) {
                 if (relativePosition != 0) {
                     success?.invoke()
@@ -2355,6 +2465,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                     return@launch
                 }
                 binding.readView.upContent(relativePosition, resetPageOffset)
+                renderParagraphContent()
             }
             if (relativePosition == 0) {
                 upSeekBarProgress()
@@ -2369,6 +2480,7 @@ class ReadBookActivity : BaseReadBookActivity(),
         resetPageOffset: Boolean,
         success: (() -> Unit)?
     ) = withContext(Main.immediate) {
+        renderParagraphContent()
         if (isEpubCoreMode()) {
             if (relativePosition != 0) {
                 success?.invoke()
@@ -2398,6 +2510,7 @@ class ReadBookActivity : BaseReadBookActivity(),
                 return@withContext
             }
             binding.readView.upContent(relativePosition, resetPageOffset)
+            renderParagraphContent()
         }
         if (relativePosition == 0) {
             upSeekBarProgress()
@@ -6278,6 +6391,8 @@ class ReadBookActivity : BaseReadBookActivity(),
             )
         }
         observeEvent<Int>(EventBus.ALOUD_STATE) {
+            binding.paragraphReadView.updateControls()
+            if (it == Status.STOP) binding.paragraphReadView.updateReadAloudHighlight(null)
             val shouldOpenPendingPanel = pendingReadAloudPlayerOpen && it == Status.PLAY
             readAloudPlayerPanel.onAloudState(it, autoExpand = !shouldOpenPendingPanel)
             if (shouldOpenPendingPanel) {
@@ -6327,6 +6442,10 @@ class ReadBookActivity : BaseReadBookActivity(),
             if (!isCurrentReadAloudProgress(progress)) return@observeEvent
             val chapterStart = progress.chapterPosition
             readAloudPlayerPanel.onTtsProgress(chapterStart)
+            if (paragraphModeActive()) {
+                paragraphSpeechProgress(progress)
+                return@observeEvent
+            }
             if (isEpubCoreMode()) {
                 if (!BaseReadAloudService.isRun) return@observeEvent
                 pendingDirectReadAloudProgress = progress

@@ -1,0 +1,4 @@
+<resources>
+    <string name="ui_code_viewer">Code viewer</string>
+    <string name="ui_result">Result</string>
+</resources>

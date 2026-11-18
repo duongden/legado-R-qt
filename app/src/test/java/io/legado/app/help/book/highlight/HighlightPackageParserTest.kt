@@ -22,6 +22,12 @@ class HighlightPackageParserTest {
     }
     private val encryptedHeader = """{"version":2,"resourceType":"highlightRule","payloadType":"directory","containerMode":"reedenPrivate","algorithm":"aes-256-gcm-manifest","assetMode":"plain-sequential","manifestLength":17,"manifestNonce":"7jRr9YTOA/nYqcad","createdBy":"reeden"}"""
 
+    @Test fun independentNightColorSurvivesImportAndLegacyRulesKeepFallback() {
+        val withNight = basic.dropLast(1) + ",\"styleColorTypeNight\":\"blue\"}"
+        assertEquals("blue", HighlightPackageParser.parse(withNight.toByteArray()).rules.single().styleColorTypeNight)
+        assertNull(HighlightPackageParser.parse(basic.toByteArray()).rules.single().styleColorTypeNight)
+    }
+
     @Test fun readsLegacyGzipEnvelope() {
         val result = HighlightPackageParser.parse(red(pack()))
         assertEquals("「」上色", result.rules.single().name)

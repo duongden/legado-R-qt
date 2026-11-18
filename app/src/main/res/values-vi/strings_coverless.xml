@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="book_list_no_cover">Danh sách không ảnh bìa</string>
+    <string name="book_list_hide_covers">Ẩn ảnh bìa</string>
+</resources>

@@ -13,6 +13,7 @@ import io.legado.app.R
 import io.legado.app.base.VMBaseActivity
 import io.legado.app.data.entities.SearchBook
 import io.legado.app.databinding.ActivityExploreShowBinding
+import io.legado.app.help.config.AppConfig
 import io.legado.app.help.webView.WebViewPool
 import io.legado.app.ui.book.SearchBookOpenHelper
 import io.legado.app.ui.widget.compose.LegadoComposeTheme
@@ -43,13 +44,27 @@ class ExploreShowActivity : VMBaseActivity<ActivityExploreShowBinding, ExploreSh
     private val composeKeepPositionAfterPrependSignal = mutableIntStateOf(0)
     private val composePrependedItemCount = mutableIntStateOf(0)
     private val bookshelfTick = mutableIntStateOf(0)
+    private val composeShowCover = mutableStateOf(AppConfig.exploreShowCover)
     private var oldPage = -1
     private var isClearAll = false
 
     private var menuPage: MenuItem? = null
+    private var menuHideCover: MenuItem? = null
 
     override fun onCompatCreateOptionsMenu(menu: Menu): Boolean {
         super.onCompatCreateOptionsMenu(menu)
+        menuHideCover = menu.add(uiString(R.string.book_list_hide_covers)).apply {
+            setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+            isCheckable = true
+            isChecked = !composeShowCover.value
+            setOnMenuItemClickListener {
+                val showCover = !composeShowCover.value
+                AppConfig.exploreShowCover = showCover
+                composeShowCover.value = showCover
+                isChecked = !showCover
+                true
+            }
+        }
         menuPage = menu.add(uiString(R.string.menu_page, viewModel.pageLiveData.value ?: 1)).apply {
             setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
             setOnMenuItemClickListener {
@@ -85,6 +100,7 @@ class ExploreShowActivity : VMBaseActivity<ActivityExploreShowBinding, ExploreSh
         lifecycleScope.launch {
             TranslateUtils.updates.collectLatest {
                 menuPage?.title = uiString(R.string.menu_page, viewModel.pageLiveData.value ?: 1)
+                menuHideCover?.title = uiString(R.string.book_list_hide_covers)
                 binding.titleBar.title = if (UiTranslation.isEnabled()) {
                     UiTranslation.translate(exploreName)
                 } else exploreName
@@ -120,6 +136,7 @@ class ExploreShowActivity : VMBaseActivity<ActivityExploreShowBinding, ExploreSh
             LegadoComposeTheme {
                 ExploreShowComposeScreen(
                     books = composeBooks,
+                    showCover = composeShowCover.value,
                     isLoading = composeBottomLoading.value,
                     isLoadingPrevious = composeTopLoading.value,
                     hasMore = composeHasMore.value,

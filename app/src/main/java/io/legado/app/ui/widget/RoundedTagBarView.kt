@@ -56,6 +56,7 @@ class RoundedTagBarView @JvmOverloads constructor(
     private var onTagLongClick: ((Int) -> Boolean)? = null
     private var styleSignature: String? = null
     private var selectedBackgroundVisible = true
+    private var labelTextSizeSp = 13f
     private var displayMode = DisplayMode.CHIP
     private var backgroundOverrideColor: Int? = null
 
@@ -122,6 +123,12 @@ class RoundedTagBarView @JvmOverloads constructor(
         } else {
             Color.WHITE
         }
+    }
+
+    fun setLabelTextSizeSp(size: Float) {
+        if (labelTextSizeSp == size) return
+        labelTextSizeSp = size
+        adapter.notifyDataSetChanged()
     }
 
     fun setDisplayMode(mode: DisplayMode) {
@@ -260,6 +267,11 @@ class RoundedTagBarView @JvmOverloads constructor(
             val verticalPadding = if (displayMode == DisplayMode.TEXT) 0 else resources.getDimensionPixelSize(R.dimen.bookshelf_tag_recycler_padding_vertical)
             val horizontalPadding = if (displayMode == DisplayMode.TEXT) 8.dp else resources.getDimensionPixelSize(R.dimen.bookshelf_tag_item_padding_horizontal)
             holder.textView.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            holder.textView.textSize = labelTextSizeSp
+            holder.textView.layoutParams = holder.textView.layoutParams.apply {
+                height = maxOf(resources.getDimensionPixelSize(R.dimen.bookshelf_tag_item_height),
+                    kotlin.math.ceil(holder.textView.paint.fontSpacing).toInt() + verticalPadding * 2)
+            }
             holder.textView.setTextColor(
                 ColorStateList(
                     arrayOf(intArrayOf(android.R.attr.state_selected), intArrayOf()),

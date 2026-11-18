@@ -1,0 +1,6 @@
+<resources>
+    <string name="book_info_style_flat">Phẳng</string>
+    <string name="book_info_style_flat_hint">Bìa nhỏ và thông tin sách, lưới thao tác phẳng, thư viện ảnh, cập nhật, liên kết chương và giới thiệu. Dùng các thao tác sách hiện có; chỉnh thành phần chỉ áp dụng cho Cổ điển.</string>
+    <string name="book_info_flat_quick_actions">Thao tác nhanh</string>
+    <string name="auto_task_book_update">Tự động kiểm tra cập nhật</string>
+</resources>

@@ -44,6 +44,7 @@ import io.legado.app.utils.stableSearchBookKey
 @Composable
 fun ExploreShowComposeScreen(
     books: List<SearchBook>,
+    showCover: Boolean,
     isLoading: Boolean,
     isLoadingPrevious: Boolean,
     hasMore: Boolean,
@@ -136,6 +137,7 @@ fun ExploreShowComposeScreen(
                     book = book,
                     inBookshelf = inBookshelf,
                     rounded = rounded,
+                    showCover = showCover,
                     renderConfig = renderConfig,
                     lifecycle = lifecycle,
                     onClick = { onBookClick(book) },

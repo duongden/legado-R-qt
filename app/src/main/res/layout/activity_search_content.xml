@@ -34,7 +34,7 @@
     <LinearLayout
         android:id="@+id/ll_search_base_info"
         android:layout_width="match_parent"
-        android:layout_height="42dp"
+        android:layout_height="56dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="10dp"
@@ -47,8 +47,10 @@
 
         <TextView
             android:id="@+id/tv_current_search_info"
+            android:focusable="true"
+            android:accessibilityLiveRegion="polite"
             android:layout_width="0dp"
-            android:layout_height="32dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@drawable/bg_popup_action_item"
             android:ellipsize="middle"
@@ -65,9 +67,10 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_search_content_top"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@drawable/bg_popup_action_item"
+            android:focusable="true"
             android:contentDescription="@string/go_to_top"
             android:src="@drawable/ic_arrow_drop_up"
             android:tooltipText="@string/go_to_top"
@@ -76,9 +79,10 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_search_content_bottom"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="@drawable/bg_popup_action_item"
+            android:focusable="true"
             android:contentDescription="@string/go_to_bottom"
             android:src="@drawable/ic_arrow_drop_down"
             android:tooltipText="@string/go_to_bottom"
@@ -94,7 +98,7 @@
         android:src="@drawable/ic_stop_black_24dp"
         android:visibility="invisible"
         android:contentDescription="@string/stop"
-        app:fabSize="mini"
+        app:fabSize="normal"
         app:layout_constraintBottom_toTopOf="@+id/ll_search_base_info"
         app:layout_constraintRight_toRightOf="parent" />
 

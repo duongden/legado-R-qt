@@ -43,8 +43,10 @@ class ExploreShowWaterfallAdapter(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )).apply {
-                height = metrics.cardHeight
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
             }
+            root.minimumHeight = metrics.cardHeight
+            tvName.textSize = 16f
             ivCover.layoutParams = ivCover.layoutParams.apply {
                 height = metrics.coverHeight
             }

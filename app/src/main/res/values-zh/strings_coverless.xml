@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="book_list_no_cover">无封面列表</string>
+    <string name="book_list_hide_covers">隐藏封面</string>
+</resources>

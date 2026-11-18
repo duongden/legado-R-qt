@@ -1,6 +1,7 @@
 package io.legado.app.help
 
 import android.net.Uri
+import io.legado.app.constant.AppLog
 import io.legado.app.constant.PreferKey
 import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
@@ -10,6 +11,7 @@ import io.legado.app.help.book.CacheCloudIndex
 import io.legado.app.help.book.CacheCloudIndexStore
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.storage.Backup
+import io.legado.app.help.storage.WebDavBackupRetention
 import io.legado.app.help.storage.Restore
 import io.legado.app.lib.cloud.CloudStorageBackend
 import io.legado.app.lib.cloud.CloudStorageFile
@@ -35,6 +37,8 @@ import io.legado.app.utils.isJson
 import io.legado.app.utils.normalizeFileName
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import splitties.init.appCtx
 import java.io.File
 
@@ -49,6 +53,7 @@ object AppCloudStorage {
     private const val COVER_COLLECTIONS_DIR = "coverCollections/"
     private const val BUBBLES_DIR = "bubbles/"
 
+    private val webDavBackupMutex = Mutex()
     private val webDavBackend = WebDavCloudStorageBackend()
     private val s3Backend = S3CloudStorageBackend()
     private var backend: CloudStorageBackend = webDavBackend
@@ -112,13 +117,43 @@ object AppCloudStorage {
 
     suspend fun backup(fileName: String) {
         ensureNetwork()
-        storage(S3ContainerScope.MAIN_BACKUP).upload(fileName, Backup.zipFilePath)
+        if (type == CloudStorageType.WEBDAV) {
+            backupToWebDav(fileName)
+        } else {
+            storage(S3ContainerScope.MAIN_BACKUP).upload(fileName, Backup.zipFilePath)
+        }
     }
 
     suspend fun backupToWebDav(fileName: String) {
         ensureNetwork()
-        webDavBackend.upConfig()
-        webDavBackend.upload(fileName, Backup.zipFilePath)
+        webDavBackupMutex.withLock {
+            fun retentionConfiguration() = listOf(
+                appCtx.getPrefString(PreferKey.webDavUrl), AppConfig.webDavDir,
+                appCtx.getPrefString(PreferKey.webDavAccount), appCtx.getPrefString(PreferKey.webDavPassword),
+                AppConfig.webDavDeviceName, AppConfig.webDavBackupKeepCount.toString()
+            )
+            val configuration = retentionConfiguration()
+            webDavBackend.upConfig()
+            webDavBackend.upload(fileName, Backup.zipFilePath)
+            if (AppConfig.webDavBackupKeepCount > 0) {
+                try {
+                    val candidates = WebDavBackupRetention.deletionCandidates(
+                        webDavBackend.listFiles(""), AppConfig.webDavDeviceName?.normalizeFileName(),
+                        AppConfig.webDavBackupKeepCount, fileName
+                    )
+                    candidates.forEach { name ->
+                        currentCoroutineContext().ensureActive()
+                        check(configuration == retentionConfiguration()) { "WebDAV settings changed during backup cleanup" }
+                        check(webDavBackend.delete(name)) { "Cannot delete old backup: $name" }
+                    }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Upload succeeded. Report cleanup separately, preserving the new backup.
+                    AppLog.put("WebDAV backup retention failed", e, true)
+                }
+            }
+        }
     }
 
     fun listContainers(): List<S3Container> = S3ContainerManager.listContainers()

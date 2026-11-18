@@ -261,7 +261,8 @@ class BookshelfConfigDialog : ComposeDialogFragment() {
             ).mapIndexed { index, label -> BookshelfConfigOption(label, index) },
             listItemStyles = listOf(
                 uiString(R.string.bookshelf_list_style_classic),
-                uiString(R.string.bookshelf_list_style_rounded_card)
+                uiString(R.string.bookshelf_list_style_rounded_card),
+                uiString(R.string.book_list_no_cover)
             ).mapIndexed { index, label -> BookshelfConfigOption(label, index) },
             listIntroLines = listOf(
                 BookshelfConfigOption(uiString(R.string.bookshelf_list_intro_lines_0), 0),

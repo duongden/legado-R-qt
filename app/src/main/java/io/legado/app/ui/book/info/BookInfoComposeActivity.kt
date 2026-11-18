@@ -45,6 +45,9 @@ import io.legado.app.help.book.isLocal
 import io.legado.app.help.book.isVideo
 import io.legado.app.help.book.isWebFile
 import io.legado.app.help.book.removeType
+import io.legado.app.help.config.BookInfoComponentConfig
+import io.legado.app.help.config.BookInfoPageStyle
+import io.legado.app.ui.book.info.compose.BookInfoFlatRoute
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.LocalConfig
 import io.legado.app.lib.dialogs.alert
@@ -204,10 +207,11 @@ class BookInfoComposeActivity :
         )
         composeView.setContent {
             val actions = remember { composeActions() }
-            BookInfoComposeRoute(
-                state = uiState,
-                actions = actions
-            )
+            if (BookInfoComponentConfig.loadStyle() == BookInfoPageStyle.FLAT) {
+                BookInfoFlatRoute(state = uiState, actions = actions)
+            } else {
+                BookInfoComposeRoute(state = uiState, actions = actions)
+            }
         }
         viewModel.bookData.observe(this) { book ->
             showBook(book)

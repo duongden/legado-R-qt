@@ -46,6 +46,23 @@ class WebViewPoolLifecycleTest {
     }
 
     @Test
+    fun backgroundRequestsNeverReusePreviouslyAttachedViews() {
+        lateinit var attached: PooledWebView
+        main {
+            attached = WebViewPool.acquire(host).also(acquired::add)
+            host.testRoot.addView(attached.realWebView, ViewGroup.LayoutParams(120, 120))
+        }
+        awaitMain("view did not attach") { attached.realWebView.hasBeenAttachedToWindow }
+        main { release(attached) }
+        awaitMain("view did not finish resetting") { !attached.isInUse }
+        main {
+            val background = WebViewPool.acquire(host, forBackground = true).also(acquired::add)
+            assertFalse(background === attached)
+            assertFalse(background.realWebView.hasBeenAttachedToWindow)
+        }
+    }
+
+    @Test
     fun resettingEachPoolLeavesIndependentReaderRunningAndReacquiredViewActive() {
         WebViewPool.Scope.entries.forEach { scope ->
             lateinit var pooled: PooledWebView

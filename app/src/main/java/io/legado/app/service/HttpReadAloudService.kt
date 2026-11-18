@@ -777,23 +777,8 @@ class HttpReadAloudService : BaseReadAloudService(),
                         throw throwable
                     }
                 }
-                response.headers["Content-Type"]?.let { contentType ->
-                    val contentType = contentType.substringBefore(";")
-                    val ct = httpTts.contentType
-                    if (contentType == "application/json" || contentType.startsWith("text/")) {
-                        throw NoStackTraceException(response.peekBody(8_192).string())
-                    } else if (ct?.isNotBlank() == true) {
-                        if (!contentType.matches(ct.toRegex())) {
-                            throw NoStackTraceException(
-                                "TTS服务器返回错误：" + response.peekBody(8_192).string()
-                            )
-                        }
-                    }
-                }
-                currentCoroutineContext().ensureActive()
-                response.body.byteStream().let { stream ->
-                    return stream
-                }
+                val context = currentCoroutineContext()
+                return openTtsAudioStream(response, httpTts.contentType) { context.ensureActive() }
             } catch (e: Exception) {
                 when (e) {
                     is CancellationException -> throw e
@@ -1108,7 +1093,7 @@ class HttpReadAloudService : BaseReadAloudService(),
                 val position = (speakTextLength * exoPlayer.currentPosition / duration)
                     .coerceIn(0L, speakTextLength.toLong())
                 while (pageIndex + 1 < textChapter.pageSize &&
-                    readAloudNumber + cueStartOffset + position >
+                    readAloudNumber + cueStartOffset + position >=
                     textChapter.getReadLength(pageIndex + 1)
                 ) {
                     pageIndex++
@@ -1258,8 +1243,10 @@ class HttpReadAloudService : BaseReadAloudService(),
             return
         }
         val mediaItem = exoPlayer.currentMediaItem ?: return
-        val filePath = mediaItem.localConfiguration!!.uri.path!!
-        File(filePath).delete()
+        val uri = mediaItem.localConfiguration?.uri ?: return
+        if (uri.scheme != "file") return
+        val filePath = uri.path ?: return
+        TtsCacheFiles.deleteFailedAudio(File(ttsFolderPath), File(filePath))
     }
 
     override fun aloudServicePendingIntent(actionStr: String): PendingIntent? {

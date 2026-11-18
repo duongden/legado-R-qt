@@ -51,7 +51,8 @@ fun SearchBookListItem(
     onPreview: (Rect?) -> Unit,
     modifier: Modifier = Modifier,
     fragment: Fragment? = null,
-    showOriginCount: Boolean = false
+    showOriginCount: Boolean = false,
+    showCover: Boolean = true
 ) {
     val palette = renderConfig.palette
     val coverBounds = remember(book.bookUrl, book.origin, book.coverUrl) {
@@ -61,24 +62,27 @@ fun SearchBookListItem(
         rounded = rounded,
         compact = false,
         renderConfig = renderConfig,
-        modifier = if (rounded) modifier else modifier.heightIn(min = NormalSearchBookListItemHeight),
+        modifier = if (rounded || !showCover) modifier else modifier.heightIn(min = NormalSearchBookListItemHeight),
+        showCover = showCover,
         onClick = onClick,
-        onLongClick = { onPreview(coverBounds.value) }
+        onLongClick = { onPreview(if (showCover) coverBounds.value else null) }
     ) { metrics ->
-        Box(modifier = Modifier.width(metrics.coverWidth)) {
-            BookCoverImage(
-                book = book,
-                modifier = Modifier
-                    .width(metrics.coverWidth),
-                style = if (rounded) CoverImageView.CoverStyle.LIST else CoverImageView.CoverStyle.COMPACT,
-                loadOnlyWifi = AppConfig.loadCoverOnlyWifi,
-                fragment = fragment,
-                lifecycle = lifecycle,
-                preferThumb = true,
-                onBoundsChanged = { coverBounds.value = it }
-            )
+        if (showCover) {
+            Box(modifier = Modifier.width(metrics.coverWidth)) {
+                BookCoverImage(
+                    book = book,
+                    modifier = Modifier
+                        .width(metrics.coverWidth),
+                    style = if (rounded) CoverImageView.CoverStyle.LIST else CoverImageView.CoverStyle.COMPACT,
+                    loadOnlyWifi = AppConfig.loadCoverOnlyWifi,
+                    fragment = fragment,
+                    lifecycle = lifecycle,
+                    preferThumb = true,
+                    onBoundsChanged = { coverBounds.value = it }
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
         }
-        Spacer(modifier = Modifier.width(12.dp))
         SearchBookListText(
             book = book,
             inBookshelf = inBookshelf,
@@ -105,10 +109,11 @@ private fun SearchBookListText(
             Text(
                 text = translatedText(book.name),
                 color = palette.primaryText,
-                fontSize = if (rounded) 16.sp else 15.sp,
-                fontWeight = FontWeight.Medium,
+                fontSize = if (rounded) 18.sp else 17.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.SemiBold,
                 fontFamily = palette.titleFontFamily,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )

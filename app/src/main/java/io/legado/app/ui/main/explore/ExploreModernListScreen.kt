@@ -148,6 +148,7 @@ fun ExploreModernListScreen(
                     book = book,
                     inBookshelf = isInBookshelf(book),
                     listItemStyle = listItemStyle,
+                    showCover = layoutMode != 4,
                     renderConfig = renderConfig,
                     fragment = fragment,
                     lifecycle = lifecycle,
@@ -345,8 +346,9 @@ private fun ExploreGridBookItem(
         Text(
             text = translatedText(book.name),
             color = palette.primaryText,
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
+            fontSize = 15.sp,
+            lineHeight = 20.sp,
+            fontWeight = FontWeight.SemiBold,
             fontFamily = palette.titleFontFamily,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -357,6 +359,7 @@ private fun ExploreGridBookItem(
 
 @Composable
 private fun ExploreBookListItem(
+    showCover: Boolean,
     book: SearchBook,
     inBookshelf: Boolean,
     listItemStyle: Int,
@@ -371,6 +374,7 @@ private fun ExploreBookListItem(
         book = book,
         inBookshelf = inBookshelf,
         rounded = rounded,
+        showCover = showCover,
         renderConfig = renderConfig,
         fragment = fragment,
         lifecycle = lifecycle,

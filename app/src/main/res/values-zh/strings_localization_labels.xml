@@ -1,0 +1,4 @@
+<resources>
+    <string name="ui_code_viewer">代码查看</string>
+    <string name="ui_result">结果</string>
+</resources>

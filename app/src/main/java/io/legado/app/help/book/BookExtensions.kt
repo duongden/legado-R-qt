@@ -61,7 +61,7 @@ val Book.isEpub: Boolean
     get() = isLocal && originName.endsWith(".epub", true)
 
 val Book.usesDirectReader: Boolean
-    get() = TextReadEnginePolicy.usesDirect(
+    get() = !usesParagraphReader && TextReadEnginePolicy.usesDirect(
         isEpub = isEpub,
         isOrdinaryText = !isAudio && !isVideo && !isImage && !isPdf,
         epubUsesCore = AppConfig.useEpubCore,
@@ -396,3 +396,7 @@ fun tryParesExportFileName(jsStr: String): Boolean {
         true
     }.getOrDefault(false)
 }
+
+/** The complete-paragraph list uses native text coordinates; rich EPUB/PDF retain their engine. */
+val Book.usesParagraphReader: Boolean
+    get() = AppConfig.paragraphReadMode && !isEpub && !isPdf && !isAudio && !isVideo && !isImage

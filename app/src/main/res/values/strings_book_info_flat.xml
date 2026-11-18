@@ -1,0 +1,5 @@
+<resources>
+    <string name="book_info_style_flat">Flat</string>
+    <string name="book_info_style_flat_hint">Compact cover and metadata, a flat action grid, gallery, update controls, chapter links and introduction. Uses existing book actions; component editing applies to Classic only.</string>
+    <string name="book_info_flat_quick_actions">Quick actions</string>
+</resources>

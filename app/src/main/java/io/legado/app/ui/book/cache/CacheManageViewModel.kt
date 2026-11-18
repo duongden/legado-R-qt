@@ -177,6 +177,31 @@ class CacheManageViewModel(application: Application) : BaseViewModel(application
         )
     }
 
+    /** Rebuild metadata from the current TOC and actual files, preserving payloads. */
+    suspend fun repairLocalIndexes(): Int = withContext(Dispatchers.IO) {
+        val books = (getBooks(mode) + CacheManifestHelper.listManifests()
+            .filter { it.matches(mode) }.map(CacheManifestHelper::toBook))
+            .distinctBy { it.bookUrl }
+        var repaired = 0
+        books.forEach { book ->
+            ensureActive()
+            val audioTask = AudioCacheTaskManager.snapshot(book.bookUrl)
+            if (audioTask?.active == true || audioTask?.status == CacheTaskStatus.PAUSED ||
+                WebDavTaskManager.snapshot(book.cacheRemoteKey(mode.name))?.active == true) return@forEach
+            val chapters = appDb.bookChapterDao.getChapterList(book.bookUrl)
+                .takeIf { it.isNotEmpty() }
+                ?: CacheManifestHelper.read(book)?.let(CacheManifestHelper::toChapters).orEmpty()
+            if (chapters.isEmpty()) return@forEach
+            // Volumes and stale/duplicate files must not inflate cached chapter counts.
+            val names = getCacheFileNames(book)
+            CacheManifestHelper.write(book, chapters) {
+                isChapterCached(book, it, names, validateImageContent = true)
+            }
+            repaired++
+        }
+        repaired
+    }
+
     fun selectSource(groupKey: String, sourceKey: String) {
         selectedSourceKeys[groupKey] = sourceKey
         saveSelectedSourceKeys()
@@ -803,17 +828,14 @@ class CacheManageViewModel(application: Application) : BaseViewModel(application
             return null
         }
         val cacheNames = getCacheFileNames(book)
-        val needsChapterList = book.totalChapterNum <= 0
         val manifest = knownManifest ?: CacheManifestHelper.read(book)
-        val dbChapters = if (needsChapterList) {
-            appDb.bookChapterDao.getChapterList(book.bookUrl)
-        } else {
-            emptyList()
-        }
+        val dbChapters = appDb.bookChapterDao.getChapterList(book.bookUrl)
         val chapters = dbChapters.takeIf { it.isNotEmpty() }
             ?: manifest?.let(CacheManifestHelper::toChapters)
             ?: emptyList()
-        val rawCachedCount = getFastCachedCount(cacheNames)
+        val rawCachedCount = chapters.filterNot { it.isVolume }.count {
+            isChapterCached(book, it, cacheNames, validateImageContent = true)
+        }
         if (rawCachedCount <= 0 && taskState?.active != true) {
             CacheManifestHelper.delete(book)
             return null
@@ -929,10 +951,6 @@ class CacheManageViewModel(application: Application) : BaseViewModel(application
         return maxOf(manifestTime, dirTime)
     }
 
-    private fun getFastCachedCount(cacheNames: Set<String>): Int {
-        return cacheNames.count { it.endsWith(".nb") }
-    }
-
     private fun getAudioCachedCount(chapters: List<BookChapter>): Int {
         return getAudioCachedCount(chapters, cachedIndexes = null)
     }
@@ -956,15 +974,12 @@ class CacheManageViewModel(application: Application) : BaseViewModel(application
             ?.mapTo(hashSetOf()) { it.index }
     }
 
-    private fun getCacheFileNames(book: Book): Set<String> {
-        val cacheDir = BookHelp.getCacheDir(book)
-        if (!cacheDir.exists() || !cacheDir.isDirectory) return emptySet()
-        return cacheDir.list()?.toSet().orEmpty()
-    }
+    private fun getCacheFileNames(book: Book): Set<String> = getCacheFileNames(BookHelp.getCacheDir(book))
 
     private fun getCacheFileNames(cacheDir: File): Set<String> {
-        if (!cacheDir.exists() || !cacheDir.isDirectory) return emptySet()
-        return cacheDir.list()?.toSet().orEmpty()
+        return cacheDir.listFiles()?.asSequence()
+            ?.filter { it.isFile && it.length() > 0L }
+            ?.mapTo(hashSetOf()) { it.name }.orEmpty()
     }
 
     private fun isChapterCached(
@@ -973,7 +988,7 @@ class CacheManageViewModel(application: Application) : BaseViewModel(application
         cacheNames: Set<String> = getCacheFileNames(book),
         validateImageContent: Boolean = true
     ): Boolean {
-        if (book.isLocal) return false
+        if (book.isLocal || chapter.isVolume) return false
         if (book.isAudio) return ExoPlayerHelper.isMediaCached(chapter.resourceUrl)
         val hasContent = BookHelp.getChapterCacheFileNames(book, chapter).any(cacheNames::contains)
         return if (validateImageContent && book.isImage && hasContent) {
