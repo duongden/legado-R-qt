@@ -316,3 +316,7 @@ Cập nhật: 2026-11-18.
 - APK đúng package io.legado.app.rqt.Archive, phiên bản 3.26.1118.1 (12034), minSdk 21, targetSdk 36 và không debuggable. Chữ ký khớp bản trước; 12 thư viện native đạt căn chỉnh 16 KB. Kiểm tra APK không có các từ điển/theme cá nhân bị loại khỏi bản công khai.
 - Bộ JVM riêng trên cùng source phát hành đạt (4m 11s): 1.671 tests, 0 failures, 0 errors, 12 skipped do dữ liệu tùy chọn không có trong source công khai. Tài nguyên APK xác nhận danh sách nguồn giữ font gốc. APK/checksum và verification.json đã lưu trong hồ sơ đợt 12.
 - Các mục nghiệm thu runtime còn lại ở các đợt trước vẫn giữ nguyên; không coi build/JVM là nghiệm thu đầy đủ trên thiết bị.
+- Đã commit bản cập nhật tại `0e0a4e76a1eba6d79c49fa21469beda095816460` và push trực tiếp lên origin/main. Không có PR cần merge; mã đã được tích hợp vào main.
+- Đã phát hành [v3.26.1118.1](https://github.com/duongden/legado-R-qt/releases/tag/v3.26.1118.1), là latest, không draft/prerelease, tag trỏ đúng commit phát hành. Nội dung changelog khớp bản đã duyệt.
+- GitHub có đúng APK release và `SHA256SUMS-3.26.1118.1`; digest và kích thước cả hai asset khớp file local. SHA-256 APK: `506312266c5c8dcb0f860362716a37080df08e076d6299a19969521f937b713f`. Chưa tải lại toàn bộ APK từ GitHub hoặc cài release mới lên điện thoại; không phát hành APK debug.
+- Bảo toàn 20 file tracked dirty ngoài phạm vi cùng các thư mục/file untracked không liên quan. Metadata GitHub sau phát hành lưu trong publication.json và latest-release.json tại hồ sơ đợt 12.
