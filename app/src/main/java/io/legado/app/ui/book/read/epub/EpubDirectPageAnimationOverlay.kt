@@ -127,6 +127,8 @@ internal class EpubDirectPageAnimationOverlay(
             EpubDirectPageAnimationPolicy.Style.Slide -> drawSlide(canvas)
             EpubDirectPageAnimationPolicy.Style.Simulation -> drawSimulation(canvas)
             EpubDirectPageAnimationPolicy.Style.LinkedCover -> drawLinkedCover(canvas)
+            EpubDirectPageAnimationPolicy.Style.Fade -> drawSlide(canvas)
+            EpubDirectPageAnimationPolicy.Style.Parallax -> drawCover(canvas)
             EpubDirectPageAnimationPolicy.Style.None -> Unit
         }
     }
@@ -173,7 +175,7 @@ internal class EpubDirectPageAnimationOverlay(
         if (frame.sourceClipRight <= frame.sourceClipLeft) return
         val saveCount = canvas.save()
         canvas.clipRect(frame.sourceClipLeft, 0f, frame.sourceClipRight, height.toFloat())
-        drawBitmap(canvas, sourceBitmap, frame.sourceTranslationX)
+        drawBitmap(canvas, sourceBitmap, frame.sourceTranslationX, frame.sourceAlpha)
         if (frame.sourceMaskAlpha > 0) {
             drawMask(canvas, frame.sourceClipLeft, frame.sourceClipRight, frame.sourceMaskAlpha)
         }

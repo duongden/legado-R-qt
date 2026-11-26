@@ -81,7 +81,9 @@ object EpubCoreProvider {
                 } else {
                     holder.facade.prepareDirectChapter(chapterIndex, config)
                 }
-                chapter.copy(html = HighlightRules.decorate(chapter.html, bookUrl, true,
+                if (chapter.readerTemplate != null) chapter.copy(templateSourceHtml = HighlightRules.decorateTemplate(
+                    requireNotNull(chapter.templateSourceHtml), bookUrl, holder.facade.directResourceHost(), styled = true
+                )) else chapter.copy(html = HighlightRules.decorate(chapter.html, bookUrl, true,
                     holder.facade.directResourceHost(), config))
             },
             resourceLoader = { path, range ->

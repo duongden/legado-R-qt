@@ -16,6 +16,26 @@ state fields.
 
 ## Ordinary Text in Direct
 
+### Optional templates for local EPUB publications
+
+Actual `.epub` imports may now opt into a page template through the existing reader
+style sheet. The selection lives in `Book.ReadConfig.epubReaderTemplateId`; a missing
+or empty value preserves publisher rendering. It does not inherit the ordinary-text
+profile's default template. The template library offers an explicit original-layout
+action, and changing one publication does not select a template for another book.
+
+The publication adapter preserves chapter/spine identity and package resource URLs,
+cuts the logical chapter's DOM boundaries, and creates canonical template block and
+anchor records. It replaces publisher styles with the selected template deliberately;
+the archive and the publisher-mode path remain unchanged. Interactive/scripted
+publications report an actionable unsupported error and retain access to the original
+layout option. `sourceChapterUrl` stays null: publication templates must not enter the
+ordinary-text character-coordinate or speech pipeline.
+
+Template choices travel in bookshelf JSON. Full backups include the template library
+and snapshots of referenced built-ins from both layout profiles and per-book choices.
+Existing backups without the new field continue to open local EPUBs in publisher mode.
+
 `textReadEngine` selects native rendering by default and Direct only for the explicit
 `epub` value. `Book.usesDirectReader` combines that setting with the existing EPUB
 engine setting; it never changes the book's format or enables Direct for audio,

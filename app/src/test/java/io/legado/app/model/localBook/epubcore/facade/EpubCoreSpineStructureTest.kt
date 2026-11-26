@@ -16,6 +16,41 @@ class EpubCoreSpineStructureTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
+    fun `nested toc preserves parent identities through spine normalization`() {
+        val file = temporaryFolder.newFile("nested.epub")
+        ZipOutputStream(file.outputStream()).use { output ->
+            put(output, "META-INF/container.xml", """
+                <container><rootfiles><rootfile full-path="OPS/package.opf" /></rootfiles></container>
+            """.trimIndent())
+            put(output, "OPS/package.opf", """
+                <package version="3.0"><manifest>
+                  <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav" />
+                  <item id="a" href="a.xhtml" media-type="application/xhtml+xml" />
+                  <item id="b" href="b.xhtml" media-type="application/xhtml+xml" />
+                </manifest><spine><itemref idref="a"/><itemref idref="b"/></spine></package>
+            """.trimIndent())
+            put(output, "OPS/nav.xhtml", """
+                <html><body><nav epub:type="toc"><ol>
+                  <li><span>Part</span><ol><li><span>Volume</span><ol>
+                    <li><a href="a.xhtml">A</a></li><li><a href="b.xhtml">B</a></li>
+                  </ol></li></ol></li>
+                </ol></nav></body></html>
+            """.trimIndent())
+            put(output, "OPS/a.xhtml", "<html><body>A</body></html>")
+            put(output, "OPS/b.xhtml", "<html><body>B</body></html>")
+        }
+        EpubCoreFacade.open(file, "book://nested", temporaryFolder.newFolder(), "nested").use { facade ->
+            val chapters = facade.chapters()
+            assertEquals(listOf("Part", "Volume", "A", "B"), chapters.map { it.title })
+            assertEquals(listOf("0", "1", "2", "2"), chapters.map { it.variableMap[EpubChapterMetadata.TocDepthKey] })
+            assertEquals(listOf(null, "0", "1", "1"), chapters.map { it.variableMap[EpubChapterMetadata.TocParentIdKey] })
+            assertEquals(listOf("OPS/a.xhtml", "OPS/b.xhtml"), chapters.filterNot { it.url.startsWith("skip:") }.map { it.url })
+            val tree = io.legado.app.ui.book.toc.TocChapterTree(chapters)
+            assertEquals(listOf("Part", "Volume", "B"), tree.visible("B", emptySet()).map { it.title })
+        }
+    }
+
+    @Test
     fun `unlisted spine document stays physical but is hidden from logical toc`() {
         val file = temporaryFolder.newFile("spine-structure.epub")
         ZipOutputStream(file.outputStream()).use { output ->

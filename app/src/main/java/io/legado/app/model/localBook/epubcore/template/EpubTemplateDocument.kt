@@ -43,6 +43,15 @@ object EpubTemplateDocument {
 
     fun wrap(chapter: EpubDirectChapter, sourceHtml: String, template: EpubReaderTemplate): EpubDirectChapter {
         require(chapter.sourceChapterUrl != null) { "页面模板仅用于普通正文的 EPUB 渲染" }
+        return wrapValidated(chapter, sourceHtml, template)
+    }
+
+    internal fun wrapPublication(chapter: EpubDirectChapter, sourceHtml: String, template: EpubReaderTemplate): EpubDirectChapter {
+        require(chapter.sourceChapterUrl == null)
+        return wrapValidated(chapter, sourceHtml, template)
+    }
+
+    private fun wrapValidated(chapter: EpubDirectChapter, sourceHtml: String, template: EpubReaderTemplate): EpubDirectChapter {
         val errors = template.validate()
         if (errors.isNotEmpty()) throw EpubTemplateException(template.contentHash(), errors.joinToString("\n"))
         return chapter.copy(html = HOST_HTML, readerTemplate = template, templateSourceHtml = sourceHtml)
@@ -59,6 +68,7 @@ object EpubTemplateDocument {
             put("template", JSONObject(template.toJson()))
             put("sourceHtml", requireNotNull(chapter.templateSourceHtml))
             put("plainText", chapter.plainText)
+            put("sourceAnchors", JSONObject(chapter.templateAnchors))
             put("baseUrl", chapter.baseUrl)
             put("baseCss", baseCss(config, density) + "\n" +
                 io.legado.app.help.reader.ReaderAssetReferences.fontCss(

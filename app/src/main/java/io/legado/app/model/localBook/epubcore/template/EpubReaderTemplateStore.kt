@@ -13,7 +13,7 @@ object EpubReaderTemplateStore {
     const val singleTemplateFileName = "readerTemplate.json"
     val filePath: String get() = File(appCtx.filesDir, fileName).absolutePath
     const val defaultId = "builtin.lord_of_mysteries"
-    val builtinIds = listOf(defaultId, "builtin.vertical")
+    val builtinIds = listOf(defaultId, "builtin.vertical", "builtin.hong_dang")
     private val retiredBuiltinIds = setOf("builtin.minecraft_live", "builtin.asuka_sync", "builtin.doraemon_scroll", "builtin.minecraft", "builtin.gilded", "builtin.flower", "builtin.night", "builtin.magazine", "builtin.clean", "builtin.garden", "builtin.cat")
 
     private fun loadBuiltIn(id: String): EpubReaderTemplate =

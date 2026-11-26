@@ -116,6 +116,7 @@
     return following >= 0 ? following : previous;
   }
   function fragmentPage(id) {
+    if (Object.prototype.hasOwnProperty.call(init.sourceAnchors || {}, id)) id = init.sourceAnchors[id];
     var match = /^__legado_text_(\d+)$/.exec(id);
     if (match) return pageForOffset(Number(match[1]));
     for (var p = 0; p < pageMap.length; p++) {

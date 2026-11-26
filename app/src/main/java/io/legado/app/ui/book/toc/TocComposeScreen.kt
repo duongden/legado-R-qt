@@ -72,6 +72,9 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.help.exoplayer.ExoPlayerHelper
 import io.legado.app.lib.theme.UiCorner
 import io.legado.app.model.localBook.epubcore.facade.EpubChapterMetadata
+import io.legado.app.model.localBook.epubcore.facade.EpubCoreProvider
+import io.legado.app.constant.AppLog
+import kotlinx.coroutines.CancellationException
 import io.legado.app.ui.widget.compose.AppManagementCard
 import io.legado.app.ui.widget.compose.AppManagementIconAction
 import io.legado.app.ui.widget.compose.AppManagementMenuAction
@@ -132,7 +135,7 @@ fun TocComposeScreen(
         val bookmarkListState = rememberLazyListState()
         val scope = rememberCoroutineScope()
         // 卷标题吸顶后会盖住其下章节，定位当前章时上移一个标题高度，让当前章露在标题下方。
-        val volumeHeaderOffsetPx = with(LocalDensity.current) { -42.dp.roundToPx() }
+        val volumeHeaderOffsetPx = with(LocalDensity.current) { -48.dp.roundToPx() }
         val hasVolumes by remember { derivedStateOf { chapterList.any { it.isVolume } } }
         val exportText = stringResource(R.string.export)
         val exportMdText = stringResource(R.string.export_md)
@@ -158,6 +161,24 @@ fun TocComposeScreen(
             book?.let(onBookLoaded)
         }
 
+        // Refresh display metadata for older persisted TOCs without replacing their reading indexes.
+        val epubHierarchy by produceState<List<BookChapter>>(emptyList(), book, contentRefreshTick) {
+            value = emptyList()
+            val current = book
+            if (current?.isEpub == true) {
+                value = withContext(Dispatchers.IO) {
+                    try {
+                        EpubCoreProvider.getChapterList(current)
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        AppLog.put("EPUB TOC hierarchy unavailable", error)
+                        emptyList()
+                    }
+                }
+            }
+        }
+
         LaunchedEffect(book, refreshTick, contentRefreshTick) {
             val currentBook = book
             titleContext = if (currentBook == null) {
@@ -176,7 +197,7 @@ fun TocComposeScreen(
             }
         }
 
-        LaunchedEffect(book, searchQuery, refreshTick, contentRefreshTick) {
+        LaunchedEffect(book, searchQuery, refreshTick, contentRefreshTick, epubHierarchy) {
             val currentBook = book ?: return@LaunchedEffect
             if (searchQuery.isNotBlank()) {
                 delay(180)
@@ -184,16 +205,19 @@ fun TocComposeScreen(
             chaptersLoaded = false
             val end = currentBook.simulatedTotalChapterNum() - 1
             val chapters = withContext(Dispatchers.IO) {
-                if (searchQuery.isBlank()) {
+                if (searchQuery.isBlank() || currentBook.isEpub) {
                     appDb.bookChapterDao.getChapterList(currentBook.bookUrl, 0, end)
                 } else {
                     appDb.bookChapterDao.search(currentBook.bookUrl, searchQuery, 0, end)
                 }
             }
+            val displayChapters = withContext(Dispatchers.Default) {
+                if (currentBook.isEpub) TocChapterTree.withHierarchy(chapters, epubHierarchy) else chapters
+            }
             val (collapsedIndexes, nextVisibleChapters, nextHasVolumes) = withContext(Dispatchers.Default) {
                 val nextCollapsedIndexes = if (searchQuery.isBlank()) {
                     collapsedVolumeIndexesFor(
-                        chapters = chapters,
+                        chapters = displayChapters,
                         durChapterIndex = currentBook.durChapterIndex
                     )
                 } else {
@@ -201,13 +225,15 @@ fun TocComposeScreen(
                 }
                 Triple(
                     nextCollapsedIndexes,
-                    visibleChapters(chapters, searchQuery, nextCollapsedIndexes),
-                    chapters.any { it.isVolume }
+                    visibleChapters(displayChapters, searchQuery, nextCollapsedIndexes),
+                    displayChapters.any { it.isVolume }
                 )
             }
             if (searchQuery.isBlank()) {
-                chapterList = chapters
+                chapterList = displayChapters
                 collapsedVolumeIndexes = collapsedIndexes
+            } else if (currentBook.isEpub) {
+                chapterList = displayChapters
             }
             visibleChapters = nextVisibleChapters
             chaptersLoaded = true
@@ -359,6 +385,7 @@ fun TocComposeScreen(
                                     chapterCacheMap = chapterCacheMap,
                                     countWords = countWords,
                                     hasVolumes = hasVolumes,
+                                    canToggle = searchQuery.isBlank(),
                                     listState = chapterListState,
                                     onToggleVolume = { chapter ->
                                         if (!chapter.isVolume || searchQuery.isNotBlank()) return@TocChapterList
@@ -661,11 +688,13 @@ private fun TocChapterList(
     chapterCacheMap: Map<String, Boolean>,
     countWords: Boolean,
     hasVolumes: Boolean,
+    canToggle: Boolean,
     listState: LazyListState,
     onToggleVolume: (BookChapter) -> Unit,
     onOpenChapter: (BookChapter) -> Unit
 ) {
     val palette = rememberAppManagementPalette()
+    val tree = remember(chapters) { TocChapterTree(chapters) }
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
@@ -675,8 +704,9 @@ private fun TocChapterList(
             // 卷仍作为 lazy item 发射，保持索引与 visibleChapters 一一对应，滚动定位逻辑无需改动。
             chapters.forEach { chapter ->
                 val key = "${chapter.bookUrl}|${chapter.index}|${chapter.url}"
+                val depth = if (tree.hierarchical) tree.depth(chapter) else if (hasVolumes && !chapter.isVolume) 1 else 0
                 if (chapter.isVolume) {
-                    stickyHeader(key = key, contentType = "volume") {
+                    val header: @Composable () -> Unit = {
                         val canOpenChapter = EpubTocNavigationPolicy.canOpenParent(
                             isEpub = book?.isEpub == true,
                             isVolume = chapter.isVolume,
@@ -685,19 +715,25 @@ private fun TocChapterList(
                         TocVolumeHeaderRow(
                             palette = palette,
                             title = chapterTitleMap[chapter.primaryStr()] ?: chapter.title,
-                            collapsed = collapsedVolumeIndexes.contains(chapter.index),
+                            collapsed = canToggle && collapsedVolumeIndexes.contains(chapter.index),
+                            depth = depth,
+                            canToggle = canToggle,
+                            canOpen = canOpenChapter,
                             onClick = if (canOpenChapter) {
                                 { onOpenChapter(chapter) }
                             } else {
                                 { onToggleVolume(chapter) }
                             },
-                            onToggle = if (canOpenChapter) {
+                            onToggle = if (canOpenChapter || book?.isEpub == true) {
                                 { onToggleVolume(chapter) }
                             } else {
                                 null
                             }
                         )
                     }
+                    // Only root headings stick; nested headings remain in their actual tree position.
+                    if (depth == 0) stickyHeader(key = key, contentType = "volume", content = { header() })
+                    else item(key = key, contentType = "volume", content = { header() })
                 } else {
                     item(key = key, contentType = "chapter") {
                         TocChapterRow(
@@ -707,7 +743,7 @@ private fun TocChapterList(
                             title = chapterTitleMap[chapter.primaryStr()] ?: chapter.title,
                             cached = chapterCacheMap[chapter.primaryStr()] ?: true,
                             countWords = countWords,
-                            indented = hasVolumes,
+                            depth = depth,
                             onClick = { onOpenChapter(chapter) }
                         )
                     }
@@ -726,6 +762,9 @@ private fun TocVolumeHeaderRow(
     palette: AppManagementPalette,
     title: String,
     collapsed: Boolean,
+    depth: Int,
+    canToggle: Boolean,
+    canOpen: Boolean,
     onClick: () -> Unit,
     onToggle: (() -> Unit)?
 ) {
@@ -743,8 +782,9 @@ private fun TocVolumeHeaderRow(
             .zIndex(1f)
             .background(occludingBackground)
             .background(palette.settings.accent.copy(alpha = 0.08f))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 11.dp),
+            .clickable(enabled = canOpen || canToggle, onClick = onClick)
+            .defaultMinSize(minHeight = 48.dp)
+            .padding(start = (14 + depth.coerceAtMost(8) * 12).dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -776,13 +816,14 @@ private fun TocVolumeHeaderRow(
         } else {
             IconButton(
                 onClick = onToggle,
-                modifier = Modifier.size(36.dp)
+                enabled = canToggle,
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     painter = painterResource(
                         id = if (collapsed) R.drawable.ic_expand_more else R.drawable.ic_expand_less
                     ),
-                    contentDescription = null,
+                    contentDescription = stringResource(if (collapsed) R.string.expand else R.string.collapse),
                     tint = palette.settings.secondaryText,
                     modifier = Modifier.size(20.dp)
                 )
@@ -799,7 +840,7 @@ private fun TocChapterRow(
     title: String,
     cached: Boolean,
     countWords: Boolean,
-    indented: Boolean,
+    depth: Int,
     onClick: () -> Unit
 ) {
     val isCurrent = book?.durChapterIndex == chapter.index
@@ -821,7 +862,7 @@ private fun TocChapterRow(
             // 当前章/按压态整行通栏高亮（去掉内缩圆角药丸，看着更清爽）。
             .background(rowBackground)
             .padding(
-                start = if (indented) 22.dp else 14.dp,
+                start = (14 + depth.coerceAtMost(8) * 12).dp,
                 end = 12.dp,
                 top = 11.dp,
                 bottom = 11.dp
@@ -1114,17 +1155,7 @@ private fun collapsedVolumeIndexesFor(
     chapters: List<BookChapter>,
     durChapterIndex: Int
 ): Set<Int> {
-    var currentVolumeIndex: Int? = null
-    val volumeIndexes = linkedSetOf<Int>()
-    chapters.forEach { chapter ->
-        if (!chapter.isVolume) return@forEach
-        volumeIndexes.add(chapter.index)
-        if (chapter.index <= durChapterIndex && chapter.index > (currentVolumeIndex ?: Int.MIN_VALUE)) {
-            currentVolumeIndex = chapter.index
-        }
-    }
-    currentVolumeIndex?.let(volumeIndexes::remove)
-    return volumeIndexes
+    return TocChapterTree(chapters).initiallyCollapsed(durChapterIndex)
 }
 
 private fun visibleChapters(
@@ -1132,19 +1163,7 @@ private fun visibleChapters(
     searchKey: String,
     collapsedVolumeIndexes: Set<Int>
 ): List<BookChapter> {
-    val tocChapters = chapters.filterNot(EpubChapterMetadata::isHiddenFromToc)
-    if (searchKey.isNotBlank() || collapsedVolumeIndexes.isEmpty()) return tocChapters
-    val visible = arrayListOf<BookChapter>()
-    var hideUntilNextVolume = false
-    tocChapters.forEach { chapter ->
-        if (chapter.isVolume) {
-            visible.add(chapter)
-            hideUntilNextVolume = collapsedVolumeIndexes.contains(chapter.index)
-        } else if (!hideUntilNextVolume) {
-            visible.add(chapter)
-        }
-    }
-    return visible
+    return TocChapterTree(chapters).visible(searchKey, collapsedVolumeIndexes)
 }
 
 private fun visiblePositionOf(chapters: List<BookChapter>, chapterIndex: Int): Int {

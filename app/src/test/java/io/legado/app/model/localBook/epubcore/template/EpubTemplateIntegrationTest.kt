@@ -159,7 +159,7 @@ class EpubTemplateIntegrationTest {
         val assets = File("src/main/assets/epub/templates")
         val json = GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create()
         val builtinNames = listOf(
-            "lord_of_mysteries", "vertical"
+            "lord_of_mysteries", "vertical", "hong_dang"
         )
         assertEquals(builtinNames.map { "builtin.$it" }, EpubReaderTemplateStore.builtinIds)
         builtinNames.forEach { name ->

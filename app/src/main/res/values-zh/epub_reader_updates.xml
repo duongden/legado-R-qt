@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_anim_fade">淡入淡出</string>
+    <string name="page_anim_parallax">视差滑动</string>
+    <string name="epub_template_local_title">此 EPUB 的排版</string>
+    <string name="epub_template_original">书籍原始排版</string>
+    <string name="epub_template_local_hint">选择页面模板以重新排版本地 EPUB，原始文件保持不变。选择原始排版可恢复书籍的设计。</string>
+    <string name="epub_template_interactive_unsupported">此交互式 EPUB 暂不支持页面模板，请选择书籍原始排版。</string>
+</resources>

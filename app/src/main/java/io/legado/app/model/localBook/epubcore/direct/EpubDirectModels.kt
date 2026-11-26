@@ -46,7 +46,8 @@ data class EpubDirectChapter(
     val sourceChapterUrl: String? = null,
     val sourceImages: TextReaderSourceImages? = null,
     val readerTemplate: EpubReaderTemplate? = null,
-    val templateSourceHtml: String? = null
+    val templateSourceHtml: String? = null,
+    val templateAnchors: Map<String, String> = emptyMap()
 )
 
 data class EpubDirectPosition(

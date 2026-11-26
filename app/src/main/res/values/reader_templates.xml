@@ -42,7 +42,7 @@
     <string name="reader_template_preview">预览排版</string>
     <string name="reader_template_preview_unavailable">当前页面尚未接入模板预览。</string>
     <string name="reader_template_editor_unavailable">编辑内容已失效，请重新打开编辑器。</string>
-    <string name="reader_template_scope_error">请在普通正文的 EPUB 渲染模式中应用模板。</string>
+    <string name="reader_template_scope_error">请在 EPUB 阅读模式中应用模板。本地 EPUB 可单独选择模板或原始排版。</string>
     <string name="reader_template_error_menu_hint">点击页面打开阅读菜单，可更换模板</string>
     <string name="reader_template_code_note">HTML、CSS 和 JavaScript 按原文保存，不过滤标签或样式。保存只检查模板格式；运行错误会在预览或正文中显示。</string>
     <string name="reader_template_javascript_help">JavaScript 全局对象：readerTemplate。\nsource：可编辑的正文 DOM；fields：动态信息；viewport：视口信息。\n使用 readerTemplate.on(event, handler) 监听 beforeLayout、beforePage、afterPage、afterLayout、pageChange、fieldsChange、motionChange、dispose，返回值可取消监听。\n在 beforeLayout 修改正文，在 beforePage 设置正文区域。afterLayout 提供本轮候选 pages；pageChange 通知导航；motionChange 通知已提交的当前 page 与实际 state，首次显示、重新分页也会触发。\n有限异步准备：readerTemplate.waitUntil(promise)；请求重新分页：readerTemplate.requestLayout()。不要等待无限动画结束或在分页钩子中无条件重排。\nmotionChange 的 state 为 settled、running、paused，不等待返回的 Promise。按它启动、暂停 JS 动画，settled 时保留完整静态画面；换页释放旧任务，dispose 清理计时器、事件和请求。HTML、CSS 和 JS 均可自由改写；天光漫游用 JS 控制九格物品栏、行走角色和日夜；分页前标记段落，动效只作用于装饰。fieldsChange 可传第三参数 {fields: [\"time\"]} 仅订阅时间。</string>

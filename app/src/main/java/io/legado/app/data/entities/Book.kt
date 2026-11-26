@@ -519,7 +519,9 @@ data class Book(
         var mangaDisableClickScroll: Boolean? = null,
         var mangaDisableScale: Boolean? = null,
         var mangaAutoPageSpeed: Int? = null,
-        var mangaPageAnim: Int? = null
+        var mangaPageAnim: Int? = null,
+        // Null/empty keeps the publisher layout for actual local EPUB files.
+        var epubReaderTemplateId: String? = null
     ) : Parcelable
 
     class Converters {

@@ -10,7 +10,8 @@ Asuka, Doraemon and Minecraft theme artwork, embedded template JSON, associated
 source folders and artwork fetching/building scripts. Original notices are kept
 under `docs/removed-theme-notices`; those notices do not ship the artwork.
 
-The remaining built-ins are Lord of Mysteries and Vertical. Lord of Mysteries
+The public built-ins are Lord of Mysteries, Vertical and Hong dang (added in
+3.26.1126.1). Lord of Mysteries
 becomes the default. Removed built-in IDs are retired so an old selection resolves
 to an available theme. Generic icons and other documented assets remain; this is
 not an image-free repository. The retained tarot artwork has public-domain source

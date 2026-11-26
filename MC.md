@@ -320,3 +320,80 @@ Cập nhật: 2026-11-18.
 - Đã phát hành [v3.26.1118.1](https://github.com/duongden/legado-R-qt/releases/tag/v3.26.1118.1), là latest, không draft/prerelease, tag trỏ đúng commit phát hành. Nội dung changelog khớp bản đã duyệt.
 - GitHub có đúng APK release và `SHA256SUMS-3.26.1118.1`; digest và kích thước cả hai asset khớp file local. SHA-256 APK: `506312266c5c8dcb0f860362716a37080df08e076d6299a19969521f937b713f`. Chưa tải lại toàn bộ APK từ GitHub hoặc cài release mới lên điện thoại; không phát hành APK debug.
 - Bảo toàn 20 file tracked dirty ngoài phạm vi cùng các thư mục/file untracked không liên quan. Metadata GitHub sau phát hành lưu trong publication.json và latest-release.json tại hồ sơ đợt 12.
+
+## Rà soát sao lưu tài khoản/phiên nguồn — 2026-11-20
+
+- Chỉ rà soát code theo yêu cầu, chưa sửa hành vi ứng dụng. Báo cáo và hướng triển khai: `artifacts/session-2026-11-20/backup-review/README.md`.
+- Đã có backup/restore loginInfo, sourceVariable và source.put; có tùy chọn bỏ qua áp dụng cả khi tạo và khôi phục backup. Chưa đọc cài đặt thực trên thiết bị.
+- Chưa có backup loginHeader động, CookieStore, cookie phiên RAM và dữ liệu WebView; cache/file do script tự quản không được bao phủ đầy đủ.
+- sourceRuntime hiện là JSON thường trong ZIP; cần mã hóa dữ liệu bí mật khi mở rộng. Cần giữ deadline cache và kiểm tra kết quả mã hóa lại tài khoản trên máy mới.
+- Có thể mở rộng để giữ phần lớn cấu hình và phiên còn hiệu lực; không bảo đảm chuyển được token ràng buộc thiết bị hoặc đã hết hạn. Chưa kiểm chứng chuyển hai thiết bị, chưa commit/push/release lượt này.
+
+## So sánh giao diện đọc EPUB — 2026-11-26
+
+- Đã đọc checkout local legado-with-MD3 (222978c5d), legado-2 (52519722d), legado (330e606c4) và source R-qt hiện tại; không fetch, sửa code hoặc cài app.
+- Báo cáo kèm điểm vào code: `artifacts/session-2026-11-26/epub-ui-comparison/README.md`.
+- R-qt có Direct giữ XHTML/CSS và mẫu trang riêng; MD3 dùng Compose Canvas với lớp giữ định dạng ngữ nghĩa có chọn lọc; legado/legado-2 chủ yếu xử lý EPUB thành nội dung cho reader của app.
+- Nên tham khảo cây mục lục EPUB nhiều cấp của legado, các hiệu ứng lật trang bổ sung của MD3, lớp presentation cho chế độ text và cách neo lại vị trí bookmark/marking. Không cần chuyển giao diện sang MD3.
+- Chỉ kết luận từ code; chưa nghiệm thu hình ảnh, hiệu năng hoặc hành vi trên cùng sách/thiết bị. Không coi test có trong repo là test đã chạy.
+
+## Đợt 13 — Mục lục và mẫu trang EPUB local (2026-11-26)
+
+- Người dùng yêu cầu áp dụng các phần phù hợp, không chuyển sang MD3; đối chiếu thêm `/Users/anhdao/Documents/GitHub/legado-R`. Người dùng xác nhận cho chọn mẫu trang cả với file EPUB nhập từ thiết bị.
+- Đã thêm metadata NAV/NCX và UI mục lục nhiều cấp, thu gọn nhánh, mở các cấp cha của chương hiện tại và tìm kiếm có ngữ cảnh. Sách nhập trước được bổ sung metadata hiển thị qua URL khớp chính xác, không ghi đè chỉ số chương hay nội dung; tăng version cache cấu trúc EPUB để lấy metadata mới.
+- Đã thêm Fade và Parallax cho Direct, gồm lựa chọn hiệu ứng riêng của mẫu trang; giữ các giá trị hiệu ứng cũ và bộ render hiện tại.
+- EPUB local có lựa chọn mẫu riêng tại `Book.ReadConfig.epubReaderTemplateId`; null/rỗng giữ bố cục gốc. Menu mẫu có nút về bố cục gốc. Lựa chọn không áp đặt cho sách khác; không tự chuyển người đang chọn engine text sang Direct.
+- Publication adapter giữ nội dung/ảnh/liên kết và biên chương trong mẫu; không sửa archive gốc, không chuyển EPUB thật sang tọa độ/TTS của truyện chữ. EPUB có script/tương tác báo chưa hỗ trợ và cho chọn lại bố cục gốc.
+- Bổ sung thư viện mẫu vào gói backup, gồm snapshot mẫu được profile hoặc từng sách tham chiếu. Lựa chọn từng sách đi theo bookshelf JSON; không đổi schema DB. Phần tài khoản/cookie nguồn được rà soát trước đó vẫn là hạng mục riêng, chưa triển khai trong đợt UI này.
+- Nền: MD3, legado và legado-R trong Documents có cùng 14 ảnh nền với workspace; 6 file mẫu EPUB ở repo legado-R tham khảo cũng trùng byte. Không có nền mới cần chép. Preset MD3 chỉ khác một số màu nhấn, không khác nền. Không sửa template store/asset cá nhân đang dirty.
+- Kiểm chứng: 68 test JVM tích hợp + 1 test khôi phục thư viện mẫu đạt, 0 lỗi; debug APK và AndroidTest APK build đạt. Cài debug giữ dữ liệu thành công. Android chặn APK test lần đầu; người dùng cho phép và cài lại thành công.
+- Test thiết bị luồng EPUB local đạt (20,101s): content URI → mục lục/parser thật → lựa chọn theo sách → mở mẫu/ảnh → Fade/Parallax → mở TOC → trở về gốc; file EPUB không đổi byte. Đã xem ảnh nền/mẫu, cây mục lục và reader gốc. Người dùng cũng tự chọn và xác nhận mẫu Quỷ Bí chạy trên EPUB mẫu.
+- Test menu tự động mở rộng chưa hoàn tất: bị thao tác chọn mẫu xen vào, sau đó ADB mất kết nối. Người dùng yêu cầu chốt bản hiện tại và kiểm tra menu tự động sau. Không ghi phần này là test đã qua.
+- Chưa triển khai iOS curl/Google curl, chuyển renderer sang semantic Canvas của MD3 hoặc kéo chọn xuyên trang Direct. Đổi mẫu có thể đổi phân trang; chưa cam kết giữ chính xác từng câu khi chuyển layout. Các mục runtime/TTS trước đây chưa được coi là đã hoàn tất.
+- Hồ sơ, ảnh, APK, fixture, log, test results và patch nằm trong `artifacts/session-2026-11-26/epub-ui-update/` và các thư mục source/build của chính repo. Đã kiểm tra 20 file dirty ngoài phạm vi vẫn trùng snapshot cũ. Chưa commit/push/release đợt này.
+
+
+## Dọn dữ liệu sinh — 2026-11-26
+
+Đã dọn build/cache trong repo, các bản APK cũ/trùng, screenshot và file tạm/audit cũ; giải phóng khoảng 3.26 GiB kích thước logic. Giữ APK release gần nhất và APK debug/test EPUB mới nhất, mã nguồn, test/fixture, khóa ký và ghi chú/kết quả kiểm thử hiện tại. Các đường dẫn ảnh/build tạm trong ghi chú lịch sử có thể không còn tồn tại. Chi tiết: `artifacts/CLEANUP-2026-11-26.md`.
+
+
+## Đợt 14 — Hoàn tất kiểm tra menu EPUB local (2026-11-26)
+
+- Tiếp tục phần menu đã hoãn: xác minh đúng APK debug/test trên điện thoại. Menu Mẫu trang thực tế hiển thị; cách tìm text qua provider accessibility trong bài test không nhận diện được các node Compose.
+- Đổi test sang duyệt cây accessibility, giữ nhãn theo ngôn ngữ Activity và thao tác click thật, không dùng tọa độ hoặc bỏ assertion. Lượt thiết bị sau sửa đạt 18,97s.
+- Sửa callback đổi hiệu ứng trong ReaderTemplateDialog: so ID mẫu của sách qua EpubBookTemplateSelection thay vì chỉ ID của profile chung. EPUB local dùng lựa chọn riêng từng sách nên đường cập nhật ngay được gọi đúng.
+- Build debug/test cuối đạt; 13 JVM liên quan đạt, 0 lỗi/bỏ qua. Đã cài debug giữ dữ liệu, checksum app/test trên máy khớp build cuối.
+- Có một lượt kiểm tra iframe quá sớm thất bại; chạy lại cùng APK đạt. Đổi bài test sang chờ DOM iframe thay vì lấy mẫu một lần ngay sau khi WebView visible. Lượt cuối đạt 15,781s: nhập EPUB local, mẫu riêng/DB, Fade/Parallax, mục lục, trở về gốc, mở menu mẫu, thấy lựa chọn bố cục gốc và file EPUB giữ nguyên byte.
+- Chưa nghiệm thu riêng mọi thao tác đổi hiệu ứng cuộn trong menu mẫu, mọi mẫu/preview hoặc TTS/TalkBack. Các mục Direct selection, backup tài khoản/cookie và tồn đọng trước đó giữ trạng thái cũ.
+- Hồ sơ: `artifacts/session-2026-11-26/epub-ui-followup/`. APK mới nhất ở `epub-ui-update/`, đã thay bản debug/test cũ; không tạo thêm APK lịch sử. 20 file dirty có từ trước vẫn nguyên byte. Chưa commit/push/release.
+
+
+### Dọn sau đợt 14
+
+Đã dọn 25,257 file build/cache/screenshot/log/XML/audit và patch tạm (758.0 MiB). Giữ mã nguồn, test/fixture, khóa ký, ghi chú/kết quả tóm tắt và APK release + debug/test mới nhất. Các đường dẫn log/ảnh/patch cũ không còn tồn tại sau đợt dọn. Chi tiết: `artifacts/CLEANUP-2026-11-26.md`.
+
+
+## Bổ sung mẫu tích hợp Hồng đăng — 2026-11-26
+
+- Đăng ký `builtin.hong_dang` (Hồng đăng · Mộng Trường An) vào thư viện tích hợp; giữ mẫu mặc định và thứ tự năm mẫu cũ. Dùng chung bộ chọn mẫu cho truyện chữ và EPUB local trong Direct. Không đổi nội dung mẫu do người dùng thêm.
+- Đồng bộ danh sách mong đợi của các test thư viện/export. Kiểm tra CSS trong test chấp nhận khoảng trắng tùy chọn để không từ chối CSS rút gọn hợp lệ.
+- Kiểm tra tĩnh đạt: 6 ID duy nhất, asset JSON khớp ID, metadata hợp lệ và một vùng body trên mỗi loại trang Hồng đăng. Chưa chạy Gradle/JVM hoặc build/cài APK trong lượt này; chưa nghiệm thu hình ảnh mẫu trên thiết bị.
+
+
+## Dọn debug cuối và chuẩn bị changelog — 2026-11-26
+
+- Đã gỡ `io.legado.app.rqt.debug.test` và `io.legado.app.rqt.debug` trên điện thoại, xác minh không còn package và thư mục external debug. Xóa fixture `/data/local/tmp/rqt-phase5-ui.xml`, giữ sách cá nhân trong Download/Legado.
+- Dọn 11 file debug/sinh còn lại trên Mac (84.1 MiB), gồm APK debug/test, metadata/config test tạm và marker Kotlin trong tmp. Giữ APK release gần nhất, source, test/fixture và khóa ký.
+- Changelog nháp: `docs/changelog-draft.md`. Chưa commit/push hoặc phát hành bản mới; Hồng đăng vẫn mới kiểm tra tĩnh, chưa build/kiểm thử renderer của mẫu này.
+
+
+## Đợt 15 — Phát hành 3.26.1126.1 (12035)
+
+- Người dùng duyệt changelog và yêu cầu commit/push/merge, build APK chính thức. Changelog Việt/Anh/Trung trong app chỉ giữ mục mới nhất; CHANGELOG.md giữ lịch sử.
+- Build source công khai riêng trong `artifacts/release-3.26.1126.1/source/`: cập nhật EPUB local, mục lục nhiều cấp, Fade/Parallax, backup mẫu và Hồng đăng. Giữ Lord of Mysteries làm mặc định bản công khai; không đưa lại từ điển, Asuka/Doraemon/Minecraft hoặc CI/Worker/thay đổi riêng.
+- Build JVM + release đạt (10m4s), bao gồm lint-vital. 1.691 tests, 0 failures, 0 errors, 12 skipped do dữ liệu tùy chọn không có trong bản công khai. Bộ kiểm tra locale và 9 test của checker đạt.
+- APK `io.legado.app.rqt.Archive`, 3.26.1126.1 (12035), minSdk21/targetSdk36, không debuggable, chữ ký SHA-256 khớp bản trước. Native đạt căn chỉnh 16KB. Có asset Hồng đăng đúng byte và không kèm asset cá nhân bị loại.
+- APK: `artifacts/release-3.26.1126.1/legado-R-qt_app_3.26.1126.1.apk`, 48.685.430 byte; SHA-256 `62ea7339c54f8fdb4592f99856cfce6ad58584a86bc26ab7f29b4bc9b5c32e35`. Chi tiết ở verification.json cùng thư mục.
+- Xác minh 20 file dirty riêng nguyên byte so với đầu lượt phát hành. Catalog/test/PUBLICATION công khai được chuẩn bị riêng; không ghi đè workspace cá nhân.
+- Repo không có PR mở; chuẩn bị tích hợp trực tiếp main. Chưa coi APK release là đã nghiệm thu thiết bị; app debug/test vẫn đã gỡ theo yêu cầu, chưa cài release hoặc nghiệm thu Hồng đăng trên điện thoại.

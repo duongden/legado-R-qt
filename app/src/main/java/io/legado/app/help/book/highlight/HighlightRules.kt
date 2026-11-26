@@ -27,8 +27,8 @@ object HighlightRules {
             EpubDirectSession.baseUrl("highlight-asset/" + id, host)
         }
 
-    fun decorateTemplate(html: String, bookUrl: String, host: String): String =
-        HighlightDocument.apply(html, store.active(bookUrl, false), HighlightStyle.Palette(
+    fun decorateTemplate(html: String, bookUrl: String, host: String, styled: Boolean = false): String =
+        HighlightDocument.apply(html, store.active(bookUrl, styled), HighlightStyle.Palette(
             text = "var(--reader-text-color,#222)", accent = "var(--reader-accent,#555)",
             background = "var(--reader-page-background,#fff)", night = AppConfig.isNightTheme
         )) { id -> EpubDirectSession.baseUrl("highlight-asset/" + id, host) }

@@ -109,6 +109,7 @@ object Backup {
             ThemeConfig.configFileName,
             BookCover.configFileName,
             "sourceRuntime.json",
+            io.legado.app.model.localBook.epubcore.template.EpubReaderTemplateStore.fileName,
             "config.xml",
             "videoConfig.xml"
         )
@@ -210,6 +211,12 @@ object Backup {
         ReadBookConfig.backupLayoutFiles().forEach { (name, json) ->
             FileUtils.createFileIfNotExist(backupPath + File.separator + name).writeText(json)
         }
+        val templateIds = ReadBookConfig.allLayoutConfigs().map { it.readerTemplateId } +
+            appDb.bookDao.all.mapNotNull { it.readConfig?.epubReaderTemplateId }
+        val templateStore = io.legado.app.model.localBook.epubcore.template.EpubReaderTemplateStore
+        File(backupPath, templateStore.fileName).writeText(templateStore.backupJson(
+            templateIds.filter { it.isNotBlank() && templateStore.resolve(it) != null }
+        ))
         GSON.toJson(ThemeConfig.configList).let {
             FileUtils.createFileIfNotExist(backupPath + File.separator + ThemeConfig.configFileName)
                 .writeText(it)

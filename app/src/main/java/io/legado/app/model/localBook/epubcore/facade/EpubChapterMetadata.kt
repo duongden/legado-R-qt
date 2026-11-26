@@ -8,6 +8,17 @@ internal object EpubChapterMetadata {
 
     const val TocHiddenKey = "epubTocHidden"
     const val LogicalOwnerUrlKey = "epubLogicalOwnerUrl"
+    const val TocIdKey = "epubTocId"
+    const val TocParentIdKey = "epubTocParentId"
+    const val TocDepthKey = "epubTocDepth"
+
+    fun withTocHierarchy(chapter: BookChapter, id: Int, parentId: Int?, depth: Int): BookChapter {
+        return chapter.copy(variable = GSON.toJson(chapter.variableMap.toMutableMap().apply {
+            put(TocIdKey, id.toString())
+            if (parentId == null) remove(TocParentIdKey) else put(TocParentIdKey, parentId.toString())
+            put(TocDepthKey, depth.toString())
+        }))
+    }
 
     fun isHiddenFromToc(chapter: BookChapter): Boolean {
         return chapter.variableMap[TocHiddenKey].equals("true", ignoreCase = true)

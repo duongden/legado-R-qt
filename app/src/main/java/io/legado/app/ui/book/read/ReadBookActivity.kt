@@ -2992,6 +2992,10 @@ class ReadBookActivity : BaseReadBookActivity(),
     }
 
     private fun selectedReaderTemplate(): EpubReaderTemplate? {
+        ReadBook.book?.takeIf { it.isEpub }?.let { book ->
+            val id = book.readConfig?.epubReaderTemplateId?.takeIf { it.isNotBlank() } ?: return null
+            return EpubReaderTemplateStore.resolve(id)
+        }
         if (ReadBook.book?.isEpub != false) return null
         return runCatching { EpubReaderTemplateStore.ensureReaderSelection() }.getOrElse {
             // A damaged library must not re-enable native typography or overwrite user code.
@@ -3005,7 +3009,7 @@ class ReadBookActivity : BaseReadBookActivity(),
             toastOnUi("请先加载正文，再预览页面模板")
             return
         }
-        val book = ReadBook.book?.takeIf { !it.isEpub } ?: return
+        val book = ReadBook.book ?: return
         val config = binding.epubReadView.layoutConfig ?: buildEpubCoreLayoutConfig(prepareEpubReaderBackground())
         ReaderTemplatePreviewDialog.show(this, session,
             binding.epubReadView.currentPage()?.chapterIndex ?: ReadBook.durChapterIndex,

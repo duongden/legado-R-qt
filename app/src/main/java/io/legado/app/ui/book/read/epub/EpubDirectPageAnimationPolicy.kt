@@ -22,6 +22,8 @@ internal object EpubDirectPageAnimationPolicy {
             private set
         var targetMaskAlpha = 0
             private set
+        var sourceAlpha = 1f
+            private set
 
         internal fun reset(width: Float) {
             sourceTranslationX = 0f
@@ -32,6 +34,7 @@ internal object EpubDirectPageAnimationPolicy {
             shadowDirection = 0
             sourceMaskAlpha = 0
             targetMaskAlpha = 0
+            sourceAlpha = 1f
         }
 
         internal fun source(translationX: Float, clipLeft: Float, clipRight: Float) {
@@ -42,6 +45,10 @@ internal object EpubDirectPageAnimationPolicy {
 
         internal fun target(translationX: Float) {
             targetTranslationX = translationX
+        }
+
+        internal fun fade(alpha: Float) {
+            sourceAlpha = alpha.coerceIn(0f, 1f)
         }
 
         internal fun edge(x: Float, direction: Int) {
@@ -60,7 +67,9 @@ internal object EpubDirectPageAnimationPolicy {
         Cover,
         Slide,
         Simulation,
-        LinkedCover
+        LinkedCover,
+        Fade,
+        Parallax
     }
 
     enum class TurnAction {
@@ -75,6 +84,8 @@ internal object EpubDirectPageAnimationPolicy {
             PageAnim.slidePageAnim -> Style.Slide
             PageAnim.simulationPageAnim -> Style.Simulation
             PageAnim.linkedCoverPageAnim -> Style.LinkedCover
+            PageAnim.fadePageAnim -> Style.Fade
+            PageAnim.parallaxPageAnim -> Style.Parallax
             else -> Style.None
         }
     }
@@ -182,12 +193,13 @@ internal object EpubDirectPageAnimationPolicy {
         return when (style) {
             Style.Cover -> if (action == TurnAction.Previous) signedWidth * (1f - value) else 0f
             Style.Slide -> signedWidth * (1f - value)
+            Style.Parallax -> signedWidth * PARALLAX_OFFSET_RATIO * (1f - value)
             Style.LinkedCover -> if (action == TurnAction.Next) {
                 signedWidth * LINKED_OFFSET_RATIO * (1f - value)
             } else {
                 signedWidth * (1f - value)
             }
-            Style.Simulation, Style.None -> 0f
+            Style.Simulation, Style.None, Style.Fade -> 0f
         }
     }
 
@@ -249,6 +261,15 @@ internal object EpubDirectPageAnimationPolicy {
                 frame.target(signedWidth * (1f - value))
             }
 
+            Style.Fade -> frame.fade(1f - value)
+
+            Style.Parallax -> {
+                val sourceX = -signedWidth * value
+                frame.source(sourceX, 0f, width)
+                frame.target(signedWidth * PARALLAX_OFFSET_RATIO * (1f - value))
+                frame.edge(outgoingEdge(sourceX), direction)
+            }
+
             Style.LinkedCover -> if (action == TurnAction.Next) {
                 val sourceX = -signedWidth * value
                 frame.source(sourceX, 0f, width)
@@ -270,7 +291,7 @@ internal object EpubDirectPageAnimationPolicy {
     }
 
     fun requiresMovingLiveTarget(style: Style, action: TurnAction): Boolean {
-        return style == Style.Slide || style == Style.LinkedCover ||
+        return style == Style.Slide || style == Style.LinkedCover || style == Style.Parallax ||
             (style == Style.Cover && action == TurnAction.Previous)
     }
 
@@ -296,6 +317,7 @@ internal object EpubDirectPageAnimationPolicy {
     }
 
     private const val LINKED_OFFSET_RATIO = 0.2f
+    private const val PARALLAX_OFFSET_RATIO = 0.3f
     private const val LINKED_TARGET_MASK_ALPHA = 102
     private const val LINKED_SOURCE_MASK_ALPHA = 76
 }

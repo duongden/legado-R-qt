@@ -70,7 +70,7 @@ class EpubReaderTemplateTest {
     fun bundledTemplatesHaveDistinctFirstPagesAndRetiredMagazineKeepsTwoFlowRegions() {
         val root = sequenceOf(File("src/main/assets/epub/templates"), File("app/src/main/assets/epub/templates"))
             .first { it.isDirectory }
-        val currentIds = listOf("builtin.lord_of_mysteries", "builtin.vertical")
+        val currentIds = listOf("builtin.lord_of_mysteries", "builtin.vertical", "builtin.hong_dang")
         val packagedIds = currentIds + "builtin.magazine"
         assertEquals(currentIds, EpubReaderTemplateStore.builtinIds)
         assertEquals(packagedIds.toSet(), root.listFiles { _, name -> name.endsWith(".json") }
@@ -86,8 +86,8 @@ class EpubReaderTemplateTest {
             val template = EpubReaderTemplate.fromJson(File(root, id + ".json").readText(Charsets.UTF_8))
             assertEquals(id, template.id)
             if (!template.isScrolling) assertNotEquals(template.firstPageHtml, template.otherPageHtml)
-            assertTrue(template.css.contains("display: grid"))
-            assertTrue(template.css.contains("display: flex"))
+            assertTrue(Regex("display\\s*:\\s*grid").containsMatchIn(template.css))
+            assertTrue(Regex("display\\s*:\\s*flex").containsMatchIn(template.css))
             val regions = Regex("data-reader-flow=\"body\"")
             val expectedRegions = if (id == "builtin.magazine") 2 else 1
             template.htmlDocuments.forEach { html -> assertEquals(expectedRegions, regions.findAll(html).count()) }

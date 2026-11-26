@@ -10,6 +10,42 @@ import org.junit.Test
 class EpubDirectPageAnimationPolicyTest {
 
     @Test
+    fun fadeUsesOpacityWithoutMovingEitherPageAndResetsReusableFrames() {
+        val style = EpubDirectPageAnimationPolicy.style(PageAnim.fadePageAnim, true)
+        assertEquals(EpubDirectPageAnimationPolicy.Style.Fade, style)
+        for (action in EpubDirectPageAnimationPolicy.TurnAction.entries) for (direction in listOf(-1, 1)) {
+            val frame = EpubDirectPageAnimationPolicy.frame(style, action, direction, 0.4f, 1000)
+            assertEquals(0.6f, frame.sourceAlpha, 0.001f)
+            assertEquals(0f, frame.sourceTranslationX, 0f)
+            assertEquals(0f, frame.targetTranslationX, 0f)
+            assertFalse(EpubDirectPageAnimationPolicy.requiresMovingLiveTarget(style, action))
+            EpubDirectPageAnimationPolicy.updateFrame(frame, EpubDirectPageAnimationPolicy.Style.Slide,
+                action, direction, 0.4f, 1000)
+            assertEquals(1f, frame.sourceAlpha, 0f)
+        }
+        assertEquals(PageAnim.fadePageAnim, PageAnim.normalize(PageAnim.fadePageAnim))
+        assertEquals(PageAnim.linkedCoverPageAnim, PageAnim.normalize(Int.MAX_VALUE))
+    }
+
+    @Test
+    fun parallaxKeepsLiveAndSnapshotTargetGeometryIdenticalInBothDirections() {
+        val style = EpubDirectPageAnimationPolicy.style(PageAnim.parallaxPageAnim, true)
+        assertEquals(EpubDirectPageAnimationPolicy.Style.Parallax, style)
+        for (action in EpubDirectPageAnimationPolicy.TurnAction.entries) for (direction in listOf(-1, 1)) {
+            for (progress in listOf(0f, 0.3f, 0.7f, 1f)) {
+                val frame = EpubDirectPageAnimationPolicy.frame(style, action, direction, progress, 1000)
+                assertEquals(-direction * 1000f * progress, frame.sourceTranslationX, 0.001f)
+                assertEquals(direction * 300f * (1f - progress), frame.targetTranslationX, 0.001f)
+                assertEquals(frame.targetTranslationX,
+                    EpubDirectPageAnimationPolicy.liveTargetTranslationX(style, action, direction, progress, 1000), 0.001f)
+                assertTrue(EpubDirectPageAnimationPolicy.requiresMovingLiveTarget(style, action))
+            }
+        }
+        assertEquals(EpubDirectPageAnimationPolicy.Style.None,
+            EpubDirectPageAnimationPolicy.style(PageAnim.parallaxPageAnim, false))
+    }
+
+    @Test
     fun mapsReaderAnimationModes() {
         assertEquals(
             EpubDirectPageAnimationPolicy.Style.Cover,

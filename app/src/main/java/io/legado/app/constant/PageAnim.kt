@@ -17,6 +17,15 @@ object PageAnim {
 
     const val linkedCoverPageAnim = 5
 
+    // Direct EPUB only; keep existing persisted values unchanged.
+    const val fadePageAnim = 6
+    const val parallaxPageAnim = 7
+
+    fun normalize(value: Int): Int = when (value) {
+        fadePageAnim, parallaxPageAnim -> value
+        else -> value.coerceIn(coverPageAnim, linkedCoverPageAnim)
+    }
+
     @Target(AnnotationTarget.VALUE_PARAMETER)
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(
@@ -25,7 +34,9 @@ object PageAnim {
         simulationPageAnim,
         scrollPageAnim,
         noAnim,
-        linkedCoverPageAnim
+        linkedCoverPageAnim,
+        fadePageAnim,
+        parallaxPageAnim
     )
     annotation class Anim
 

@@ -1535,7 +1535,9 @@
           return;
         }
       } else if (method === 'goToFragment') {
-        var id = String(args[0] || '').replace(/^#/, ''), match = /^__legado_text_(\d+)$/.exec(id), found = -1;
+        var id = String(args[0] || '').replace(/^#/, '');
+        if (Object.prototype.hasOwnProperty.call(init.sourceAnchors || {}, id)) id = init.sourceAnchors[id];
+        var match = /^__legado_text_(\d+)$/.exec(id), found = -1;
         if (match) found = pageForOffset(Number(match[1]), pageMap);
         else for (var index = 0; index < pageMap.length; index++) {
           if (pageMap[index].fragments.some(function (entry) { return entry.id === id; })) { found = index; break; }

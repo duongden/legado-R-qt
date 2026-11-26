@@ -406,6 +406,10 @@ interface BookDao {
     @Query("update books set durChapterPos = :pos where bookUrl = :bookUrl")
     fun upProgress(bookUrl: String, pos: Int)
 
+    @Query("update books set readConfig = :config where bookUrl = :bookUrl")
+    @TypeConverters(Book.Converters::class)
+    fun updateReadConfig(bookUrl: String, config: Book.ReadConfig)
+
     /**
      * Stamp the last-read time without rewriting the row. A whole-row update would carry
      * whatever `type` the in-memory copy holds, which can undo a concurrent shelf-state

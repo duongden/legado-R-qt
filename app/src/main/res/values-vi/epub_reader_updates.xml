@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_anim_fade">Mờ chuyển trang</string>
+    <string name="page_anim_parallax">Parallax (trượt lệch lớp)</string>
+    <string name="epub_template_local_title">Bố cục cho EPUB này</string>
+    <string name="epub_template_original">Bố cục gốc của sách</string>
+    <string name="epub_template_local_hint">Chọn mẫu trang để đổi bố cục EPUB local này. File gốc được giữ nguyên. Chọn bố cục gốc để trở lại thiết kế của sách.</string>
+    <string name="epub_template_interactive_unsupported">EPUB tương tác này chưa hỗ trợ mẫu trang. Hãy chọn bố cục gốc của sách.</string>
+</resources>

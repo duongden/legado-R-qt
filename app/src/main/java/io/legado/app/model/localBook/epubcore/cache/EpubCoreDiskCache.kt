@@ -20,7 +20,7 @@ import java.util.zip.GZIPOutputStream
 
 object EpubCoreDiskCache {
 
-    private const val CoreSchemaVersion = 8
+    private const val CoreSchemaVersion = 9
     private const val RootDirName = "epub_core"
     private const val StructureDirName = "structure"
     private const val MaxInflatedCacheBytes = 64L * 1024L * 1024L

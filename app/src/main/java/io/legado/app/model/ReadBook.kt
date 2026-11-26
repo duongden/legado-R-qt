@@ -1860,11 +1860,15 @@ object ReadBook : CoroutineScope by MainScope() {
         }
     }
 
-    fun usesPageTemplate(): Boolean = ReadBookConfig.usingEpubLayout && book?.isEpub == false
+    fun usesPageTemplate(): Boolean = ReadBookConfig.usingEpubLayout && book?.let {
+        !it.isEpub || !it.readConfig?.epubReaderTemplateId.isNullOrBlank()
+    } == true
 
     fun pageAnim(): Int {
         if (usesPageTemplate()) {
-            EpubReaderTemplateStore.pageAnimation(ReadBookConfig.config.readerTemplateId)?.let { return it }
+            EpubReaderTemplateStore.pageAnimation(
+                io.legado.app.model.localBook.epubcore.template.EpubBookTemplateSelection.selectedId(book)
+            )?.let { return it }
         }
         return book?.getPageAnim() ?: ReadBookConfig.pageAnim
     }

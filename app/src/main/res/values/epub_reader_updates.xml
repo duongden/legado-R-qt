@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="page_anim_fade">Fade</string>
+    <string name="page_anim_parallax">Parallax</string>
+    <string name="epub_template_local_title">Layout for this EPUB</string>
+    <string name="epub_template_original">Original book layout</string>
+    <string name="epub_template_local_hint">Choose a page template to restyle this local EPUB. The original file stays unchanged. Select the original layout to restore the book’s design.</string>
+    <string name="epub_template_interactive_unsupported">This interactive EPUB cannot use page templates. Select the original book layout.</string>
+</resources>

@@ -47,6 +47,7 @@ import io.legado.app.model.ReadBook
 import io.legado.app.model.localBook.epubcore.template.EpubReaderTemplate
 import io.legado.app.model.localBook.epubcore.template.EpubReaderTemplatePackages
 import io.legado.app.model.localBook.epubcore.template.EpubReaderTemplateStore
+import io.legado.app.model.localBook.epubcore.template.EpubBookTemplateSelection
 import io.legado.app.model.localBook.epubcore.template.ReaderTemplateOperationQueue
 import io.legado.app.ui.code.CodeEditActivity
 import io.legado.app.ui.file.HandleFileContract
@@ -108,7 +109,7 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
         model.perform(enqueue = true) {
             // Complete the commit and notify the reader together, even if this sheet is dismissed.
             withContext(NonCancellable) {
-                val previousId = ReadBookConfig.config.readerTemplateId
+                val previousId = EpubBookTemplateSelection.selectedId(ReadBook.book)
                 withContext(Dispatchers.IO) {
                     uri.inputStream(context).getOrThrow().use(EpubReaderTemplatePackages::importPackage)
                 }
@@ -197,6 +198,17 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(AppListSpacing.Normal)
         ) {
+            if (ReadBook.book?.isEpub == true) item(key = "publisher-layout") {
+                ReaderSectionCard(style = style, title = stringResource(R.string.epub_template_local_title)) {
+                    Text(stringResource(R.string.epub_template_local_hint), color = style.secondaryText, fontSize = 12.sp)
+                    ReaderTextAction(
+                        text = stringResource(R.string.epub_template_original) +
+                            if (model.appliedId.isEmpty()) " · " + stringResource(R.string.reader_template_selected) else "",
+                        style = style,
+                        onClick = { if (!model.busy) applyTemplate("") }
+                    )
+                }
+            }
             if (model.templates.any { it.id == model.appliedId }) {
                 item(key = "page-animation") {
                     ReaderSectionCard(style = style, title = stringResource(R.string.reader_template_page_animation)) {
@@ -264,6 +276,8 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
         ReaderOption(PageAnim.linkedCoverPageAnim.toString(), stringResource(R.string.page_anim_linked_cover)),
         ReaderOption(PageAnim.slidePageAnim.toString(), stringResource(R.string.page_anim_slide)),
         ReaderOption(PageAnim.simulationPageAnim.toString(), stringResource(R.string.page_anim_simulation)),
+        ReaderOption(PageAnim.fadePageAnim.toString(), stringResource(R.string.page_anim_fade)),
+        ReaderOption(PageAnim.parallaxPageAnim.toString(), stringResource(R.string.page_anim_parallax)),
         ReaderOption(PageAnim.scrollPageAnim.toString(), stringResource(R.string.page_anim_scroll)),
         ReaderOption(PageAnim.noAnim.toString(), stringResource(R.string.page_anim_none))
     )
@@ -274,7 +288,7 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
             val previousPageAnim = ReadBook.pageAnim()
             withContext(Dispatchers.IO) { EpubReaderTemplateStore.savePageAnimation(id, animation) }
             model.pageAnimation = animation
-            if (ReadBook.usesPageTemplate() && ReadBookConfig.config.readerTemplateId == id) {
+            if (ReadBook.usesPageTemplate() && EpubBookTemplateSelection.selectedId(ReadBook.book) == id) {
                 (activity as? ReadBookActivity)?.applyPageAnimationChange(previousPageAnim)
             }
         }
@@ -457,7 +471,7 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
                 val deletedMessage = getString(R.string.reader_template_deleted)
                 model.perform {
                     withContext(NonCancellable) {
-                        val previousId = ReadBookConfig.config.readerTemplateId
+                        val previousId = EpubBookTemplateSelection.selectedId(ReadBook.book)
                         withContext(Dispatchers.IO) { EpubReaderTemplateStore.delete(template.id) }
                         notifySelectionChange(previousId)
                         model.refresh()
@@ -479,8 +493,12 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
         }
     }
 
-    private fun notifySelectionChange(previousId: String) {
-        if (previousId != ReadBookConfig.config.readerTemplateId) {
+    private suspend fun notifySelectionChange(previousId: String) {
+        val book = ReadBook.book
+        if (book?.isEpub == true && previousId.isNotEmpty() && EpubReaderTemplateStore.resolve(previousId) == null) {
+            withContext(Dispatchers.IO) { EpubBookTemplateSelection.save(book, "") }
+        }
+        if (previousId != EpubBookTemplateSelection.selectedId(book)) {
             postEvent(EventBus.UP_CONFIG, arrayListOf(8, 5))
         }
     }
@@ -536,7 +554,7 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
                 model.draft = null
                 model.message = savedMessage
                 if (apply) applyTemplateNow(saved.id, scopeError)
-                else if (saved.id == ReadBookConfig.config.readerTemplateId && ReadBook.usesPageTemplate()) {
+                else if (saved.id == EpubBookTemplateSelection.selectedId(ReadBook.book) && ReadBook.usesPageTemplate()) {
                     postEvent(EventBus.UP_CONFIG, arrayListOf(8, 5))
                 }
             }
@@ -549,10 +567,13 @@ class ReaderTemplateDialog : ReaderBottomSheetComposeDialogFragment() {
     }
 
     private suspend fun applyTemplateNow(id: String, scopeError: String) {
-        require(ReadBookConfig.usingEpubLayout && ReadBook.book?.isEpub == false) { scopeError }
-        require(id.isNotEmpty()) { scopeError }
+        val book = requireNotNull(ReadBook.book) { scopeError }
+        require(ReadBookConfig.usingEpubLayout && (book.isEpub || id.isNotEmpty())) { scopeError }
         withContext(NonCancellable) {
-            withContext(Dispatchers.IO) { EpubReaderTemplateStore.saveSelection(id) }
+            withContext(Dispatchers.IO) {
+                if (book.isEpub) EpubBookTemplateSelection.save(book, id)
+                else EpubReaderTemplateStore.saveSelection(id)
+            }
             postEvent(EventBus.UP_CONFIG, arrayListOf(8, 5))
             if (isAdded) dismissAllowingStateLoss()
         }
@@ -589,7 +610,7 @@ internal enum class TemplateCodeField(val label: Int, val language: String) {
 
 internal class ReaderTemplateViewModel : ViewModel() {
     var templates by mutableStateOf<List<EpubReaderTemplate>>(emptyList())
-    var appliedId by mutableStateOf(ReadBookConfig.config.readerTemplateId)
+    var appliedId by mutableStateOf(EpubBookTemplateSelection.selectedId(ReadBook.book))
     var pageAnimation by mutableStateOf<Int?>(null)
     var hasHiddenBuiltIns by mutableStateOf(false)
     var draft by mutableStateOf<EpubReaderTemplate?>(null)
@@ -617,12 +638,12 @@ internal class ReaderTemplateViewModel : ViewModel() {
 
     suspend fun refresh() {
         withContext(NonCancellable) {
-            val previousId = ReadBookConfig.config.readerTemplateId
+            val previousId = EpubBookTemplateSelection.selectedId(ReadBook.book)
             val library = withContext(Dispatchers.IO) {
-                if (ReadBook.usesPageTemplate()) EpubReaderTemplateStore.ensureReaderSelection()
+                if (ReadBook.book?.isEpub == false && ReadBook.usesPageTemplate()) EpubReaderTemplateStore.ensureReaderSelection()
                 EpubReaderTemplateStore.list() to EpubReaderTemplateStore.hasHiddenBuiltIns()
             }
-            appliedId = ReadBookConfig.config.readerTemplateId
+            appliedId = EpubBookTemplateSelection.selectedId(ReadBook.book)
             pageAnimation = EpubReaderTemplateStore.pageAnimation(appliedId)
             if (previousId != appliedId) postEvent(EventBus.UP_CONFIG, arrayListOf(8, 5))
             templates = library.first

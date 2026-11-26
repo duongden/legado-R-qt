@@ -35,7 +35,8 @@ class EpubTemplatePageAnimationPreferencesTest {
     @Test
     fun allReaderAnimationsSurvivePreferenceReload() {
         for (animation in listOf(PageAnim.coverPageAnim, PageAnim.linkedCoverPageAnim,
-            PageAnim.slidePageAnim, PageAnim.simulationPageAnim, PageAnim.scrollPageAnim, PageAnim.noAnim)) {
+            PageAnim.slidePageAnim, PageAnim.simulationPageAnim, PageAnim.scrollPageAnim, PageAnim.noAnim,
+            PageAnim.fadePageAnim, PageAnim.parallaxPageAnim)) {
             preferences().select("template", animation)
             assertEquals(animation, preferences().selected("template"))
         }

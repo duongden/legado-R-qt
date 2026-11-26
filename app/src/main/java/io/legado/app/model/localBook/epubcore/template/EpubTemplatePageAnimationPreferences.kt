@@ -18,5 +18,5 @@ internal class EpubTemplatePageAnimationPreferences(
 
     private fun key(id: String) = "readerTemplatePageAnimation." + id
 
-    private fun supported(value: Int) = value in PageAnim.coverPageAnim..PageAnim.linkedCoverPageAnim
+    private fun supported(value: Int) = value in PageAnim.coverPageAnim..PageAnim.parallaxPageAnim
 }

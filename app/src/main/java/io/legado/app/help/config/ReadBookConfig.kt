@@ -407,7 +407,7 @@ object ReadBookConfig {
             bgStrEInk = default.bgStrEInk.takeIf(::isColor) ?: "#FFFFFF"
         }
         repairPrivateColors(default)
-        pageAnim = pageAnim.coerceIn(PageAnim.coverPageAnim, PageAnim.linkedCoverPageAnim)
+        pageAnim = PageAnim.normalize(pageAnim)
         repairPrivatePageAnim()
         textBold = ReaderFontWeight.normalize(textBold)
         textSize = textSize.coerceIn(5, 80)
@@ -1010,7 +1010,7 @@ object ReadBookConfig {
         }
 
         fun repairPrivatePageAnim() {
-            pageAnimEInk = pageAnimEInk.coerceIn(PageAnim.coverPageAnim, PageAnim.linkedCoverPageAnim)
+            pageAnimEInk = PageAnim.normalize(pageAnimEInk)
         }
 
         fun normalizedUnderlineStrokeWidth(): Float =

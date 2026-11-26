@@ -334,7 +334,7 @@ class EpubCoreFacade private constructor(
             packageViewportHeight = rendition.viewportHeight,
             publisherCss = publisherCss
         )
-        return EpubDirectDocumentBuilder.build(
+        val prepared = EpubDirectDocumentBuilder.build(
             // DirectChapter.chapterIndex is navigation identity, not the internal content
             // owner selected while resolving a shared XHTML/fragment window.
             chapterIndex = chapter.index,
@@ -361,6 +361,9 @@ class EpubCoreFacade private constructor(
             resourceHost = directResourceHost,
             pageProgressionDirection = pkg.pageProgressionDirection
         )
+        return config.readerTemplate?.let { template ->
+            io.legado.app.model.localBook.epubcore.template.EpubPublicationTemplateDocument.prepare(prepared, template)
+        } ?: prepared
     }
 
     private fun readDirectChapterHtml(chapter: BookChapter, href: String, mediaType: String?): String {
@@ -569,10 +572,12 @@ class EpubCoreFacade private constructor(
             val chapter: BookChapter
         )
         val tocEntries = arrayListOf<TocChapterEntry>()
+        val tocHierarchy = java.util.IdentityHashMap<TocItem, Triple<Int, Int?, Int>>()
         var tocOrder = 0
-        fun visitToc(item: TocItem): Int? {
+        fun visitToc(item: TocItem, parentId: Int? = null, depth: Int = 0): Int? {
             val order = tocOrder++
-            val childFirstOrder = item.children.mapNotNull(::visitToc).minOrNull()
+            tocHierarchy[item] = Triple(order, parentId, depth)
+            val childFirstOrder = item.children.mapNotNull { visitToc(it, order, depth + 1) }.minOrNull()
             val href = item.href.trim()
             val cleanHref = EpubPath.stripFragment(href)
             val hrefOrder = if (href.isNotBlank() && isReadableHref(href)) {
@@ -604,12 +609,12 @@ class EpubCoreFacade private constructor(
                     spineOrder = placement,
                     tocOrder = order,
                     cleanHref = hrefOrder?.let { cleanHref },
-                    chapter = chapter
+                    chapter = EpubChapterMetadata.withTocHierarchy(chapter, order, parentId, depth)
                 )
             }
             return placement
         }
-        toc.forEach(::visitToc)
+        toc.forEach { visitToc(it) }
         val entriesBySpineOrder = tocEntries
             .sortedWith(compareBy<TocChapterEntry> { it.spineOrder }.thenBy { it.tocOrder })
             .groupBy { it.spineOrder }
@@ -664,7 +669,7 @@ class EpubCoreFacade private constructor(
             result
         } else {
             flatToc.mapNotNull { item ->
-                when {
+                val chapter = when {
                     item.href.isNotBlank() && isReadableHref(item.href) -> BookChapter(
                         url = item.href,
                         title = item.title.ifBlank { "Chapter" },
@@ -682,6 +687,8 @@ class EpubCoreFacade private constructor(
                     )
                     else -> null
                 }
+                val (id, parentId, depth) = tocHierarchy.getValue(item)
+                chapter?.let { EpubChapterMetadata.withTocHierarchy(it, id, parentId, depth) }
             }
         }
         return normalizeChapters(chapters).also {

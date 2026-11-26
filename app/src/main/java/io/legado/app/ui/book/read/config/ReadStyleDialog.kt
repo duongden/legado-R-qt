@@ -57,6 +57,8 @@ import io.legado.app.constant.PageAnim
 import io.legado.app.constant.PageAnimationSpeed
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.ReadBookConfig
+import io.legado.app.help.book.usesDirectReader
+import io.legado.app.help.book.isEpub
 import io.legado.app.help.config.ReaderFontWeight
 import io.legado.app.lib.theme.accentColor
 import io.legado.app.lib.theme.uiTypeface
@@ -119,13 +121,13 @@ class ReadStyleDialog : ReaderBottomSheetComposeDialogFragment(),
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
-                if (templateOnly) {
+                if (templateOnly || ReadBook.book?.let { it.isEpub && it.usesDirectReader } == true) {
                     ReaderTextAction(
                         text = stringResource(R.string.reader_template_title),
                         style = style,
                         onClick = { showDialogFragment<ReaderTemplateDialog>() }
                     )
-                    return@Column
+                    if (templateOnly) return@Column
                 }
                 TextMetricSection(style = style)
                 AnimAndToolsSection(
@@ -631,7 +633,10 @@ class ReadStyleDialog : ReaderBottomSheetComposeDialogFragment(),
             ReaderOption(PageAnim.simulationPageAnim.toString(), stringResource(R.string.page_anim_simulation)),
             ReaderOption(PageAnim.scrollPageAnim.toString(), stringResource(R.string.page_anim_scroll)),
             ReaderOption(PageAnim.noAnim.toString(), stringResource(R.string.page_anim_none))
-        )
+        ) + if (ReadBook.book?.usesDirectReader == true) listOf(
+            ReaderOption(PageAnim.fadePageAnim.toString(), stringResource(R.string.page_anim_fade)),
+            ReaderOption(PageAnim.parallaxPageAnim.toString(), stringResource(R.string.page_anim_parallax))
+        ) else emptyList()
     }
 
     @Composable
