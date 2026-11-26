@@ -418,3 +418,16 @@ Cập nhật: 2026-11-18.
 
 - Build biến thể release và toàn bộ testAppReleaseUnitTest đạt (6m22s), bao gồm lint-vital: 1.692 tests, 0 lỗi, 12 skipped do dữ liệu tùy chọn. APK đúng io.legado.app.rqt.Archive, 3.26.1126.2 (12036), min21/target36, không debuggable; chữ ký khớp bản trước và 12 thư viện native đạt 16KB.
 - Đã xác minh đủ sáu mẫu tích hợp và asset JSON tương ứng, runtime/Hồng Đăng trong APK đúng byte đã kiểm thử; dữ liệu từ điển bị loại. APK 48.991.484 byte, SHA-256 `02bfab5734ea2053555c5be91364309ef0d48a8680e206976a03cd65d2279e32`. Chuẩn bị commit/push/tag/phát hành hotfix; chưa cài APK release lên điện thoại.
+
+- Đã commit/push hotfix tại `1d5875f39a00fa633b4601c808176c8baf308a7d` và tag `v3.26.1126.2`, tích hợp trực tiếp main; đã phát hành GitHub latest, không draft/prerelease. Kích thước và digest APK/checksum GitHub khớp local. Không tải lại toàn bộ APK hotfix; bản release chưa cài lên thiết bị, bản debug đã được người dùng xác nhận hết lỗi.
+
+
+### Dọn artifacts và chốt changelog theo yêu cầu
+
+- Người dùng đã thấy release mới và yêu cầu bỏ qua việc đã hoàn tất. Không build/phát hành lại APK 3.26.1126.2; không thay tag hoặc payload đã ký.
+- Changelog GitHub và mục mới nhất của CHANGELOG.md đã rút gọn thành “Sửa lỗi EPUB”. Changelog nhúng trong APK đã phát hành không được thay vì không build lại.
+- Đã xóa toàn bộ thư mục artifacts (gồm bản sao sách riêng, browser profile, screenshot, log/audit và source staging) cùng build/cache sinh trong repo: 55,717 file, 1.73 GiB kích thước logic. Kiểm tra SHA-256 3,569 file ngoài phạm vi dọn không đổi.
+- Chỉ giữ APK chính thức mới nhất và checksum ở `release/legado-R-qt_app_3.26.1126.2.apk`, `release/SHA256SUMS-3.26.1126.2`; checksum đã đối chiếu lại. Các liên kết artifacts trong ghi chú cũ chỉ còn mang tính lịch sử.
+- Giữ app debug sửa lỗi trên điện thoại theo lượt cài/kiểm tra mới của người dùng; không gỡ app người dùng đang thử. Mã nguồn, test/fixture tổng hợp, dữ liệu riêng, khóa ký và .git được giữ nguyên.
+
+- Đã gỡ riêng APK kiểm thử `io.legado.app.rqt.debug.test` và xóa các ảnh/XML fixture QA đã tạo trên điện thoại; giữ nguyên app debug và sách/dữ liệu đang dùng.
