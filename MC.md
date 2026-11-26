@@ -397,3 +397,8 @@ Cập nhật: 2026-11-18.
 - APK: `artifacts/release-3.26.1126.1/legado-R-qt_app_3.26.1126.1.apk`, 48.685.430 byte; SHA-256 `62ea7339c54f8fdb4592f99856cfce6ad58584a86bc26ab7f29b4bc9b5c32e35`. Chi tiết ở verification.json cùng thư mục.
 - Xác minh 20 file dirty riêng nguyên byte so với đầu lượt phát hành. Catalog/test/PUBLICATION công khai được chuẩn bị riêng; không ghi đè workspace cá nhân.
 - Repo không có PR mở; chuẩn bị tích hợp trực tiếp main. Chưa coi APK release là đã nghiệm thu thiết bị; app debug/test vẫn đã gỡ theo yêu cầu, chưa cài release hoặc nghiệm thu Hồng đăng trên điện thoại.
+
+- Đã commit bản phát hành tại `d90101b50c3923270f1bef444d044c48d7156c23`, push lên origin/main và gắn tag `v3.26.1126.1` đúng commit. Không có PR cần merge riêng; mã đã tích hợp trực tiếp main.
+- Đã phát hành [v3.26.1126.1](https://github.com/duongden/legado-R-qt/releases/tag/v3.26.1126.1), latest, không draft/prerelease. APK và SHA256SUMS trên GitHub khớp digest/kích thước local; đã tải lại đầy đủ cả hai file và đối chiếu SHA-256 đạt.
+- Đã dọn snapshot source/build/cache/test temp và bản tải lại; xóa APK release cũ sau khi bản mới được xác minh. Giữ APK chính thức mới, checksum và hồ sơ kiểm chứng gọn. Changelog nháp đã hợp nhất vào CHANGELOG.md và log app, file nháp đã dọn.
+- Không cài lại app debug/test hoặc cài APK release trên điện thoại trong đợt phát hành này. Nghiệm thu Hồng đăng trên thiết bị vẫn chưa được thực hiện.
