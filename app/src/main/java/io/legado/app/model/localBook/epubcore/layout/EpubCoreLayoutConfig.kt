@@ -41,7 +41,8 @@ data class EpubCoreLayoutConfig(
     val selectionColor: Int = Color.argb(20, 0, 0, 0),
     val readerBackgroundImage: Boolean = false,
     val readerChrome: EpubReaderChromeConfig = EpubReaderChromeConfig.DISABLED,
-    val readerTemplate: EpubReaderTemplate? = null
+    val readerTemplate: EpubReaderTemplate? = null,
+    val readerTemplateNightMode: Boolean = false
 ) {
     val horizontalPaddingPx: Int
         get() = paddingLeftPx + paddingRightPx
@@ -73,5 +74,7 @@ data class EpubCoreLayoutConfig(
             it.reservedHeaderHeightPx > 0 || it.reservedFooterHeightPx > 0
         }?.geometryKey().orEmpty()
 
-    val readerTemplateKey: String = readerTemplate?.contentHash().orEmpty()
+    val readerTemplateKey: String = readerTemplate?.let {
+        it.contentHash() + if (readerTemplateNightMode) "|dark" else "|light"
+    }.orEmpty()
 }

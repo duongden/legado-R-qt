@@ -49,8 +49,8 @@ class EpubTemplateFramePolicyTest {
         assertFalse(EpubTemplateFramePolicy.supports(reviewed))
     }
 
-    @Test fun `packaged lord of mysteries animation has reproducible settled frames`() {
-        val template = EpubReaderTemplate.fromJson(File("src/main/assets/epub/templates/builtin.lord_of_mysteries.json").readText())
+    @Test fun `packaged minecraft animation has reproducible settled frames`() {
+        val template = EpubReaderTemplate.fromJson(File("src/main/assets/epub/templates/builtin.minecraft_live.json").readText())
         assertFalse(EpubTemplateFramePolicy.supports(template))
         assertTrue(EpubTemplateFramePolicy.supports(template, template))
     }

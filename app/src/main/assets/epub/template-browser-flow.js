@@ -60,6 +60,13 @@
     markSplit(holder, end.token, prepared, false);
     return holder;
   }
+  function cloneSourceRange(prepared, start, end) {
+    var root = prepared.source;
+    return cloneRange(root,
+      {point: start ? pointAt(start.node, start.offset || 0, root) : {node: root, offset: 0}, token: start},
+      {point: end ? pointAt(end.node, end.offset || 0, root) : {node: root, offset: root.childNodes.length}, token: end},
+      prepared);
+  }
   async function build(content, viewport, prepared, token, options, style, firstOnly) {
     options.checkpoint();
     stats.layouts++;
@@ -235,5 +242,5 @@
       return null;
     }
   }
-  window.ReaderBrowserTemplateFlow = {render: render, stats: stats};
+  window.ReaderBrowserTemplateFlow = {render: render, cloneSourceRange: cloneSourceRange, stats: stats};
 }());

@@ -79,6 +79,7 @@ object EpubTemplateDocument {
                 .put("height", config.pageHeightPx / density))
             put("scrollMode", template.isScrolling || config.scrollMode)
             put("templateOwnsLayout", true)
+            put("colorScheme", if (config.readerTemplateNightMode) "dark" else "light")
         }
         // Only the trusted host receives the secret. Author HTML/JS is carried as data,
         // not concatenated into host source, and is executed in a sandboxed srcdoc.

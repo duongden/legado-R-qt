@@ -15,6 +15,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.legado.app.constant.AppConst
 import io.legado.app.R
 import io.legado.app.constant.PageAnim
+import io.legado.app.constant.EventBus
 import io.legado.app.data.appDb
 import io.legado.app.help.book.isEpub
 import io.legado.app.help.config.AppConfig
@@ -29,6 +30,7 @@ import io.legado.app.ui.book.read.epub.EpubDirectWebLayer
 import io.legado.app.ui.book.read.epub.EpubReadView
 import io.legado.app.ui.book.toc.TocActivity
 import io.legado.app.ui.book.toc.TocChapterTree
+import io.legado.app.utils.postEvent
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -46,11 +48,16 @@ class LocalEpubTemplateAndroidTest {
         instrumentation.context.assets.open("rqt-epub-ui-local.epub").use { input -> file.outputStream().use { input.copyTo(it) } }
         val originalBytes = file.readBytes()
         val id = "qa.local-epub-${SystemClock.uptimeMillis()}"
-        EpubReaderTemplateStore.save(EpubReaderTemplate(id = id, name = "EPUB local QA",
+        val example = EpubReaderTemplate(id = id, name = "EPUB local QA",
             firstPageHtml = "<main><section data-reader-flow='body'></section></main>",
             otherPageHtml = "<main><section data-reader-flow='body'></section></main>",
             css = "html,body{margin:0;height:100%;background:#eaf3ff;color:#172b4d;font:18px/1.7 serif}" +
-                "main{height:100%;box-sizing:border-box;padding:28px}section{height:100%;overflow:hidden}p{margin:0 0 14px}"))
+                "main{height:100%;box-sizing:border-box;padding:28px}section{height:100%;overflow:hidden}p{margin:0 0 14px}")
+        val requestedTemplate = InstrumentationRegistry.getArguments().getString("readerTemplateId")
+        val seed = requestedTemplate?.let { requireNotNull(EpubReaderTemplateStore.resolve(it)) } ?: example
+        require(!seed.isScrolling) { "This test requires a paged template" }
+        // Copy built-ins so cleanup cannot hide or delete a user's original template.
+        EpubReaderTemplateStore.save(seed.copy(id = id, name = "EPUB local QA"))
         val engine = AppConfig.epubReadEngine
         val book = LocalBook.importFile(FileProvider.getUriForFile(context, AppConst.authority, file))
         try {
@@ -111,6 +118,29 @@ class LocalEpubTemplateAndroidTest {
                         screenshot(evidence, "local-$name.png")
                     }
                 } finally { scenario.onActivity { ReadBookConfig.pageAnim = previous } }
+                var originalLabel = ""
+                scenario.onActivity {
+                    originalLabel = it.getString(R.string.epub_template_original)
+                    it.showReadStyle()
+                }
+                await("original layout is missing from the active template picker") { hasText(originalLabel) }
+                assertTrue("original layout cannot be selected", clickText(originalLabel))
+                await("switching away from the template did not commit the publisher document") {
+                    var ready = false
+                    scenario.onActivity { ready = find<EpubDirectWebLayer>(it.window.decorView)?.hasVisibleDocument == true }
+                    ready && !ReadBook.usesPageTemplate() && hasTemplateFrame(scenario) == false
+                }
+                EpubBookTemplateSelection.save(requireNotNull(ReadBook.book), "builtin.vertical")
+                scenario.onActivity { postEvent(EventBus.UP_CONFIG, arrayListOf(8, 5)) }
+                await("switching to another template did not commit in the same reader") {
+                    var ready = false
+                    scenario.onActivity {
+                        ready = find<EpubDirectWebLayer>(it.window.decorView)?.hasVisibleDocument == true &&
+                            find<EpubReadView>(it.window.decorView)?.layoutConfig?.readerTemplate?.id == "builtin.vertical"
+                    }
+                    ready && ReadBook.usesPageTemplate() && hasTemplateFrame(scenario) == true
+                }
+                screenshot(evidence, "local-template-switch.png")
             }
             ActivityScenario.launch<TocActivity>(Intent(context, TocActivity::class.java)
                 .putExtra("bookUrl", book.bookUrl).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)).use { scenario ->
@@ -156,6 +186,21 @@ class LocalEpubTemplateAndroidTest {
             EpubReaderTemplateStore.delete(id)
             file.delete()
         }
+    }
+
+    private fun hasTemplateFrame(scenario: ActivityScenario<ReadBookActivity>): Boolean? {
+        val latch = CountDownLatch(1)
+        var result: Boolean? = null
+        scenario.onActivity { activity ->
+            val layer = find<EpubDirectWebLayer>(activity.window.decorView)
+            val web = layer?.let { find<WebView>(it) }
+            if (web == null) latch.countDown()
+            else web.evaluateJavascript("!!document.querySelector('iframe')") { value ->
+                result = when (value) { "true" -> true; "false" -> false; else -> null }
+                latch.countDown()
+            }
+        }
+        return if (latch.await(1, TimeUnit.SECONDS)) result else null
     }
 
     private fun await(message: String, ready: () -> Boolean) {

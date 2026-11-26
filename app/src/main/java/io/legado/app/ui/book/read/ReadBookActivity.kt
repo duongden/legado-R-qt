@@ -3448,7 +3448,8 @@ class ReadBookActivity : BaseReadBookActivity(),
                 pageWidthPx = view.width, pageHeightPx = view.height, textPaint = TextPaint(),
                 readerSafeInsetLeftPx = safe.left, readerSafeInsetTopPx = safe.top,
                 readerSafeInsetRightPx = safe.right, readerSafeInsetBottomPx = safe.bottom,
-                scrollMode = scrollMode, readerTemplate = template
+                scrollMode = scrollMode, readerTemplate = template,
+                readerTemplateNightMode = AppConfig.isNightTheme
             ), resources.displayMetrics.density)
         }
         val textPaint = TextPaint().apply {

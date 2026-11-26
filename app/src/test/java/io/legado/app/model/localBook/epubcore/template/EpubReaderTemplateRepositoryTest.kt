@@ -17,15 +17,15 @@ import java.util.concurrent.TimeUnit
 
 class EpubReaderTemplateRepositoryTest {
     @Test
-    fun `retired snapshots cannot mask the default theme or erase user copies`() {
-        listOf("builtin.flower", "builtin.gilded", "builtin.minecraft", "builtin.minecraft_live", "builtin.asuka_sync", "builtin.doraemon_scroll").forEach { oldId ->
+    fun `retired snapshots cannot mask the minecraft upgrade or erase user copies`() {
+        listOf("builtin.flower", "builtin.gilded", "builtin.minecraft").forEach { oldId ->
             val old = exampleTemplate(oldId).copy(css = "body { color: pink; }")
             val copy = old.copy(id = "user.my-" + oldId, name = "My earlier template")
-            val defaultTheme = exampleTemplate("builtin.lord_of_mysteries")
+            val minecraft = exampleTemplate("builtin.minecraft_live")
             val file = target()
-            val store = EpubReaderTemplateRepository(file, setOf(old.id)) { listOf(defaultTheme) }
+            val store = EpubReaderTemplateRepository(file, setOf(old.id)) { listOf(minecraft) }
             store.restoreJson(EpubReaderTemplateLibrary(listOf(old, copy)).toJson())
-            assertEquals(defaultTheme, store.resolveRequired(old.id, defaultTheme.id))
+            assertEquals(minecraft, store.resolveRequired(old.id, minecraft.id))
             assertNull(store.resolve(old.id))
             assertEquals(copy, store.resolve(copy.id))
             assertTrue(file.readText().contains("color: pink"))

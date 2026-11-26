@@ -72,13 +72,10 @@ keystore.properties
 credentials.json
 /secrets/
 
-# Third-party artwork intentionally omitted from this public distribution.
+# Theme authoring inputs remain local; the six bundled template JSON files are distributed.
 /tools/reader-templates/asuka/
 /tools/reader-templates/doraemon/
 /tools/reader-templates/minecraft/
-/app/src/main/assets/epub/templates/builtin.asuka_sync.json
-/app/src/main/assets/epub/templates/builtin.doraemon_scroll.json
-/app/src/main/assets/epub/templates/builtin.minecraft_live.json
 
 # Translation data is supplied locally or imported by the user; never publish it.
 /app/src/main/assets/translate/vietphrase/

@@ -4,18 +4,19 @@
 
 Public source snapshot prepared on 2026-10-04 for `legado-R-qt` under GPL-3.0.
 
-This distribution excludes all four translation data
-files (Names.dat, VietPhrase.dat, ChinesePhienAmWords.txt and Rule.txt), plus the
-Asuka, Doraemon and Minecraft theme artwork, embedded template JSON, associated
-source folders and artwork fetching/building scripts. Original notices are kept
-under `docs/removed-theme-notices`; those notices do not ship the artwork.
+This distribution excludes all four translation data files (Names.dat,
+VietPhrase.dat, ChinesePhienAmWords.txt and Rule.txt). They remain local or can
+be imported by users.
 
-The public built-ins are Lord of Mysteries, Vertical and Hong dang (added in
-3.26.1126.1). Lord of Mysteries
-becomes the default. Removed built-in IDs are retired so an old selection resolves
-to an available theme. Generic icons and other documented assets remain; this is
-not an image-free repository. The retained tarot artwork has public-domain source
-records and included fonts retain their OFL notices.
+Version 3.26.1126.2 restores the Minecraft, Asuka and Doraemon template JSON at
+the maintainer's explicit request. The six public built-ins are Minecraft,
+Asuka, Lord of Mysteries, Doraemon, Vertical and Hong dang. Lord of Mysteries
+remains the official default; an update does not reset existing selections.
+Embedded template artwork and fonts remain with their original attribution;
+existing source and license records are retained under docs/removed-theme-notices.
+Theme authoring folders and fetching/building scripts remain outside this snapshot.
+Generic icons and other documented assets remain. The project retains its GPL-3.0
+license and existing third-party notices.
 
 ## Translation without bundled data
 

@@ -70,12 +70,12 @@ class EpubReaderTemplateTest {
     fun bundledTemplatesHaveDistinctFirstPagesAndRetiredMagazineKeepsTwoFlowRegions() {
         val root = sequenceOf(File("src/main/assets/epub/templates"), File("app/src/main/assets/epub/templates"))
             .first { it.isDirectory }
-        val currentIds = listOf("builtin.lord_of_mysteries", "builtin.vertical", "builtin.hong_dang")
+        val currentIds = listOf("builtin.minecraft_live", "builtin.asuka_sync", "builtin.lord_of_mysteries", "builtin.doraemon_scroll", "builtin.vertical", "builtin.hong_dang")
         val packagedIds = currentIds + "builtin.magazine"
         assertEquals(currentIds, EpubReaderTemplateStore.builtinIds)
         assertEquals(packagedIds.toSet(), root.listFiles { _, name -> name.endsWith(".json") }
             .orEmpty().map { it.nameWithoutExtension }.toSet())
-        listOf("builtin.clean", "builtin.garden", "builtin.cat", "builtin.magazine", "builtin.night", "builtin.flower", "builtin.gilded", "builtin.minecraft_live", "builtin.asuka_sync", "builtin.doraemon_scroll").forEach { id ->
+        listOf("builtin.clean", "builtin.garden", "builtin.cat", "builtin.magazine", "builtin.night", "builtin.flower", "builtin.gilded").forEach { id ->
             assertTrue(EpubReaderTemplateStore.isRetiredBuiltIn(id))
             assertFalse(EpubReaderTemplateStore.isBuiltIn(id))
         }

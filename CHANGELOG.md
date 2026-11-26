@@ -1,5 +1,11 @@
 # Lịch sử thay đổi R-qt
 
+## 3.26.1126.2 · 26/11/2026 · Build 12036
+
+- Bổ sung đủ 6 mẫu đọc EPUB.
+- Sửa lỗi phân trang và đổi mẫu EPUB.
+- Sửa lỗi sáng/tối của Hồng Đăng khi chuyển trang.
+
 ## 3.26.1126.1 · 26/11/2026 · Build 12035
 
 - Cập nhật giao diện đọc EPUB, hỗ trợ chọn mẫu cho EPUB local.

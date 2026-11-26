@@ -13,8 +13,9 @@ object EpubReaderTemplateStore {
     const val singleTemplateFileName = "readerTemplate.json"
     val filePath: String get() = File(appCtx.filesDir, fileName).absolutePath
     const val defaultId = "builtin.lord_of_mysteries"
-    val builtinIds = listOf(defaultId, "builtin.vertical", "builtin.hong_dang")
-    private val retiredBuiltinIds = setOf("builtin.minecraft_live", "builtin.asuka_sync", "builtin.doraemon_scroll", "builtin.minecraft", "builtin.gilded", "builtin.flower", "builtin.night", "builtin.magazine", "builtin.clean", "builtin.garden", "builtin.cat")
+    const val doraemonScrollId = "builtin.doraemon_scroll"
+    val builtinIds = listOf("builtin.minecraft_live", "builtin.asuka_sync", defaultId, doraemonScrollId, "builtin.vertical", "builtin.hong_dang")
+    private val retiredBuiltinIds = setOf("builtin.minecraft", "builtin.gilded", "builtin.flower", "builtin.night", "builtin.magazine", "builtin.clean", "builtin.garden", "builtin.cat")
 
     private fun loadBuiltIn(id: String): EpubReaderTemplate =
         appCtx.assets.open("epub/templates/" + id + ".json")
@@ -24,7 +25,7 @@ object EpubReaderTemplateStore {
     val defaultTemplate: EpubReaderTemplate by lazy { loadBuiltIn(defaultId) }
 
     private val reviewedFrameTemplates by lazy {
-        listOf(defaultTemplate)
+        listOf(defaultTemplate, loadBuiltIn("builtin.minecraft_live"), loadBuiltIn("builtin.asuka_sync"))
     }
 
     /** A renamed copy is reproducible only when all rendering source still matches. */
@@ -57,7 +58,7 @@ object EpubReaderTemplateStore {
     }
 
     private fun isScrolling(id: String): Boolean =
-        appCtx.getPrefBoolean("readerTemplateScroll." + id, false)
+        appCtx.getPrefBoolean("readerTemplateScroll." + id, id == doraemonScrollId)
 
     private fun rememberType(template: EpubReaderTemplate) {
         if (isScrolling(template.id) != template.isScrolling) {

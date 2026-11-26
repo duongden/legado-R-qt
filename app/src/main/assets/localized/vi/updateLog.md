@@ -1,7 +1,5 @@
-## 3.26.1126.1 · 26/11/2026 · Build 12035
+## 3.26.1126.2 · 26/11/2026 · Build 12036
 
-- Cập nhật giao diện đọc EPUB, hỗ trợ chọn mẫu cho EPUB local.
-- Thêm mục lục EPUB nhiều cấp và hiệu ứng Fade/Parallax.
-- Bổ sung mẫu đọc **Hồng đăng · Mộng Trường An**.
-- Bổ sung sao lưu thư viện mẫu đọc.
-- Sửa lỗi.
+- Bổ sung đủ 6 mẫu đọc EPUB.
+- Sửa lỗi phân trang và đổi mẫu EPUB.
+- Sửa lỗi sáng/tối của Hồng Đăng khi chuyển trang.

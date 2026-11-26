@@ -4,6 +4,9 @@
   // This runtime belongs to the opaque-origin template frame. Native capability
   // checks and navigation live in template-host.js, outside author JavaScript.
   var init = window.__readerTemplateInit || {};
+  if (init.colorScheme === 'light' || init.colorScheme === 'dark') {
+    document.documentElement.setAttribute('data-reader-color-scheme', init.colorScheme);
+  }
   var template = init.template || {};
   var channel = 'legado-reader-template';
   var token = init.token;
@@ -935,6 +938,14 @@
     var bounds = {top: box.top, bottom: box.bottom, left: box.left, right: box.right, width: box.width, height: box.height};
     var result = await layout.renderTo(content, prepared.source, breakToken, bounds);
     if (result.error) return result;
+    function restoreSourceFragment() {
+      // Paged may omit collapsed whitespace at a page boundary. Retain the
+      // exact source interval (including invisible text) for integrity/offsets.
+      // It still uses Paged's measured break and the normal overflow checks.
+      var fragment = ReaderBrowserTemplateFlow.cloneSourceRange(prepared, breakToken, result.breakToken);
+      content.replaceChildren.apply(content, Array.prototype.slice.call(fragment.childNodes));
+    }
+    restoreSourceFragment();
     // Removing a suffix changes last-line justification and punctuation shaping.
     // The pre-extraction metrics are not a guarantee about the displayed page.
     // Refit that final fragment and, only if it now crosses the block edge,
@@ -950,6 +961,7 @@
         throw new Error('正文无法在当前区域内完成分页，请检查正文尺寸或禁止换行的内容');
       }
       result.breakToken = corrected;
+      restoreSourceFragment();
     }
     throw new Error('正文分页后的行尾未能稳定，请检查正文尺寸或分页后的样式修改');
   }

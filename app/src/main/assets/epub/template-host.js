@@ -1,6 +1,11 @@
 (function (bootstrap) {
   'use strict';
   var init = bootstrap.init;
+  // Presentation-backed frame renderers can have a different Android theme.
+  // The iframe's media queries must use the same reader preference as live pages.
+  if (init.colorScheme === 'light' || init.colorScheme === 'dark') {
+    document.documentElement.style.colorScheme = init.colorScheme;
+  }
   if (init.template && init.template.type === 'scroll') init.scrollMode = true;
   if (window.__legadoEpub && window.__legadoEpub.templateHost) {
     window.__legadoEpub.setToken(init.token);

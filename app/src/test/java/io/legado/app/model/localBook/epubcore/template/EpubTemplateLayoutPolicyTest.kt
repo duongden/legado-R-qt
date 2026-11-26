@@ -64,6 +64,19 @@ class EpubTemplateLayoutPolicyTest {
         assertSame(source, EpubTemplateLayoutPolicy.isolate(source, 3f))
     }
 
+    @Test fun `template night preference survives isolation and invalidates cached frames`() {
+        val day = EpubTemplateLayoutPolicy.isolate(config(), 3f)
+        val night = EpubTemplateLayoutPolicy.isolate(config().copy(readerTemplateNightMode = true), 3f)
+        assertFalse(day.readerTemplateNightMode)
+        assertTrue(night.readerTemplateNightMode)
+        assertNotEquals(day.readerTemplateKey, night.readerTemplateKey)
+        assertNotEquals(
+            io.legado.app.ui.book.read.epub.EpubPageFrameTarget.layoutSignature(day, 1080, 2200),
+            io.legado.app.ui.book.read.epub.EpubPageFrameTarget.layoutSignature(night, 1080, 2200)
+        )
+        assertEquals("", config().copy(readerTemplate = null, readerTemplateNightMode = true).readerTemplateKey)
+    }
+
     @Test fun `scroll template forces scrolling even when global settings use horizontal turns`() {
         val source = config().copy(scrollMode = false, readerTemplate = template.copy(
             schemaVersion = 2, type = "scroll", scrollHtml = "<main data-reader-flow='body'></main>"))

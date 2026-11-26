@@ -402,3 +402,19 @@ Cập nhật: 2026-11-18.
 - Đã phát hành [v3.26.1126.1](https://github.com/duongden/legado-R-qt/releases/tag/v3.26.1126.1), latest, không draft/prerelease. APK và SHA256SUMS trên GitHub khớp digest/kích thước local; đã tải lại đầy đủ cả hai file và đối chiếu SHA-256 đạt.
 - Đã dọn snapshot source/build/cache/test temp và bản tải lại; xóa APK release cũ sau khi bản mới được xác minh. Giữ APK chính thức mới, checksum và hồ sơ kiểm chứng gọn. Changelog nháp đã hợp nhất vào CHANGELOG.md và log app, file nháp đã dọn.
 - Không cài lại app debug/test hoặc cài APK release trên điện thoại trong đợt phát hành này. Nghiệm thu Hồng đăng trên thiết bị vẫn chưa được thực hiện.
+
+
+## Đợt 16 — EPUB đầy đủ sáu mẫu và sửa Hồng Đăng (2026-11-26)
+
+- Người dùng xác nhận “Đưa đủ 6 mẫu vào bản chính thức”; phạm vi này thay thế quy tắc loại ba mẫu Minecraft/Asuka/Doraemon cũ. Chỉ khôi phục các JSON mẫu và ghi nhận nguồn/notice có sẵn; dữ liệu từ điển, mã riêng và thông tin cá nhân vẫn không phát hành. Giữ Lord of Mysteries làm mặc định bản chính thức, không reset lựa chọn từng sách.
+- Phân trang: tái hiện lỗi với nguồn EPUB lồng nhau có whitespace. Nhánh Paged bỏ các whitespace tại ranh giới trang, làm guard toàn vẹn báo thiếu/đổi thứ tự. Giữ lại đúng source Range theo break token Paged đã đo và tiếp tục kiểm tra overflow/toàn vẹn, không bỏ guard hoặc bỏ chữ.
+- Sáng/tối: truyền readerTemplateNightMode tới mọi lượt render, đưa light/dark vào khóa template/frame cache, host và root iframe nhận cùng preference. Hồng Đăng ưu tiên data-reader-color-scheme, vẫn fallback prefers-color-scheme khi host cũ không gửi preference; không phụ thuộc theme Presentation riêng của renderer ảnh chuyển trang.
+- Kiểm tra: 31/31 browser source-map regressions đạt, gồm mất chữ/ảnh vẫn bị từ chối; sáu mẫu đều bảo toàn 30.539 ký tự ở fixture formatted. Hai ca sáng/tối ngược môi trường đều giữ đúng màu ở trang đầu/trang sau.
+- Đúng sách báo lỗi: adapter sản xuất xuất 285 phần có chữ và một trang bìa. Browser kiểm tra toàn bộ 286 phần bằng Hồng Đăng đạt, không lệch nội dung; fixture sách riêng bị Git bỏ qua, không đưa vào test/source công khai.
+- Debug + AndroidTest build đạt; 25 JVM liên quan đạt. Cài debug giữ dữ liệu. Native luồng EPUB formatted đạt 21,535s; lượt dùng bản sao Hồng Đăng thật đạt 29,628s, gồm Fade/Parallax và đổi ngay trong cùng Activity từ mẫu sang bố cục gốc qua nút UI rồi sang mẫu dọc qua cùng sự kiện UP_CONFIG. Ảnh cho thấy trang đầu và trang sau Hồng Đăng đều tối. Test chỉ tạo/xóa fixture và bản sao mẫu riêng.
+- Chuẩn bị APK chính thức 3.26.1126.2 (12036) từ source công khai tách biệt; chưa coi đó là APK đã cài/kiểm thử trên thiết bị. Hồ sơ sửa lỗi: artifacts/fix-epub-20261126; hồ sơ phát hành: artifacts/release-3.26.1126.2.
+
+- Người dùng đã thử bản debug sửa lỗi với sách trong ảnh, lật trang Hồng Đăng và đổi mẫu, xác nhận “Đã thử, hết lỗi”.
+
+- Build biến thể release và toàn bộ testAppReleaseUnitTest đạt (6m22s), bao gồm lint-vital: 1.692 tests, 0 lỗi, 12 skipped do dữ liệu tùy chọn. APK đúng io.legado.app.rqt.Archive, 3.26.1126.2 (12036), min21/target36, không debuggable; chữ ký khớp bản trước và 12 thư viện native đạt 16KB.
+- Đã xác minh đủ sáu mẫu tích hợp và asset JSON tương ứng, runtime/Hồng Đăng trong APK đúng byte đã kiểm thử; dữ liệu từ điển bị loại. APK 48.991.484 byte, SHA-256 `02bfab5734ea2053555c5be91364309ef0d48a8680e206976a03cd65d2279e32`. Chuẩn bị commit/push/tag/phát hành hotfix; chưa cài APK release lên điện thoại.

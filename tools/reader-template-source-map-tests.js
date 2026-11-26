@@ -298,6 +298,23 @@
       equal(pages.reduce(function (total, page) { return total + page.fragments.length; }, 0), 1500);
       return {canonicalUtf16Length: fixture.plain.length, captureMs: captured - started, totalMs: performance.now() - started};
     });
+    test('compatibility page breaks retain inter-block and preformatted whitespace', function () {
+      var fixture = book(['alpha\n  ', 'beta\n gamma']);
+      fixture.source.firstChild.style.whiteSpace = 'pre-wrap';
+      fixture.source.insertBefore(document.createTextNode('\n  '), fixture.source.lastChild);
+      var snapshot = capture(fixture), second = fixture.source.lastChild;
+      var prepared = {source: fixture.source};
+      var token = {node: second, offset: 0};
+      var first = window.ReaderBrowserTemplateFlow.cloneSourceRange(prepared, null, token);
+      var last = window.ReaderBrowserTemplateFlow.cloneSourceRange(prepared, token, null);
+      equal(first.textContent + last.textContent, fixture.source.textContent);
+      equal(first.textContent, 'alpha\n  \n  ');
+      var pages = snapshot.collect([{pageIndex: 0, node: first}, {pageIndex: 1, node: last}], 2);
+      equal(pages.length, 2);
+      // Actual missing characters must still be rejected by the unchanged mapper.
+      last.querySelector('p').firstChild.data = 'eta\n gamma';
+      reject(function () { snapshot.collect([{pageIndex: 0, node: first}, {pageIndex: 1, node: last}], 2); }, 'text-changed');
+    });
     return {passed: results.filter(function (result) { return result.passed; }).length,
       failed: results.filter(function (result) { return !result.passed; }).length, results: results, physicalDeviceVerified: false};
   };
